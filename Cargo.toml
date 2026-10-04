@@ -11,10 +11,11 @@ license = "MIT OR Apache-2.0"
 [workspace.dependencies]
 svd-lint-core = { path = "crates/svd-lint-core" }
 
-svd-parser = "0.14"
+svd-parser = { version = "0.14", features = ["expand"] }
+svd-rs = { version = "0.14", features = ["serde", "derive-from"] }
 roxmltree = "0.21"
 thiserror = "2"
-serde = { version = "1", features = ["derive"] }
+serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "1"
 clap = { version = "4", features = ["derive"] }
 miette = { version = "7", features = ["fancy"] }

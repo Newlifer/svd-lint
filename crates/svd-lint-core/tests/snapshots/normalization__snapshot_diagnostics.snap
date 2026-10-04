@@ -1,0 +1,106 @@
+---
+source: crates/svd-lint-core/tests/normalization.rs
+expression: "serde_json::to_string_pretty(&analyze_svd(&source(ERRORS)).diagnostics).unwrap()"
+---
+[
+  {
+    "code": "NORM001",
+    "severity": "error",
+    "message": "derivedFrom target `MISSING` not found for `P.A`",
+    "primary_span": {
+      "start": 332,
+      "end": 339
+    },
+    "related": []
+  },
+  {
+    "code": "NORM002",
+    "severity": "error",
+    "message": "cyclic derivedFrom dependency",
+    "primary_span": {
+      "start": 428,
+      "end": 432
+    },
+    "related": [
+      {
+        "span": {
+          "start": 405,
+          "end": 494
+        },
+        "message": "P.SELF"
+      }
+    ]
+  },
+  {
+    "code": "NORM002",
+    "severity": "error",
+    "message": "cyclic derivedFrom dependency",
+    "primary_span": {
+      "start": 704,
+      "end": 705
+    },
+    "related": [
+      {
+        "span": {
+          "start": 501,
+          "end": 584
+        },
+        "message": "P.B"
+      },
+      {
+        "span": {
+          "start": 591,
+          "end": 674
+        },
+        "message": "P.C"
+      },
+      {
+        "span": {
+          "start": 681,
+          "end": 764
+        },
+        "message": "P.D"
+      }
+    ]
+  },
+  {
+    "code": "NORM005",
+    "severity": "error",
+    "message": "dimIndex must contain one distinct nonempty index per instance",
+    "primary_span": {
+      "start": 823,
+      "end": 847
+    },
+    "related": []
+  },
+  {
+    "code": "NORM006",
+    "severity": "error",
+    "message": "invalid array name template `DOUBLE%s%s`",
+    "primary_span": {
+      "start": 967,
+      "end": 990
+    },
+    "related": []
+  },
+  {
+    "code": "NORM004",
+    "severity": "error",
+    "message": "array dimension must be positive",
+    "primary_span": {
+      "start": 1050,
+      "end": 1062
+    },
+    "related": []
+  },
+  {
+    "code": "NORM007",
+    "severity": "error",
+    "message": "address overflow for `OVERFLOW.R`",
+    "primary_span": {
+      "start": 1345,
+      "end": 1377
+    },
+    "related": []
+  }
+]

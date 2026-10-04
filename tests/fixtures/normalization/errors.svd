@@ -1,0 +1,19 @@
+<device schemaVersion="1.3">
+  <name>Errors</name><version>1</version><description>Independent failures</description>
+  <addressUnitBits>8</addressUnitBits><width>32</width><size>32</size>
+  <peripherals>
+    <peripheral><name>P</name><description>p</description><baseAddress>0</baseAddress><registers>
+      <register derivedFrom="MISSING"><name>A</name><addressOffset>0</addressOffset></register>
+      <register derivedFrom="SELF"><name>SELF</name><addressOffset>0</addressOffset></register>
+      <register derivedFrom="C"><name>B</name><addressOffset>0</addressOffset></register>
+      <register derivedFrom="D"><name>C</name><addressOffset>0</addressOffset></register>
+      <register derivedFrom="B"><name>D</name><addressOffset>0</addressOffset></register>
+      <register><dim>2</dim><dimIncrement>4</dimIncrement><dimIndex>A,A</dimIndex><name>BAD%s</name><addressOffset>0</addressOffset></register>
+      <register><dim>2</dim><dimIncrement>4</dimIncrement><name>DOUBLE%s%s</name><addressOffset>0</addressOffset></register>
+      <register><dim>0</dim><dimIncrement>4</dimIncrement><name>EMPTY%s</name><addressOffset>0</addressOffset></register>
+    </registers></peripheral>
+    <peripheral><name>OVERFLOW</name><description>overflow</description><baseAddress>0xffffffffffffffff</baseAddress>
+      <registers><register><name>R</name><addressOffset>1</addressOffset></register></registers>
+    </peripheral>
+  </peripherals>
+</device>

@@ -1,0 +1,1219 @@
+---
+source: crates/svd-lint-core/tests/normalization.rs
+expression: "serde_json::to_string_pretty(&valid(xml)).unwrap()"
+---
+{
+  "name": "Derived",
+  "address_unit_bits": 8,
+  "width": 32,
+  "peripherals": [
+    {
+      "name": "GPIOA",
+      "base_address": 1073872896,
+      "properties": {
+        "size": {
+          "value": 32,
+          "origin": {
+            "declaration": 6,
+            "usage": 9,
+            "derived_from": [],
+            "arrays": []
+          }
+        },
+        "access": {
+          "value": "read-write",
+          "origin": {
+            "declaration": 7,
+            "usage": 9,
+            "derived_from": [],
+            "arrays": []
+          }
+        },
+        "protection": null,
+        "reset_value": null,
+        "reset_mask": null
+      },
+      "registers": [
+        {
+          "name": "GPIOA.DATA0",
+          "address": 1073872896,
+          "size": {
+            "value": 32,
+            "origin": {
+              "declaration": 6,
+              "usage": 14,
+              "derived_from": [],
+              "arrays": [
+                {
+                  "declaration": 14,
+                  "template": "DATA%s",
+                  "index": "0",
+                  "ordinal": 0,
+                  "dimension": {
+                    "dim": 4,
+                    "dimIncrement": 4,
+                    "dimIndex": "0,1,2,3"
+                  }
+                }
+              ]
+            }
+          },
+          "access": {
+            "value": "read-write",
+            "origin": {
+              "declaration": 7,
+              "usage": 14,
+              "derived_from": [],
+              "arrays": [
+                {
+                  "declaration": 14,
+                  "template": "DATA%s",
+                  "index": "0",
+                  "ordinal": 0,
+                  "dimension": {
+                    "dim": 4,
+                    "dimIncrement": 4,
+                    "dimIndex": "0,1,2,3"
+                  }
+                }
+              ]
+            }
+          },
+          "protection": null,
+          "reset_value": null,
+          "reset_mask": null,
+          "fields": [],
+          "alternate_register": null,
+          "alternate_group": null,
+          "metadata": {
+            "name": "DATA%s",
+            "description": "Data registers",
+            "addressOffset": 0
+          },
+          "origin": {
+            "declaration": 14,
+            "usage": 14,
+            "derived_from": [],
+            "arrays": [
+              {
+                "declaration": 14,
+                "template": "DATA%s",
+                "index": "0",
+                "ordinal": 0,
+                "dimension": {
+                  "dim": 4,
+                  "dimIncrement": 4,
+                  "dimIndex": "0,1,2,3"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "GPIOA.DATA1",
+          "address": 1073872900,
+          "size": {
+            "value": 32,
+            "origin": {
+              "declaration": 6,
+              "usage": 14,
+              "derived_from": [],
+              "arrays": [
+                {
+                  "declaration": 14,
+                  "template": "DATA%s",
+                  "index": "1",
+                  "ordinal": 1,
+                  "dimension": {
+                    "dim": 4,
+                    "dimIncrement": 4,
+                    "dimIndex": "0,1,2,3"
+                  }
+                }
+              ]
+            }
+          },
+          "access": {
+            "value": "read-write",
+            "origin": {
+              "declaration": 7,
+              "usage": 14,
+              "derived_from": [],
+              "arrays": [
+                {
+                  "declaration": 14,
+                  "template": "DATA%s",
+                  "index": "1",
+                  "ordinal": 1,
+                  "dimension": {
+                    "dim": 4,
+                    "dimIncrement": 4,
+                    "dimIndex": "0,1,2,3"
+                  }
+                }
+              ]
+            }
+          },
+          "protection": null,
+          "reset_value": null,
+          "reset_mask": null,
+          "fields": [],
+          "alternate_register": null,
+          "alternate_group": null,
+          "metadata": {
+            "name": "DATA%s",
+            "description": "Data registers",
+            "addressOffset": 0
+          },
+          "origin": {
+            "declaration": 14,
+            "usage": 14,
+            "derived_from": [],
+            "arrays": [
+              {
+                "declaration": 14,
+                "template": "DATA%s",
+                "index": "1",
+                "ordinal": 1,
+                "dimension": {
+                  "dim": 4,
+                  "dimIncrement": 4,
+                  "dimIndex": "0,1,2,3"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "GPIOA.DATA2",
+          "address": 1073872904,
+          "size": {
+            "value": 32,
+            "origin": {
+              "declaration": 6,
+              "usage": 14,
+              "derived_from": [],
+              "arrays": [
+                {
+                  "declaration": 14,
+                  "template": "DATA%s",
+                  "index": "2",
+                  "ordinal": 2,
+                  "dimension": {
+                    "dim": 4,
+                    "dimIncrement": 4,
+                    "dimIndex": "0,1,2,3"
+                  }
+                }
+              ]
+            }
+          },
+          "access": {
+            "value": "read-write",
+            "origin": {
+              "declaration": 7,
+              "usage": 14,
+              "derived_from": [],
+              "arrays": [
+                {
+                  "declaration": 14,
+                  "template": "DATA%s",
+                  "index": "2",
+                  "ordinal": 2,
+                  "dimension": {
+                    "dim": 4,
+                    "dimIncrement": 4,
+                    "dimIndex": "0,1,2,3"
+                  }
+                }
+              ]
+            }
+          },
+          "protection": null,
+          "reset_value": null,
+          "reset_mask": null,
+          "fields": [],
+          "alternate_register": null,
+          "alternate_group": null,
+          "metadata": {
+            "name": "DATA%s",
+            "description": "Data registers",
+            "addressOffset": 0
+          },
+          "origin": {
+            "declaration": 14,
+            "usage": 14,
+            "derived_from": [],
+            "arrays": [
+              {
+                "declaration": 14,
+                "template": "DATA%s",
+                "index": "2",
+                "ordinal": 2,
+                "dimension": {
+                  "dim": 4,
+                  "dimIncrement": 4,
+                  "dimIndex": "0,1,2,3"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "GPIOA.DATA3",
+          "address": 1073872908,
+          "size": {
+            "value": 32,
+            "origin": {
+              "declaration": 6,
+              "usage": 14,
+              "derived_from": [],
+              "arrays": [
+                {
+                  "declaration": 14,
+                  "template": "DATA%s",
+                  "index": "3",
+                  "ordinal": 3,
+                  "dimension": {
+                    "dim": 4,
+                    "dimIncrement": 4,
+                    "dimIndex": "0,1,2,3"
+                  }
+                }
+              ]
+            }
+          },
+          "access": {
+            "value": "read-write",
+            "origin": {
+              "declaration": 7,
+              "usage": 14,
+              "derived_from": [],
+              "arrays": [
+                {
+                  "declaration": 14,
+                  "template": "DATA%s",
+                  "index": "3",
+                  "ordinal": 3,
+                  "dimension": {
+                    "dim": 4,
+                    "dimIncrement": 4,
+                    "dimIndex": "0,1,2,3"
+                  }
+                }
+              ]
+            }
+          },
+          "protection": null,
+          "reset_value": null,
+          "reset_mask": null,
+          "fields": [],
+          "alternate_register": null,
+          "alternate_group": null,
+          "metadata": {
+            "name": "DATA%s",
+            "description": "Data registers",
+            "addressOffset": 0
+          },
+          "origin": {
+            "declaration": 14,
+            "usage": 14,
+            "derived_from": [],
+            "arrays": [
+              {
+                "declaration": 14,
+                "template": "DATA%s",
+                "index": "3",
+                "ordinal": 3,
+                "dimension": {
+                  "dim": 4,
+                  "dimIncrement": 4,
+                  "dimIndex": "0,1,2,3"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "GPIOA.CFG.MODE",
+          "address": 1073872928,
+          "size": {
+            "value": 32,
+            "origin": {
+              "declaration": 6,
+              "usage": 25,
+              "derived_from": [],
+              "arrays": []
+            }
+          },
+          "access": {
+            "value": "read-write",
+            "origin": {
+              "declaration": 7,
+              "usage": 25,
+              "derived_from": [],
+              "arrays": []
+            }
+          },
+          "protection": null,
+          "reset_value": null,
+          "reset_mask": null,
+          "fields": [],
+          "alternate_register": null,
+          "alternate_group": null,
+          "metadata": {
+            "name": "MODE",
+            "description": "Mode register",
+            "addressOffset": 0
+          },
+          "origin": {
+            "declaration": 25,
+            "usage": 25,
+            "derived_from": [],
+            "arrays": []
+          }
+        },
+        {
+          "name": "GPIOA.CFG.CH0",
+          "address": 1073872932,
+          "size": {
+            "value": 32,
+            "origin": {
+              "declaration": 6,
+              "usage": 29,
+              "derived_from": [],
+              "arrays": [
+                {
+                  "declaration": 29,
+                  "template": "CH%s",
+                  "index": "0",
+                  "ordinal": 0,
+                  "dimension": {
+                    "dim": 2,
+                    "dimIncrement": 4
+                  }
+                }
+              ]
+            }
+          },
+          "access": {
+            "value": "read-write",
+            "origin": {
+              "declaration": 7,
+              "usage": 29,
+              "derived_from": [],
+              "arrays": [
+                {
+                  "declaration": 29,
+                  "template": "CH%s",
+                  "index": "0",
+                  "ordinal": 0,
+                  "dimension": {
+                    "dim": 2,
+                    "dimIncrement": 4
+                  }
+                }
+              ]
+            }
+          },
+          "protection": null,
+          "reset_value": null,
+          "reset_mask": null,
+          "fields": [],
+          "alternate_register": null,
+          "alternate_group": null,
+          "metadata": {
+            "name": "CH%s",
+            "description": "Channel registers",
+            "addressOffset": 4
+          },
+          "origin": {
+            "declaration": 29,
+            "usage": 29,
+            "derived_from": [],
+            "arrays": [
+              {
+                "declaration": 29,
+                "template": "CH%s",
+                "index": "0",
+                "ordinal": 0,
+                "dimension": {
+                  "dim": 2,
+                  "dimIncrement": 4
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "GPIOA.CFG.CH1",
+          "address": 1073872936,
+          "size": {
+            "value": 32,
+            "origin": {
+              "declaration": 6,
+              "usage": 29,
+              "derived_from": [],
+              "arrays": [
+                {
+                  "declaration": 29,
+                  "template": "CH%s",
+                  "index": "1",
+                  "ordinal": 1,
+                  "dimension": {
+                    "dim": 2,
+                    "dimIncrement": 4
+                  }
+                }
+              ]
+            }
+          },
+          "access": {
+            "value": "read-write",
+            "origin": {
+              "declaration": 7,
+              "usage": 29,
+              "derived_from": [],
+              "arrays": [
+                {
+                  "declaration": 29,
+                  "template": "CH%s",
+                  "index": "1",
+                  "ordinal": 1,
+                  "dimension": {
+                    "dim": 2,
+                    "dimIncrement": 4
+                  }
+                }
+              ]
+            }
+          },
+          "protection": null,
+          "reset_value": null,
+          "reset_mask": null,
+          "fields": [],
+          "alternate_register": null,
+          "alternate_group": null,
+          "metadata": {
+            "name": "CH%s",
+            "description": "Channel registers",
+            "addressOffset": 4
+          },
+          "origin": {
+            "declaration": 29,
+            "usage": 29,
+            "derived_from": [],
+            "arrays": [
+              {
+                "declaration": 29,
+                "template": "CH%s",
+                "index": "1",
+                "ordinal": 1,
+                "dimension": {
+                  "dim": 2,
+                  "dimIncrement": 4
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "clusters": [
+        {
+          "name": "GPIOA.CFG",
+          "address": 1073872928,
+          "properties": {
+            "size": {
+              "value": 32,
+              "origin": {
+                "declaration": 6,
+                "usage": 21,
+                "derived_from": [],
+                "arrays": []
+              }
+            },
+            "access": {
+              "value": "read-write",
+              "origin": {
+                "declaration": 7,
+                "usage": 21,
+                "derived_from": [],
+                "arrays": []
+              }
+            },
+            "protection": null,
+            "reset_value": null,
+            "reset_mask": null
+          },
+          "alternate_cluster": null,
+          "metadata": {
+            "name": "CFG",
+            "description": "Configuration cluster",
+            "addressOffset": 32,
+            "children": []
+          },
+          "origin": {
+            "declaration": 21,
+            "usage": 21,
+            "derived_from": [],
+            "arrays": []
+          }
+        }
+      ],
+      "address_blocks": [],
+      "interrupts": [],
+      "alternate_peripheral": null,
+      "metadata": {
+        "name": "GPIOA",
+        "description": "GPIO port A",
+        "baseAddress": 1073872896
+      },
+      "origin": {
+        "declaration": 9,
+        "usage": 9,
+        "derived_from": [],
+        "arrays": []
+      }
+    },
+    {
+      "name": "GPIOB",
+      "base_address": 1073873920,
+      "properties": {
+        "size": {
+          "value": 32,
+          "origin": {
+            "declaration": 6,
+            "usage": 35,
+            "derived_from": [
+              9
+            ],
+            "arrays": []
+          }
+        },
+        "access": {
+          "value": "read-write",
+          "origin": {
+            "declaration": 7,
+            "usage": 35,
+            "derived_from": [
+              9
+            ],
+            "arrays": []
+          }
+        },
+        "protection": null,
+        "reset_value": null,
+        "reset_mask": null
+      },
+      "registers": [
+        {
+          "name": "GPIOB.DATA0",
+          "address": 1073873920,
+          "size": {
+            "value": 32,
+            "origin": {
+              "declaration": 6,
+              "usage": 35,
+              "derived_from": [
+                9
+              ],
+              "arrays": [
+                {
+                  "declaration": 14,
+                  "template": "DATA%s",
+                  "index": "0",
+                  "ordinal": 0,
+                  "dimension": {
+                    "dim": 4,
+                    "dimIncrement": 4,
+                    "dimIndex": "0,1,2,3"
+                  }
+                }
+              ]
+            }
+          },
+          "access": {
+            "value": "read-write",
+            "origin": {
+              "declaration": 7,
+              "usage": 35,
+              "derived_from": [
+                9
+              ],
+              "arrays": [
+                {
+                  "declaration": 14,
+                  "template": "DATA%s",
+                  "index": "0",
+                  "ordinal": 0,
+                  "dimension": {
+                    "dim": 4,
+                    "dimIncrement": 4,
+                    "dimIndex": "0,1,2,3"
+                  }
+                }
+              ]
+            }
+          },
+          "protection": null,
+          "reset_value": null,
+          "reset_mask": null,
+          "fields": [],
+          "alternate_register": null,
+          "alternate_group": null,
+          "metadata": {
+            "name": "DATA%s",
+            "description": "Data registers",
+            "addressOffset": 0
+          },
+          "origin": {
+            "declaration": 14,
+            "usage": 35,
+            "derived_from": [
+              9
+            ],
+            "arrays": [
+              {
+                "declaration": 14,
+                "template": "DATA%s",
+                "index": "0",
+                "ordinal": 0,
+                "dimension": {
+                  "dim": 4,
+                  "dimIncrement": 4,
+                  "dimIndex": "0,1,2,3"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "GPIOB.DATA1",
+          "address": 1073873924,
+          "size": {
+            "value": 32,
+            "origin": {
+              "declaration": 6,
+              "usage": 35,
+              "derived_from": [
+                9
+              ],
+              "arrays": [
+                {
+                  "declaration": 14,
+                  "template": "DATA%s",
+                  "index": "1",
+                  "ordinal": 1,
+                  "dimension": {
+                    "dim": 4,
+                    "dimIncrement": 4,
+                    "dimIndex": "0,1,2,3"
+                  }
+                }
+              ]
+            }
+          },
+          "access": {
+            "value": "read-write",
+            "origin": {
+              "declaration": 7,
+              "usage": 35,
+              "derived_from": [
+                9
+              ],
+              "arrays": [
+                {
+                  "declaration": 14,
+                  "template": "DATA%s",
+                  "index": "1",
+                  "ordinal": 1,
+                  "dimension": {
+                    "dim": 4,
+                    "dimIncrement": 4,
+                    "dimIndex": "0,1,2,3"
+                  }
+                }
+              ]
+            }
+          },
+          "protection": null,
+          "reset_value": null,
+          "reset_mask": null,
+          "fields": [],
+          "alternate_register": null,
+          "alternate_group": null,
+          "metadata": {
+            "name": "DATA%s",
+            "description": "Data registers",
+            "addressOffset": 0
+          },
+          "origin": {
+            "declaration": 14,
+            "usage": 35,
+            "derived_from": [
+              9
+            ],
+            "arrays": [
+              {
+                "declaration": 14,
+                "template": "DATA%s",
+                "index": "1",
+                "ordinal": 1,
+                "dimension": {
+                  "dim": 4,
+                  "dimIncrement": 4,
+                  "dimIndex": "0,1,2,3"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "GPIOB.DATA2",
+          "address": 1073873928,
+          "size": {
+            "value": 32,
+            "origin": {
+              "declaration": 6,
+              "usage": 35,
+              "derived_from": [
+                9
+              ],
+              "arrays": [
+                {
+                  "declaration": 14,
+                  "template": "DATA%s",
+                  "index": "2",
+                  "ordinal": 2,
+                  "dimension": {
+                    "dim": 4,
+                    "dimIncrement": 4,
+                    "dimIndex": "0,1,2,3"
+                  }
+                }
+              ]
+            }
+          },
+          "access": {
+            "value": "read-write",
+            "origin": {
+              "declaration": 7,
+              "usage": 35,
+              "derived_from": [
+                9
+              ],
+              "arrays": [
+                {
+                  "declaration": 14,
+                  "template": "DATA%s",
+                  "index": "2",
+                  "ordinal": 2,
+                  "dimension": {
+                    "dim": 4,
+                    "dimIncrement": 4,
+                    "dimIndex": "0,1,2,3"
+                  }
+                }
+              ]
+            }
+          },
+          "protection": null,
+          "reset_value": null,
+          "reset_mask": null,
+          "fields": [],
+          "alternate_register": null,
+          "alternate_group": null,
+          "metadata": {
+            "name": "DATA%s",
+            "description": "Data registers",
+            "addressOffset": 0
+          },
+          "origin": {
+            "declaration": 14,
+            "usage": 35,
+            "derived_from": [
+              9
+            ],
+            "arrays": [
+              {
+                "declaration": 14,
+                "template": "DATA%s",
+                "index": "2",
+                "ordinal": 2,
+                "dimension": {
+                  "dim": 4,
+                  "dimIncrement": 4,
+                  "dimIndex": "0,1,2,3"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "GPIOB.DATA3",
+          "address": 1073873932,
+          "size": {
+            "value": 32,
+            "origin": {
+              "declaration": 6,
+              "usage": 35,
+              "derived_from": [
+                9
+              ],
+              "arrays": [
+                {
+                  "declaration": 14,
+                  "template": "DATA%s",
+                  "index": "3",
+                  "ordinal": 3,
+                  "dimension": {
+                    "dim": 4,
+                    "dimIncrement": 4,
+                    "dimIndex": "0,1,2,3"
+                  }
+                }
+              ]
+            }
+          },
+          "access": {
+            "value": "read-write",
+            "origin": {
+              "declaration": 7,
+              "usage": 35,
+              "derived_from": [
+                9
+              ],
+              "arrays": [
+                {
+                  "declaration": 14,
+                  "template": "DATA%s",
+                  "index": "3",
+                  "ordinal": 3,
+                  "dimension": {
+                    "dim": 4,
+                    "dimIncrement": 4,
+                    "dimIndex": "0,1,2,3"
+                  }
+                }
+              ]
+            }
+          },
+          "protection": null,
+          "reset_value": null,
+          "reset_mask": null,
+          "fields": [],
+          "alternate_register": null,
+          "alternate_group": null,
+          "metadata": {
+            "name": "DATA%s",
+            "description": "Data registers",
+            "addressOffset": 0
+          },
+          "origin": {
+            "declaration": 14,
+            "usage": 35,
+            "derived_from": [
+              9
+            ],
+            "arrays": [
+              {
+                "declaration": 14,
+                "template": "DATA%s",
+                "index": "3",
+                "ordinal": 3,
+                "dimension": {
+                  "dim": 4,
+                  "dimIncrement": 4,
+                  "dimIndex": "0,1,2,3"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "GPIOB.CFG.MODE",
+          "address": 1073873952,
+          "size": {
+            "value": 32,
+            "origin": {
+              "declaration": 6,
+              "usage": 35,
+              "derived_from": [
+                9
+              ],
+              "arrays": []
+            }
+          },
+          "access": {
+            "value": "read-write",
+            "origin": {
+              "declaration": 7,
+              "usage": 35,
+              "derived_from": [
+                9
+              ],
+              "arrays": []
+            }
+          },
+          "protection": null,
+          "reset_value": null,
+          "reset_mask": null,
+          "fields": [],
+          "alternate_register": null,
+          "alternate_group": null,
+          "metadata": {
+            "name": "MODE",
+            "description": "Mode register",
+            "addressOffset": 0
+          },
+          "origin": {
+            "declaration": 25,
+            "usage": 35,
+            "derived_from": [
+              9
+            ],
+            "arrays": []
+          }
+        },
+        {
+          "name": "GPIOB.CFG.CH0",
+          "address": 1073873956,
+          "size": {
+            "value": 32,
+            "origin": {
+              "declaration": 6,
+              "usage": 35,
+              "derived_from": [
+                9
+              ],
+              "arrays": [
+                {
+                  "declaration": 29,
+                  "template": "CH%s",
+                  "index": "0",
+                  "ordinal": 0,
+                  "dimension": {
+                    "dim": 2,
+                    "dimIncrement": 4
+                  }
+                }
+              ]
+            }
+          },
+          "access": {
+            "value": "read-write",
+            "origin": {
+              "declaration": 7,
+              "usage": 35,
+              "derived_from": [
+                9
+              ],
+              "arrays": [
+                {
+                  "declaration": 29,
+                  "template": "CH%s",
+                  "index": "0",
+                  "ordinal": 0,
+                  "dimension": {
+                    "dim": 2,
+                    "dimIncrement": 4
+                  }
+                }
+              ]
+            }
+          },
+          "protection": null,
+          "reset_value": null,
+          "reset_mask": null,
+          "fields": [],
+          "alternate_register": null,
+          "alternate_group": null,
+          "metadata": {
+            "name": "CH%s",
+            "description": "Channel registers",
+            "addressOffset": 4
+          },
+          "origin": {
+            "declaration": 29,
+            "usage": 35,
+            "derived_from": [
+              9
+            ],
+            "arrays": [
+              {
+                "declaration": 29,
+                "template": "CH%s",
+                "index": "0",
+                "ordinal": 0,
+                "dimension": {
+                  "dim": 2,
+                  "dimIncrement": 4
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "GPIOB.CFG.CH1",
+          "address": 1073873960,
+          "size": {
+            "value": 32,
+            "origin": {
+              "declaration": 6,
+              "usage": 35,
+              "derived_from": [
+                9
+              ],
+              "arrays": [
+                {
+                  "declaration": 29,
+                  "template": "CH%s",
+                  "index": "1",
+                  "ordinal": 1,
+                  "dimension": {
+                    "dim": 2,
+                    "dimIncrement": 4
+                  }
+                }
+              ]
+            }
+          },
+          "access": {
+            "value": "read-write",
+            "origin": {
+              "declaration": 7,
+              "usage": 35,
+              "derived_from": [
+                9
+              ],
+              "arrays": [
+                {
+                  "declaration": 29,
+                  "template": "CH%s",
+                  "index": "1",
+                  "ordinal": 1,
+                  "dimension": {
+                    "dim": 2,
+                    "dimIncrement": 4
+                  }
+                }
+              ]
+            }
+          },
+          "protection": null,
+          "reset_value": null,
+          "reset_mask": null,
+          "fields": [],
+          "alternate_register": null,
+          "alternate_group": null,
+          "metadata": {
+            "name": "CH%s",
+            "description": "Channel registers",
+            "addressOffset": 4
+          },
+          "origin": {
+            "declaration": 29,
+            "usage": 35,
+            "derived_from": [
+              9
+            ],
+            "arrays": [
+              {
+                "declaration": 29,
+                "template": "CH%s",
+                "index": "1",
+                "ordinal": 1,
+                "dimension": {
+                  "dim": 2,
+                  "dimIncrement": 4
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "clusters": [
+        {
+          "name": "GPIOB.CFG",
+          "address": 1073873952,
+          "properties": {
+            "size": {
+              "value": 32,
+              "origin": {
+                "declaration": 6,
+                "usage": 35,
+                "derived_from": [
+                  9
+                ],
+                "arrays": []
+              }
+            },
+            "access": {
+              "value": "read-write",
+              "origin": {
+                "declaration": 7,
+                "usage": 35,
+                "derived_from": [
+                  9
+                ],
+                "arrays": []
+              }
+            },
+            "protection": null,
+            "reset_value": null,
+            "reset_mask": null
+          },
+          "alternate_cluster": null,
+          "metadata": {
+            "name": "CFG",
+            "description": "Configuration cluster",
+            "addressOffset": 32,
+            "children": []
+          },
+          "origin": {
+            "declaration": 21,
+            "usage": 35,
+            "derived_from": [
+              9
+            ],
+            "arrays": []
+          }
+        }
+      ],
+      "address_blocks": [],
+      "interrupts": [],
+      "alternate_peripheral": null,
+      "metadata": {
+        "name": "GPIOB",
+        "description": "GPIO port A",
+        "baseAddress": 1073873920,
+        "derivedFrom": "GPIOA"
+      },
+      "origin": {
+        "declaration": 35,
+        "usage": 35,
+        "derived_from": [
+          9
+        ],
+        "arrays": []
+      }
+    }
+  ],
+  "metadata": {
+    "name": "Derived",
+    "version": "1.0",
+    "description": "Device using derivedFrom, dim and cluster",
+    "addressUnitBits": 8,
+    "width": 32,
+    "size": 32,
+    "access": "read-write",
+    "peripherals": []
+  },
+  "unmodeled_nodes": [],
+  "origin": {
+    "declaration": 0,
+    "usage": 0,
+    "derived_from": [],
+    "arrays": []
+  }
+}

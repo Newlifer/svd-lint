@@ -8,6 +8,7 @@ license.workspace = true
 
 [dependencies]
 svd-parser.workspace = true
+svd-rs.workspace = true
 roxmltree.workspace = true
 thiserror.workspace = true
 serde.workspace = true

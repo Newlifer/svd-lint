@@ -24,6 +24,69 @@ fn valid_file_exits_zero_with_quiet_stderr() {
 }
 
 #[test]
+fn check_reports_normalization_errors_in_stable_json_shape() {
+    let assert = svd_lint()
+        .args([
+            "check",
+            &fixture("normalization/errors.svd"),
+            "--format",
+            "json",
+        ])
+        .assert()
+        .code(1);
+    let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
+    assert!(
+        report["diagnostics"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|d| d["code"] == "NORM001")
+    );
+    assert!(report["diagnostics"][0]["span"]["start_line"].is_number());
+    assert_eq!(report.as_object().unwrap().len(), 2);
+}
+
+#[test]
+fn dump_ir_is_deterministic_json_with_physical_registers() {
+    let run = || {
+        svd_lint()
+            .args([
+                "dump-ir",
+                &fixture("normalization/complex.svd"),
+                "--format",
+                "json",
+            ])
+            .assert()
+            .code(0)
+            .get_output()
+            .stdout
+            .clone()
+    };
+    let first = run();
+    assert_eq!(first, run());
+    let ir: serde_json::Value = serde_json::from_slice(&first).unwrap();
+    assert_eq!(ir["peripherals"][0]["name"], "TIMER2");
+    assert_eq!(ir["peripherals"][0]["registers"][0]["address"], 0x5004);
+    assert_eq!(ir["peripherals"][0]["registers"][0]["size"]["value"], 16);
+}
+
+#[test]
+fn dump_ir_failure_outputs_diagnostics_without_partial_ir() {
+    let assert = svd_lint()
+        .args([
+            "dump-ir",
+            &fixture("normalization/errors.svd"),
+            "--format",
+            "json",
+        ])
+        .assert()
+        .code(1);
+    let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
+    assert!(report.get("peripherals").is_none());
+    assert!(!report["diagnostics"].as_array().unwrap().is_empty());
+}
+
+#[test]
 fn warning_only_file_exits_zero() {
     svd_lint()
         .args(["check", &fixture("valid/warning_no_description.svd")])

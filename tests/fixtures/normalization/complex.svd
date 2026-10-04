@@ -1,0 +1,50 @@
+<device schemaVersion="1.3">
+  <name>Canonical</name><version>1</version><description>Normalization fixture</description>
+  <addressUnitBits>8</addressUnitBits><width>32</width>
+  <size>32</size><access>read-write</access><resetValue>0</resetValue><resetMask>0xffffffff</resetMask>
+  <peripherals>
+    <peripheral derivedFrom="TIMER"><name>TIMER2</name><baseAddress>0x5000</baseAddress></peripheral>
+    <peripheral>
+      <name>TIMER</name><description>timer</description><baseAddress>0x4000</baseAddress>
+      <size>16</size><protection>s</protection>
+      <addressBlock><offset>0</offset><size>256</size><usage>registers</usage></addressBlock>
+      <interrupt><name>TIM</name><description>timer interrupt</description><value>4</value></interrupt>
+      <registers>
+        <register derivedFrom="BASE"><name>COPY</name><addressOffset>4</addressOffset><access>read-only</access></register>
+        <register>
+          <name>BASE</name><description>base</description><addressOffset>0</addressOffset>
+          <alternateGroup>VIEW</alternateGroup><alternateRegister>COPY</alternateRegister>
+          <fields>
+            <field><name>MODE</name><bitOffset>0</bitOffset><bitWidth>2</bitWidth><access>read-write</access>
+              <modifiedWriteValues>oneToClear</modifiedWriteValues><readAction>clear</readAction>
+              <writeConstraint><useEnumeratedValues>true</useEnumeratedValues></writeConstraint>
+              <enumeratedValues><name>MODES</name><usage>read-write</usage>
+                <enumeratedValue><name>OFF</name><description>off</description><value>0</value></enumeratedValue>
+                <enumeratedValue><name>ON</name><value>1</value></enumeratedValue>
+              </enumeratedValues>
+            </field>
+            <field derivedFrom="MODE"><name>OTHER</name><bitOffset>4</bitOffset><bitWidth>2</bitWidth></field>
+            <field><dim>2</dim><dimIncrement>1</dimIncrement><dimIndex>A,B</dimIndex><name>FLAG%s</name><bitOffset>8</bitOffset><bitWidth>1</bitWidth>
+              <enumeratedValues derivedFrom="MODES"/>
+            </field>
+          </fields>
+        </register>
+        <register><dim>3</dim><dimIncrement>4</dimIncrement><dimIndex>2-4</dimIndex><name>DATA%s</name><addressOffset>0x10</addressOffset><size>8</size></register>
+        <register derivedFrom="DATA%s"><name>MORE%s</name><addressOffset>0x30</addressOffset></register>
+        <cluster>
+          <dim>2</dim><dimIncrement>0x20</dimIncrement><name>CH[%s]</name><addressOffset>0x80</addressOffset>
+          <size>8</size><access>write-only</access><alternateCluster>ALT</alternateCluster>
+          <cluster><name>NEST</name><addressOffset>4</addressOffset>
+            <register><name>CTRL</name><addressOffset>2</addressOffset><size>4</size></register>
+            <register><name>STATUS</name><addressOffset>3</addressOffset></register>
+          </cluster>
+        </cluster>
+        <cluster derivedFrom="CH[%s]"><name>ALT[%s]</name><addressOffset>0xc0</addressOffset></cluster>
+      </registers>
+    </peripheral>
+    <peripheral>
+      <dim>2</dim><dimIncrement>0x100</dimIncrement><name>PORT%s</name><description>ports</description><baseAddress>0x6000</baseAddress>
+      <registers><register derivedFrom="TIMER2.BASE"><name>REMOTE</name><addressOffset>0</addressOffset></register></registers>
+    </peripheral>
+  </peripherals>
+</device>

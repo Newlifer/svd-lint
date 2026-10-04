@@ -1,0 +1,226 @@
+---
+source: crates/svd-lint-core/tests/normalization.rs
+expression: "serde_json::to_string_pretty(&valid(xml)).unwrap()"
+---
+{
+  "name": "Minimal",
+  "address_unit_bits": 8,
+  "width": 32,
+  "peripherals": [
+    {
+      "name": "TIMER0",
+      "base_address": 1073741824,
+      "properties": {
+        "size": {
+          "value": 32,
+          "origin": {
+            "declaration": 6,
+            "usage": 9,
+            "derived_from": [],
+            "arrays": []
+          }
+        },
+        "access": {
+          "value": "read-write",
+          "origin": {
+            "declaration": 7,
+            "usage": 9,
+            "derived_from": [],
+            "arrays": []
+          }
+        },
+        "protection": null,
+        "reset_value": null,
+        "reset_mask": null
+      },
+      "registers": [
+        {
+          "name": "TIMER0.CTRL",
+          "address": 1073741824,
+          "size": {
+            "value": 32,
+            "origin": {
+              "declaration": 6,
+              "usage": 18,
+              "derived_from": [],
+              "arrays": []
+            }
+          },
+          "access": {
+            "value": "read-write",
+            "origin": {
+              "declaration": 7,
+              "usage": 18,
+              "derived_from": [],
+              "arrays": []
+            }
+          },
+          "protection": null,
+          "reset_value": null,
+          "reset_mask": null,
+          "fields": [
+            {
+              "name": "EN",
+              "qualified_name": "TIMER0.CTRL.EN",
+              "bit_offset": 0,
+              "bit_width": 1,
+              "access": {
+                "value": "read-write",
+                "origin": {
+                  "declaration": 7,
+                  "usage": 23,
+                  "derived_from": [],
+                  "arrays": []
+                }
+              },
+              "enumerated_values": [],
+              "modified_write_values": null,
+              "read_action": null,
+              "write_constraint": null,
+              "metadata": {
+                "name": "EN",
+                "description": "Timer enable",
+                "bitOffset": 0,
+                "bitWidth": 1
+              },
+              "origin": {
+                "declaration": 23,
+                "usage": 23,
+                "derived_from": [],
+                "arrays": []
+              }
+            },
+            {
+              "name": "MODE",
+              "qualified_name": "TIMER0.CTRL.MODE",
+              "bit_offset": 1,
+              "bit_width": 2,
+              "access": {
+                "value": "read-write",
+                "origin": {
+                  "declaration": 7,
+                  "usage": 28,
+                  "derived_from": [],
+                  "arrays": []
+                }
+              },
+              "enumerated_values": [
+                {
+                  "name": "ModeValues",
+                  "usage": null,
+                  "values": {
+                    "value": [
+                      {
+                        "name": "OneShot",
+                        "description": "One-shot mode",
+                        "value": 0
+                      },
+                      {
+                        "name": "Continuous",
+                        "description": "Continuous mode",
+                        "value": 1
+                      }
+                    ],
+                    "origin": {
+                      "declaration": 33,
+                      "usage": 28,
+                      "derived_from": [],
+                      "arrays": []
+                    }
+                  },
+                  "origin": {
+                    "declaration": 33,
+                    "usage": 28,
+                    "derived_from": [],
+                    "arrays": []
+                  }
+                }
+              ],
+              "modified_write_values": null,
+              "read_action": null,
+              "write_constraint": null,
+              "metadata": {
+                "name": "MODE",
+                "description": "Timer mode",
+                "bitOffset": 1,
+                "bitWidth": 2
+              },
+              "origin": {
+                "declaration": 28,
+                "usage": 28,
+                "derived_from": [],
+                "arrays": []
+              }
+            }
+          ],
+          "alternate_register": null,
+          "alternate_group": null,
+          "metadata": {
+            "name": "CTRL",
+            "description": "Control register",
+            "addressOffset": 0
+          },
+          "origin": {
+            "declaration": 18,
+            "usage": 18,
+            "derived_from": [],
+            "arrays": []
+          }
+        }
+      ],
+      "clusters": [],
+      "address_blocks": [
+        {
+          "address": 1073741824,
+          "offset": 0,
+          "size": 256,
+          "usage": "registers",
+          "protection": null,
+          "origin": {
+            "declaration": 13,
+            "usage": 9,
+            "derived_from": [],
+            "arrays": []
+          }
+        }
+      ],
+      "interrupts": [],
+      "alternate_peripheral": null,
+      "metadata": {
+        "name": "TIMER0",
+        "description": "General purpose timer",
+        "baseAddress": 1073741824,
+        "addressBlock": [
+          {
+            "offset": 0,
+            "size": 256,
+            "usage": "registers"
+          }
+        ]
+      },
+      "origin": {
+        "declaration": 9,
+        "usage": 9,
+        "derived_from": [],
+        "arrays": []
+      }
+    }
+  ],
+  "metadata": {
+    "name": "Minimal",
+    "version": "1.0",
+    "description": "Minimal valid test device",
+    "addressUnitBits": 8,
+    "width": 32,
+    "size": 32,
+    "access": "read-write",
+    "peripherals": []
+  },
+  "unmodeled_nodes": [],
+  "origin": {
+    "declaration": 0,
+    "usage": 0,
+    "derived_from": [],
+    "arrays": []
+  }
+}

@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 
 use clap::{Parser, Subcommand, ValueEnum};
-use svd_lint_core::{Diagnostic, DiagnosticCode, SourceFile, parse_svd};
+use svd_lint_core::{Diagnostic, DiagnosticCode, SourceFile, analyze_svd};
 
 /// Static analyzer for CMSIS-SVD files.
 #[derive(Parser)]
@@ -20,6 +20,8 @@ struct Cli {
 enum Commands {
     /// Checks an SVD file and reports diagnostics.
     Check(CheckArgs),
+    /// Dumps canonical IR as JSON after successful analysis.
+    DumpIr(CheckArgs),
 }
 
 #[derive(Parser)]
@@ -42,11 +44,12 @@ enum Format {
 fn main() -> ExitCode {
     let cli = Cli::parse();
     match cli.command {
-        Commands::Check(args) => run_check(&args),
+        Commands::Check(args) => run_check(&args, false),
+        Commands::DumpIr(args) => run_check(&args, true),
     }
 }
 
-fn run_check(args: &CheckArgs) -> ExitCode {
+fn run_check(args: &CheckArgs, dump_ir: bool) -> ExitCode {
     let file_name = args.file.to_string_lossy().into_owned();
 
     let bytes = match std::fs::read(&args.file) {
@@ -84,7 +87,20 @@ fn run_check(args: &CheckArgs) -> ExitCode {
     };
 
     let source = SourceFile::new(file_name, text);
-    let result = parse_svd(&source);
+    let result = analyze_svd(&source);
+    if let Some(device) = result.device.as_ref().filter(|_| dump_ir) {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(device).expect("IR is JSON serializable")
+        );
+        if !result.diagnostics.is_empty() {
+            eprint!(
+                "{}",
+                output::render_text(&result.diagnostics, Some(&source), output::colors_enabled())
+            );
+        }
+        return ExitCode::SUCCESS;
+    }
     finish(
         args.format,
         source.name(),

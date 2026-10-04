@@ -134,6 +134,15 @@ pub enum DiagnosticCode {
     MissingPeripheralDescription,
     /// SVD006: the typed `svd-parser` pass failed.
     SvdParseError,
+    NormMissingReference,
+    NormCycle,
+    NormAmbiguousReference,
+    NormInvalidDimension,
+    NormInvalidIndex,
+    NormInvalidTemplate,
+    NormAddressOverflow,
+    NormMissingProperty,
+    NormExpansionLimit,
 }
 
 impl DiagnosticCode {
@@ -148,6 +157,15 @@ impl DiagnosticCode {
         DiagnosticCode::EmptyRequiredElement,
         DiagnosticCode::MissingPeripheralDescription,
         DiagnosticCode::SvdParseError,
+        DiagnosticCode::NormMissingReference,
+        DiagnosticCode::NormCycle,
+        DiagnosticCode::NormAmbiguousReference,
+        DiagnosticCode::NormInvalidDimension,
+        DiagnosticCode::NormInvalidIndex,
+        DiagnosticCode::NormInvalidTemplate,
+        DiagnosticCode::NormAddressOverflow,
+        DiagnosticCode::NormMissingProperty,
+        DiagnosticCode::NormExpansionLimit,
     ];
 
     /// Stable string representation, e.g. `IO001` or `SVD002`.
@@ -162,6 +180,15 @@ impl DiagnosticCode {
             DiagnosticCode::EmptyRequiredElement => "SVD004",
             DiagnosticCode::MissingPeripheralDescription => "SVD005",
             DiagnosticCode::SvdParseError => "SVD006",
+            DiagnosticCode::NormMissingReference => "NORM001",
+            DiagnosticCode::NormCycle => "NORM002",
+            DiagnosticCode::NormAmbiguousReference => "NORM003",
+            DiagnosticCode::NormInvalidDimension => "NORM004",
+            DiagnosticCode::NormInvalidIndex => "NORM005",
+            DiagnosticCode::NormInvalidTemplate => "NORM006",
+            DiagnosticCode::NormAddressOverflow => "NORM007",
+            DiagnosticCode::NormMissingProperty => "NORM008",
+            DiagnosticCode::NormExpansionLimit => "NORM009",
         }
     }
 
@@ -177,6 +204,15 @@ impl DiagnosticCode {
             "SVD004" => DiagnosticCode::EmptyRequiredElement,
             "SVD005" => DiagnosticCode::MissingPeripheralDescription,
             "SVD006" => DiagnosticCode::SvdParseError,
+            "NORM001" => DiagnosticCode::NormMissingReference,
+            "NORM002" => DiagnosticCode::NormCycle,
+            "NORM003" => DiagnosticCode::NormAmbiguousReference,
+            "NORM004" => DiagnosticCode::NormInvalidDimension,
+            "NORM005" => DiagnosticCode::NormInvalidIndex,
+            "NORM006" => DiagnosticCode::NormInvalidTemplate,
+            "NORM007" => DiagnosticCode::NormAddressOverflow,
+            "NORM008" => DiagnosticCode::NormMissingProperty,
+            "NORM009" => DiagnosticCode::NormExpansionLimit,
             _ => return None,
         })
     }
@@ -280,6 +316,8 @@ mod tests {
     fn codes_are_stable_and_unique() {
         let expected = [
             "IO001", "IO002", "XML001", "SVD001", "SVD002", "SVD003", "SVD004", "SVD005", "SVD006",
+            "NORM001", "NORM002", "NORM003", "NORM004", "NORM005", "NORM006", "NORM007", "NORM008",
+            "NORM009",
         ];
         let actual: Vec<&str> = DiagnosticCode::ALL.iter().map(|c| c.as_str()).collect();
         assert_eq!(actual, expected);
