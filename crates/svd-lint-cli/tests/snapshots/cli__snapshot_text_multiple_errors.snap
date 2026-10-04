@@ -1,0 +1,58 @@
+---
+source: crates/svd-lint-cli/tests/cli.rs
+expression: stderr
+---
+SVD002
+
+  × missing required element <width>
+    ╭─[../../tests/fixtures/invalid/multiple_errors.svd:2:1]
+  1 │     <?xml version="1.0" encoding="utf-8"?>
+  2 │ ╭─▶ <device schemaVersion="1.1">
+  3 │ │     <name>Multi</name>
+  4 │ │     <version>1.0</version>
+  5 │ │     <version>2.0</version>
+  6 │ │     <description></description>
+  7 │ │     <addressUnitBits>8</addressUnitBits>
+  8 │ │     <peripherals>
+  9 │ │       <peripheral>
+ 10 │ │         <name>P0</name>
+ 11 │ │         <baseAddress>0x40000000</baseAddress>
+ 12 │ │       </peripheral>
+ 13 │ │     </peripherals>
+ 14 │ ╰─▶ </device>
+    ╰────
+
+SVD003
+
+  × element <version> must appear only once
+   ╭─[../../tests/fixtures/invalid/multiple_errors.svd:4:3]
+ 3 │   <name>Multi</name>
+ 4 │   <version>1.0</version>
+   ·   ───────────┬──────────
+   ·              ╰── first occurrence is here
+ 5 │   <version>2.0</version>
+   ·   ──────────────────────
+ 6 │   <description></description>
+   ╰────
+
+SVD004
+
+  × required element <description> must not be empty
+   ╭─[../../tests/fixtures/invalid/multiple_errors.svd:6:3]
+ 5 │   <version>2.0</version>
+ 6 │   <description></description>
+   ·   ───────────────────────────
+ 7 │   <addressUnitBits>8</addressUnitBits>
+   ╰────
+
+SVD005
+
+  ⚠ peripheral <P0> has no description
+    ╭─[../../tests/fixtures/invalid/multiple_errors.svd:9:5]
+  8 │       <peripherals>
+  9 │ ╭─▶     <peripheral>
+ 10 │ │         <name>P0</name>
+ 11 │ │         <baseAddress>0x40000000</baseAddress>
+ 12 │ ╰─▶     </peripheral>
+ 13 │       </peripherals>
+    ╰────

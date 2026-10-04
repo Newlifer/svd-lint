@@ -1,0 +1,77 @@
+---
+source: crates/svd-lint-cli/tests/cli.rs
+expression: stdout
+---
+{
+  "file": "../../tests/fixtures/invalid/multiple_errors.svd",
+  "diagnostics": [
+    {
+      "code": "SVD002",
+      "severity": "error",
+      "message": "missing required element <width>",
+      "span": {
+        "start": 39,
+        "end": 351,
+        "start_line": 2,
+        "start_column": 1,
+        "end_line": 14,
+        "end_column": 10
+      },
+      "related": []
+    },
+    {
+      "code": "SVD003",
+      "severity": "error",
+      "message": "element <version> must appear only once",
+      "span": {
+        "start": 116,
+        "end": 138,
+        "start_line": 5,
+        "start_column": 3,
+        "end_line": 5,
+        "end_column": 25
+      },
+      "related": [
+        {
+          "span": {
+            "start": 91,
+            "end": 113,
+            "start_line": 4,
+            "start_column": 3,
+            "end_line": 4,
+            "end_column": 25
+          },
+          "message": "first occurrence is here"
+        }
+      ]
+    },
+    {
+      "code": "SVD004",
+      "severity": "error",
+      "message": "required element <description> must not be empty",
+      "span": {
+        "start": 141,
+        "end": 168,
+        "start_line": 6,
+        "start_column": 3,
+        "end_line": 6,
+        "end_column": 30
+      },
+      "related": []
+    },
+    {
+      "code": "SVD005",
+      "severity": "warning",
+      "message": "peripheral <P0> has no description",
+      "span": {
+        "start": 228,
+        "end": 324,
+        "start_line": 9,
+        "start_column": 5,
+        "end_line": 12,
+        "end_column": 18
+      },
+      "related": []
+    }
+  ]
+}

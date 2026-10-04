@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<device schemaVersion="1.1" xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:noNamespaceSchemaLocation="CMSIS-SVD_Schema_1_3.xsd">
+  <name>Derived</name>
+  <version>1.0</version>
+  <description>Device using derivedFrom, dim and cluster</description>
+  <addressUnitBits>8</addressUnitBits>
+  <width>32</width>
+  <size>32</size>
+  <access>read-write</access>
+  <peripherals>
+    <peripheral>
+      <name>GPIOA</name>
+      <description>GPIO port A</description>
+      <baseAddress>0x40020000</baseAddress>
+      <registers>
+        <register>
+          <dim>4</dim>
+          <dimIncrement>0x4</dimIncrement>
+          <dimIndex>0-3</dimIndex>
+          <name>DATA%s</name>
+          <description>Data registers</description>
+          <addressOffset>0x0</addressOffset>
+        </register>
+        <cluster>
+          <name>CFG</name>
+          <description>Configuration cluster</description>
+          <addressOffset>0x20</addressOffset>
+          <register>
+            <name>MODE</name>
+            <description>Mode register</description>
+            <addressOffset>0x0</addressOffset>
+          </register>
+          <register>
+            <dim>2</dim>
+            <dimIncrement>0x4</dimIncrement>
+            <name>CH%s</name>
+            <description>Channel registers</description>
+            <addressOffset>0x4</addressOffset>
+          </register>
+        </cluster>
+      </registers>
+    </peripheral>
+    <peripheral derivedFrom="GPIOA">
+      <name>GPIOB</name>
+      <baseAddress>0x40020400</baseAddress>
+    </peripheral>
+  </peripherals>
+</device>

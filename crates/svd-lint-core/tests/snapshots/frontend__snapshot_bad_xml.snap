@@ -1,0 +1,5 @@
+---
+source: crates/svd-lint-core/tests/frontend.rs
+expression: "debug_dump(&source, &result.diagnostics)"
+---
+Error XML001 [277..277 @ 11:1-11:1] XML syntax error: the root node was opened but never closed

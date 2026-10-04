@@ -1,0 +1,18 @@
+[package]
+name = "svd-lint-core"
+description = "Static analyzer for CMSIS-SVD files: frontend, source maps and diagnostics"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+svd-parser.workspace = true
+roxmltree.workspace = true
+thiserror.workspace = true
+serde.workspace = true
+
+[dev-dependencies]
+insta.workspace = true
+serde_json.workspace = true
+tempfile.workspace = true

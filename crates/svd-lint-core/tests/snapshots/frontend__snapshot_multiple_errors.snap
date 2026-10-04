@@ -1,0 +1,9 @@
+---
+source: crates/svd-lint-core/tests/frontend.rs
+expression: "debug_dump(&source, &result.diagnostics)"
+---
+Error SVD002 [39..351 @ 2:1-14:10] missing required element <width>
+Error SVD003 [116..138 @ 5:3-5:25] element <version> must appear only once
+  related [91..113 @ 4:3] first occurrence is here
+Error SVD004 [141..168 @ 6:3-6:30] required element <description> must not be empty
+Warning SVD005 [228..324 @ 9:5-12:18] peripheral <P0> has no description
