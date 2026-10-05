@@ -1,0 +1,17 @@
+<device schemaVersion="1.3">
+  <name>ValidSemantic</name><version>1</version><description>Semantic fixtures</description>
+  <addressUnitBits>8</addressUnitBits><width>32</width><size>32</size><access>read-write</access>
+  <resetValue>17</resetValue><resetMask>255</resetMask>
+  <peripherals><peripheral><name>P</name><description>p</description><baseAddress>0x1000</baseAddress>
+    <addressBlock><offset>0</offset><size>4</size><usage>registers</usage></addressBlock>
+    <addressBlock><offset>8</offset><size>4</size><usage>registers</usage></addressBlock>
+    <registers>
+      <register><name>CTRL</name><addressOffset>0</addressOffset><fields>
+        <field><name>A</name><bitOffset>0</bitOffset><bitWidth>4</bitWidth><enumeratedValues><usage>read</usage><enumeratedValue><name>OFF</name><value>0</value></enumeratedValue></enumeratedValues><enumeratedValues><usage>write</usage><enumeratedValue><name>START</name><value>0</value></enumeratedValue></enumeratedValues></field>
+        <field><name>B</name><bitOffset>4</bitOffset><bitWidth>4</bitWidth><writeConstraint><range><minimum>0</minimum><maximum>15</maximum></range></writeConstraint></field>
+      </fields></register>
+      <register><name>VIEW</name><alternateRegister>CTRL</alternateRegister><addressOffset>0</addressOffset></register>
+      <register><name>ONCE</name><addressOffset>8</addressOffset><access>writeOnce</access><modifiedWriteValues>oneToClear</modifiedWriteValues></register>
+    </registers>
+  </peripheral></peripherals>
+</device>

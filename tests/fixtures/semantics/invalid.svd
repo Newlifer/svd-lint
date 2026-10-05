@@ -1,0 +1,25 @@
+<device schemaVersion="1.3">
+  <name>InvalidSemantic</name><version>1</version><description>Independent semantic failures</description>
+  <addressUnitBits>8</addressUnitBits><width>32</width><size>8</size><access>read-write</access>
+  <resetValue>256</resetValue><resetMask>256</resetMask>
+  <peripherals><peripheral><name>P</name><description>p</description><baseAddress>0x1000</baseAddress>
+    <addressBlock><offset>0</offset><size>1</size><usage>registers</usage></addressBlock>
+    <addressBlock><offset>8</offset><size>0</size><usage>buffer</usage></addressBlock>
+    <registers>
+      <register><name>ZERO</name><addressOffset>0</addressOffset><size>0</size><fields><field><name>ZERO</name><bitOffset>0</bitOffset><bitWidth>0</bitWidth></field></fields></register>
+      <register><name>BAD</name><addressOffset>0</addressOffset><resetValue>2</resetValue><resetMask>1</resetMask><access>read-only</access><modifiedWriteValues>oneToClear</modifiedWriteValues><fields>
+        <field><name>OUT</name><bitOffset>7</bitOffset><bitWidth>2</bitWidth></field>
+        <field><name>A</name><bitOffset>0</bitOffset><bitWidth>4</bitWidth></field>
+        <field><name>B</name><bitOffset>3</bitOffset><bitWidth>2</bitWidth></field>
+        <field><name>E</name><bitOffset>5</bitOffset><bitWidth>2</bitWidth><enumeratedValues>
+          <enumeratedValue><name>X</name><value>4</value></enumeratedValue><enumeratedValue><name>X</name><value>1</value></enumeratedValue>
+          <enumeratedValue><name>D</name><isDefault>true</isDefault></enumeratedValue><enumeratedValue><name>E</name><isDefault>true</isDefault></enumeratedValue>
+        </enumeratedValues></field>
+        <field><name>WC</name><bitOffset>0</bitOffset><bitWidth>2</bitWidth><writeConstraint><range><minimum>3</minimum><maximum>2</maximum></range></writeConstraint></field>
+      </fields></register>
+      <register><name>LONG</name><addressOffset>0</addressOffset><size>16</size></register>
+      <register><name>PARTIAL</name><addressOffset>1</addressOffset><size>16</size><alternateRegister>MISSING</alternateRegister></register>
+      <register><name>RESET</name><addressOffset>8</addressOffset></register>
+    </registers>
+  </peripheral></peripherals>
+</device>

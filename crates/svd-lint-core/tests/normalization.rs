@@ -8,8 +8,19 @@ fn source(xml: &str) -> SourceFile {
 }
 
 fn valid(xml: &str) -> CanonicalDevice {
-    let result = analyze_svd(&source(xml));
-    assert!(!result.has_errors(), "{:?}", result.diagnostics);
+    // These tests exercise Stage 2 independently of semantic validity.
+    let parsed = parse_svd(&source(xml));
+    assert!(!parsed.has_errors(), "{:?}", parsed.diagnostics);
+    let result = normalize(
+        parsed.device.as_ref().unwrap(),
+        parsed.source_map.as_ref().unwrap(),
+        &NormalizeConfig::default(),
+    );
+    assert!(
+        result.diagnostics.iter().all(|d| !d.severity.is_error()),
+        "{:?}",
+        result.diagnostics
+    );
     result.device.unwrap()
 }
 
@@ -36,9 +47,14 @@ fn plain_register_and_optional_properties() {
 #[test]
 fn container_precedence_and_exact_property_origin() {
     let input = source(COMPLEX);
-    let result = analyze_svd(&input);
-    assert!(!result.has_errors(), "{:?}", result.diagnostics);
-    let map = result.source_map.unwrap();
+    let parsed = parse_svd(&input);
+    let map = parsed.source_map.unwrap();
+    let result = normalize(
+        parsed.device.as_ref().unwrap(),
+        &map,
+        &NormalizeConfig::default(),
+    );
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
     let ir = result.device.unwrap();
     let p = &ir.peripherals[1];
     assert_eq!(p.name, "TIMER");

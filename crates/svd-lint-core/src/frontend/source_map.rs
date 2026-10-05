@@ -70,6 +70,7 @@ pub struct SourceMap {
     source_id: SourceId,
     nodes: Vec<NodeInfo>,
     root: Option<NodeId>,
+    binary_patterns: std::collections::HashMap<NodeId, Box<str>>,
 }
 
 impl SourceMap {
@@ -85,6 +86,7 @@ impl SourceMap {
             source_id: source.id(),
             nodes: Vec::new(),
             root: None,
+            binary_patterns: std::collections::HashMap::new(),
         };
         let root = document.root_element();
         map.root = Some(map.insert_node(source, root, None)?);
@@ -125,7 +127,27 @@ impl SourceMap {
             children.push(self.insert_node(source, child, Some(id))?);
         }
         self.nodes[id.0 as usize].children = children;
+        if node.has_tag_name("value") {
+            if let Some(bits) = node
+                .text()
+                .map(str::trim)
+                .and_then(|s| s.strip_prefix('#').or_else(|| s.strip_prefix("0b")))
+            {
+                if bits.contains(['x', 'X'])
+                    && bits.bytes().all(|b| matches!(b, b'0' | b'1' | b'x' | b'X'))
+                {
+                    self.binary_patterns
+                        .insert(id, bits.to_ascii_lowercase().into_boxed_str());
+                }
+            }
+        }
         Ok(id)
+    }
+
+    /// Original binary digits with don't-care bits, which svd-parser zero-fills.
+    /// Widths greater than 64 are preserved without fixed-width mask arithmetic.
+    pub fn binary_pattern(&self, id: NodeId) -> Option<&str> {
+        self.binary_patterns.get(&id).map(|s| s.as_ref())
     }
 
     fn convert_span(
@@ -262,6 +284,27 @@ mod tests {
         let (_, map) = map();
         assert!(map.find_by_path(&["device", "registers"]).is_none());
         assert!(map.find_by_path(&["peripheral"]).is_none());
+    }
+
+    #[test]
+    fn wildcard_patterns_preserve_source_bits_without_machine_word_limits() {
+        let wide = "X".repeat(128);
+        let xml =
+            format!("<device><value>#1X</value><value>0b{wide}</value><value>2</value></device>");
+        let source = SourceFile::new("patterns.svd", &xml);
+        let doc = roxmltree::Document::parse(&xml).unwrap();
+        let map = SourceMap::from_document(&source, &doc).unwrap();
+        let values: Vec<_> = map.children_named(map.root().unwrap(), "value").collect();
+        assert_eq!(map.binary_pattern(values[0]), Some("1x"));
+        assert_eq!(
+            map.binary_pattern(values[1]),
+            Some("x".repeat(128).as_str())
+        );
+        assert_eq!(map.binary_pattern(values[2]), None);
+        assert_eq!(
+            source.snippet(map.node(values[0]).unwrap().range),
+            Some("<value>#1X</value>")
+        );
     }
 
     #[test]

@@ -99,7 +99,7 @@ fn run_check(args: &CheckArgs, dump_ir: bool) -> ExitCode {
                 output::render_text(&result.diagnostics, Some(&source), output::colors_enabled())
             );
         }
-        return ExitCode::SUCCESS;
+        return ExitCode::from(output::exit_code(&result.diagnostics, false) as u8);
     }
     finish(
         args.format,

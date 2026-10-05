@@ -143,6 +143,22 @@ pub enum DiagnosticCode {
     NormAddressOverflow,
     NormMissingProperty,
     NormExpansionLimit,
+    SemZeroRegisterSize,
+    SemZeroFieldWidth,
+    SemFieldOutOfBounds,
+    SemFieldOverlap,
+    SemResetValueOutOfBounds,
+    SemResetMaskOutOfBounds,
+    SemResetOutsideMask,
+    SemRegisterOverlap,
+    SemInvalidAlternateRegister,
+    SemRegisterOutsideBlock,
+    SemInvalidAddressBlock,
+    SemEnumValueOutOfBounds,
+    SemDuplicateEnumEntry,
+    SemMultipleEnumDefaults,
+    SemInvalidWriteConstraint,
+    SemAccessConflict,
 }
 
 impl DiagnosticCode {
@@ -166,6 +182,22 @@ impl DiagnosticCode {
         DiagnosticCode::NormAddressOverflow,
         DiagnosticCode::NormMissingProperty,
         DiagnosticCode::NormExpansionLimit,
+        DiagnosticCode::SemZeroRegisterSize,
+        DiagnosticCode::SemZeroFieldWidth,
+        DiagnosticCode::SemFieldOutOfBounds,
+        DiagnosticCode::SemFieldOverlap,
+        DiagnosticCode::SemResetValueOutOfBounds,
+        DiagnosticCode::SemResetMaskOutOfBounds,
+        DiagnosticCode::SemResetOutsideMask,
+        DiagnosticCode::SemRegisterOverlap,
+        DiagnosticCode::SemInvalidAlternateRegister,
+        DiagnosticCode::SemRegisterOutsideBlock,
+        DiagnosticCode::SemInvalidAddressBlock,
+        DiagnosticCode::SemEnumValueOutOfBounds,
+        DiagnosticCode::SemDuplicateEnumEntry,
+        DiagnosticCode::SemMultipleEnumDefaults,
+        DiagnosticCode::SemInvalidWriteConstraint,
+        DiagnosticCode::SemAccessConflict,
     ];
 
     /// Stable string representation, e.g. `IO001` or `SVD002`.
@@ -189,6 +221,22 @@ impl DiagnosticCode {
             DiagnosticCode::NormAddressOverflow => "NORM007",
             DiagnosticCode::NormMissingProperty => "NORM008",
             DiagnosticCode::NormExpansionLimit => "NORM009",
+            DiagnosticCode::SemZeroRegisterSize => "SEM001",
+            DiagnosticCode::SemZeroFieldWidth => "SEM002",
+            DiagnosticCode::SemFieldOutOfBounds => "SEM003",
+            DiagnosticCode::SemFieldOverlap => "SEM004",
+            DiagnosticCode::SemResetValueOutOfBounds => "SEM005",
+            DiagnosticCode::SemResetMaskOutOfBounds => "SEM006",
+            DiagnosticCode::SemResetOutsideMask => "SEM007",
+            DiagnosticCode::SemRegisterOverlap => "SEM008",
+            DiagnosticCode::SemInvalidAlternateRegister => "SEM009",
+            DiagnosticCode::SemRegisterOutsideBlock => "SEM010",
+            DiagnosticCode::SemInvalidAddressBlock => "SEM011",
+            DiagnosticCode::SemEnumValueOutOfBounds => "SEM012",
+            DiagnosticCode::SemDuplicateEnumEntry => "SEM013",
+            DiagnosticCode::SemMultipleEnumDefaults => "SEM014",
+            DiagnosticCode::SemInvalidWriteConstraint => "SEM015",
+            DiagnosticCode::SemAccessConflict => "SEM016",
         }
     }
 
@@ -213,6 +261,22 @@ impl DiagnosticCode {
             "NORM007" => DiagnosticCode::NormAddressOverflow,
             "NORM008" => DiagnosticCode::NormMissingProperty,
             "NORM009" => DiagnosticCode::NormExpansionLimit,
+            "SEM001" => DiagnosticCode::SemZeroRegisterSize,
+            "SEM002" => DiagnosticCode::SemZeroFieldWidth,
+            "SEM003" => DiagnosticCode::SemFieldOutOfBounds,
+            "SEM004" => DiagnosticCode::SemFieldOverlap,
+            "SEM005" => DiagnosticCode::SemResetValueOutOfBounds,
+            "SEM006" => DiagnosticCode::SemResetMaskOutOfBounds,
+            "SEM007" => DiagnosticCode::SemResetOutsideMask,
+            "SEM008" => DiagnosticCode::SemRegisterOverlap,
+            "SEM009" => DiagnosticCode::SemInvalidAlternateRegister,
+            "SEM010" => DiagnosticCode::SemRegisterOutsideBlock,
+            "SEM011" => DiagnosticCode::SemInvalidAddressBlock,
+            "SEM012" => DiagnosticCode::SemEnumValueOutOfBounds,
+            "SEM013" => DiagnosticCode::SemDuplicateEnumEntry,
+            "SEM014" => DiagnosticCode::SemMultipleEnumDefaults,
+            "SEM015" => DiagnosticCode::SemInvalidWriteConstraint,
+            "SEM016" => DiagnosticCode::SemAccessConflict,
             _ => return None,
         })
     }
@@ -317,7 +381,9 @@ mod tests {
         let expected = [
             "IO001", "IO002", "XML001", "SVD001", "SVD002", "SVD003", "SVD004", "SVD005", "SVD006",
             "NORM001", "NORM002", "NORM003", "NORM004", "NORM005", "NORM006", "NORM007", "NORM008",
-            "NORM009",
+            "NORM009", "SEM001", "SEM002", "SEM003", "SEM004", "SEM005", "SEM006", "SEM007",
+            "SEM008", "SEM009", "SEM010", "SEM011", "SEM012", "SEM013", "SEM014", "SEM015",
+            "SEM016",
         ];
         let actual: Vec<&str> = DiagnosticCode::ALL.iter().map(|c| c.as_str()).collect();
         assert_eq!(actual, expected);

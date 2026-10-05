@@ -10,6 +10,8 @@ pub mod diagnostics;
 pub mod frontend;
 pub mod ir;
 pub mod normalize;
+pub mod rules;
+pub use rules::check_semantics;
 
 pub use ir::{
     CanonicalAddressBlock, CanonicalDevice, CanonicalField, CanonicalPeripheral, CanonicalRegister,
@@ -17,7 +19,8 @@ pub use ir::{
 };
 pub use normalize::{NormalizeConfig, NormalizeResult, normalize};
 
-/// Combined Stage 1 and Stage 2 result. SourceMap owns the meaning of IR node ids.
+/// Analysis of Stages 1–3. Semantic errors leave the complete IR available.
+/// SourceMap owns the meaning of IR node ids.
 #[derive(Debug)]
 pub struct AnalysisResult {
     pub device: Option<CanonicalDevice>,
@@ -45,7 +48,16 @@ pub fn analyze_svd_with_config(source: &SourceFile, config: &NormalizeConfig) ->
     } else {
         None
     };
-    diagnostics.sort_by_key(|d| (d.primary_span.map(|s| (s.start, s.end)), d.code.as_str()));
+    if let (Some(device), Some(map)) = (&device, &parsed.source_map) {
+        diagnostics.extend(check_semantics(device, map));
+    }
+    diagnostics.sort_by_key(|d| {
+        (
+            d.primary_span.map(|s| (s.start, s.end)),
+            d.code.as_str(),
+            d.message.clone(),
+        )
+    });
     AnalysisResult {
         device,
         diagnostics,

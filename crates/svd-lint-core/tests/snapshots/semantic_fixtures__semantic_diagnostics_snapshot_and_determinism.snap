@@ -1,0 +1,361 @@
+---
+source: crates/svd-lint-core/tests/semantic_fixtures.rs
+expression: "serde_json::to_string_pretty(&result.diagnostics).unwrap()"
+---
+[
+  {
+    "code": "SEM005",
+    "severity": "error",
+    "message": "resetValue 0x100 does not fit in 8 bits",
+    "primary_span": {
+      "start": 235,
+      "end": 263
+    },
+    "related": [
+      {
+        "span": {
+          "start": 2103,
+          "end": 2174
+        },
+        "message": "property is used here"
+      },
+      {
+        "span": {
+          "start": 191,
+          "end": 205
+        },
+        "message": "register size declared here"
+      }
+    ]
+  },
+  {
+    "code": "SEM006",
+    "severity": "error",
+    "message": "resetMask 0x100 does not fit in 8 bits",
+    "primary_span": {
+      "start": 263,
+      "end": 289
+    },
+    "related": [
+      {
+        "span": {
+          "start": 2103,
+          "end": 2174
+        },
+        "message": "property is used here"
+      },
+      {
+        "span": {
+          "start": 191,
+          "end": 205
+        },
+        "message": "register size declared here"
+      }
+    ]
+  },
+  {
+    "code": "SEM011",
+    "severity": "error",
+    "message": "addressBlock size must be greater than zero",
+    "primary_span": {
+      "start": 519,
+      "end": 533
+    },
+    "related": []
+  },
+  {
+    "code": "SEM001",
+    "severity": "error",
+    "message": "register size must be greater than zero",
+    "primary_span": {
+      "start": 651,
+      "end": 665
+    },
+    "related": []
+  },
+  {
+    "code": "SEM002",
+    "severity": "error",
+    "message": "field width must be greater than zero",
+    "primary_span": {
+      "start": 721,
+      "end": 743
+    },
+    "related": []
+  },
+  {
+    "code": "SEM007",
+    "severity": "warning",
+    "message": "resetValue has bits 0x2 outside resetMask; those reset bits are unspecified",
+    "primary_span": {
+      "start": 836,
+      "end": 862
+    },
+    "related": [
+      {
+        "span": {
+          "start": 862,
+          "end": 886
+        },
+        "message": "reset mask declared here"
+      }
+    ]
+  },
+  {
+    "code": "SEM016",
+    "severity": "warning",
+    "message": "modifiedWriteValues is declared on a read-only object",
+    "primary_span": {
+      "start": 912,
+      "end": 965
+    },
+    "related": [
+      {
+        "span": {
+          "start": 886,
+          "end": 912
+        },
+        "message": "effective access declared here"
+      }
+    ]
+  },
+  {
+    "code": "SEM003",
+    "severity": "error",
+    "message": "field interval [7, 9) exceeds register size 8",
+    "primary_span": {
+      "start": 1005,
+      "end": 1029
+    },
+    "related": [
+      {
+        "span": {
+          "start": 191,
+          "end": 205
+        },
+        "message": "register size declared here"
+      }
+    ]
+  },
+  {
+    "code": "SEM004",
+    "severity": "warning",
+    "message": "field intervals [0, 2) and [0, 4) overlap",
+    "primary_span": {
+      "start": 1075,
+      "end": 1089
+    },
+    "related": [
+      {
+        "span": {
+          "start": 1677,
+          "end": 1692
+        },
+        "message": "overlapping field"
+      }
+    ]
+  },
+  {
+    "code": "SEM004",
+    "severity": "warning",
+    "message": "field intervals [0, 4) and [3, 5) overlap",
+    "primary_span": {
+      "start": 1159,
+      "end": 1173
+    },
+    "related": [
+      {
+        "span": {
+          "start": 1075,
+          "end": 1089
+        },
+        "message": "overlapping field"
+      }
+    ]
+  },
+  {
+    "code": "SEM012",
+    "severity": "error",
+    "message": "enumerated value 0x4 does not fit in 2 bits",
+    "primary_span": {
+      "start": 1363,
+      "end": 1379
+    },
+    "related": [
+      {
+        "span": {
+          "start": 1236,
+          "end": 1661
+        },
+        "message": "property is used here"
+      },
+      {
+        "span": {
+          "start": 1281,
+          "end": 1303
+        },
+        "message": "field width declared here"
+      }
+    ]
+  },
+  {
+    "code": "SEM013",
+    "severity": "error",
+    "message": "duplicate enumerated name `X` in one usage set",
+    "primary_span": {
+      "start": 1414,
+      "end": 1428
+    },
+    "related": [
+      {
+        "span": {
+          "start": 1236,
+          "end": 1661
+        },
+        "message": "property is used here"
+      },
+      {
+        "span": {
+          "start": 1349,
+          "end": 1363
+        },
+        "message": "previous entry with this name"
+      }
+    ]
+  },
+  {
+    "code": "SEM014",
+    "severity": "error",
+    "message": "enumeratedValues contains multiple isDefault=true entries",
+    "primary_span": {
+      "start": 1580,
+      "end": 1607
+    },
+    "related": [
+      {
+        "span": {
+          "start": 1236,
+          "end": 1661
+        },
+        "message": "property is used here"
+      },
+      {
+        "span": {
+          "start": 1504,
+          "end": 1531
+        },
+        "message": "previous default entry"
+      }
+    ]
+  },
+  {
+    "code": "SEM015",
+    "severity": "error",
+    "message": "writeConstraint minimum exceeds maximum",
+    "primary_span": {
+      "start": 1738,
+      "end": 1828
+    },
+    "related": []
+  },
+  {
+    "code": "SEM008",
+    "severity": "warning",
+    "message": "register ranges [0x1000, 0x1001) and [0x1000, 0x1002) overlap",
+    "primary_span": {
+      "start": 1897,
+      "end": 1929
+    },
+    "related": [
+      {
+        "span": {
+          "start": 804,
+          "end": 836
+        },
+        "message": "overlapping register"
+      }
+    ]
+  },
+  {
+    "code": "SEM010",
+    "severity": "error",
+    "message": "register range [0x1000, 0x1002) is outside every registers addressBlock",
+    "primary_span": {
+      "start": 1897,
+      "end": 1929
+    },
+    "related": [
+      {
+        "span": {
+          "start": 397,
+          "end": 482
+        },
+        "message": "registers addressBlock"
+      }
+    ]
+  },
+  {
+    "code": "SEM008",
+    "severity": "error",
+    "message": "register ranges [0x1000, 0x1002) and [0x1001, 0x1003) overlap",
+    "primary_span": {
+      "start": 1992,
+      "end": 2024
+    },
+    "related": [
+      {
+        "span": {
+          "start": 1897,
+          "end": 1929
+        },
+        "message": "overlapping register"
+      }
+    ]
+  },
+  {
+    "code": "SEM010",
+    "severity": "error",
+    "message": "register range [0x1001, 0x1003) is outside every registers addressBlock",
+    "primary_span": {
+      "start": 1992,
+      "end": 2024
+    },
+    "related": [
+      {
+        "span": {
+          "start": 397,
+          "end": 482
+        },
+        "message": "registers addressBlock"
+      }
+    ]
+  },
+  {
+    "code": "SEM009",
+    "severity": "error",
+    "message": "alternateRegister target does not exist in this peripheral",
+    "primary_span": {
+      "start": 2039,
+      "end": 2085
+    },
+    "related": []
+  },
+  {
+    "code": "SEM010",
+    "severity": "error",
+    "message": "register range [0x1008, 0x1009) is outside every registers addressBlock",
+    "primary_span": {
+      "start": 2131,
+      "end": 2163
+    },
+    "related": [
+      {
+        "span": {
+          "start": 397,
+          "end": 482
+        },
+        "message": "registers addressBlock"
+      }
+    ]
+  }
+]

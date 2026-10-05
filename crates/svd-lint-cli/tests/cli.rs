@@ -47,7 +47,7 @@ fn check_reports_normalization_errors_in_stable_json_shape() {
 }
 
 #[test]
-fn dump_ir_is_deterministic_json_with_physical_registers() {
+fn dump_ir_is_deterministic_json_even_with_semantic_errors() {
     let run = || {
         svd_lint()
             .args([
@@ -57,7 +57,8 @@ fn dump_ir_is_deterministic_json_with_physical_registers() {
                 "json",
             ])
             .assert()
-            .code(0)
+            .code(1)
+            .stderr(contains("SEM009"))
             .get_output()
             .stdout
             .clone()
@@ -84,6 +85,79 @@ fn dump_ir_failure_outputs_diagnostics_without_partial_ir() {
     let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
     assert!(report.get("peripherals").is_none());
     assert!(!report["diagnostics"].as_array().unwrap().is_empty());
+}
+
+#[test]
+fn check_reports_semantic_errors_and_preserves_json_structure() {
+    let assert = svd_lint()
+        .args([
+            "check",
+            &fixture("semantics/invalid.svd"),
+            "--format",
+            "json",
+        ])
+        .assert()
+        .code(1);
+    let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
+    assert_eq!(report.as_object().unwrap().len(), 2);
+    let diagnostics = report["diagnostics"].as_array().unwrap();
+    for code in ["SEM001", "SEM008", "SEM013", "SEM016"] {
+        assert!(diagnostics.iter().any(|d| d["code"] == code));
+    }
+    assert!(
+        diagnostics
+            .iter()
+            .all(|d| d["span"]["start_line"].is_number())
+    );
+}
+
+#[test]
+fn semantic_warning_only_file_exits_zero() {
+    let mut file = tempfile::NamedTempFile::new().unwrap();
+    use std::io::Write;
+    write!(file, "<device><name>D</name><version>1</version><description>d</description><addressUnitBits>8</addressUnitBits><width>32</width><size>8</size><peripherals><peripheral><name>P</name><description>p</description><baseAddress>0</baseAddress><registers><register><name>R</name><addressOffset>0</addressOffset><resetValue>2</resetValue><resetMask>1</resetMask></register></registers></peripheral></peripherals></device>").unwrap();
+    svd_lint()
+        .arg("check")
+        .arg(file.path())
+        .assert()
+        .code(0)
+        .stderr(contains("SEM007"));
+}
+
+#[test]
+fn dump_ir_keeps_schema_and_returns_error_status_for_semantic_violations() {
+    let assert = svd_lint()
+        .args([
+            "dump-ir",
+            &fixture("semantics/invalid.svd"),
+            "--format",
+            "json",
+        ])
+        .assert()
+        .code(1)
+        .stderr(contains("SEM001"));
+    let ir: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
+    assert!(ir["peripherals"].is_array());
+    assert!(ir.get("diagnostics").is_none());
+}
+
+#[test]
+fn semantic_valid_fixture_exits_zero_for_check_and_dump_ir() {
+    svd_lint()
+        .args(["check", &fixture("semantics/valid.svd")])
+        .assert()
+        .code(0)
+        .stderr(predicates::str::is_empty());
+    svd_lint()
+        .args([
+            "dump-ir",
+            &fixture("semantics/valid.svd"),
+            "--format",
+            "json",
+        ])
+        .assert()
+        .code(0)
+        .stderr(predicates::str::is_empty());
 }
 
 #[test]
