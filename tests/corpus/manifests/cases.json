@@ -1,0 +1,581 @@
+{
+  "cases": [
+    {
+      "diagnostics": [],
+      "file": "valid/SEM001-positive.svd",
+      "kind": "positive",
+      "profile": "default",
+      "rule": "SEM001"
+    },
+    {
+      "diagnostics": [
+        "SEM001"
+      ],
+      "file": "invalid/SEM001/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "SEM001"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM001-boundary.svd",
+      "kind": "boundary",
+      "profile": "default",
+      "rule": "SEM001"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM002-positive.svd",
+      "kind": "positive",
+      "profile": "default",
+      "rule": "SEM002"
+    },
+    {
+      "diagnostics": [
+        "SEM002"
+      ],
+      "file": "invalid/SEM002/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "SEM002"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM002-boundary.svd",
+      "kind": "boundary",
+      "profile": "default",
+      "rule": "SEM002"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM003-positive.svd",
+      "kind": "positive",
+      "profile": "default",
+      "rule": "SEM003"
+    },
+    {
+      "diagnostics": [
+        "SEM003"
+      ],
+      "file": "invalid/SEM003/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "SEM003"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM003-boundary.svd",
+      "kind": "boundary",
+      "profile": "default",
+      "rule": "SEM003"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM004-positive.svd",
+      "kind": "positive",
+      "profile": "default",
+      "rule": "SEM004"
+    },
+    {
+      "diagnostics": [
+        "SEM004"
+      ],
+      "file": "invalid/SEM004/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "SEM004"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM004-boundary.svd",
+      "kind": "boundary",
+      "profile": "default",
+      "rule": "SEM004"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM005-positive.svd",
+      "kind": "positive",
+      "profile": "default",
+      "rule": "SEM005"
+    },
+    {
+      "diagnostics": [
+        "SEM005"
+      ],
+      "file": "invalid/SEM005/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "SEM005"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM005-boundary.svd",
+      "kind": "boundary",
+      "profile": "default",
+      "rule": "SEM005"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM006-positive.svd",
+      "kind": "positive",
+      "profile": "default",
+      "rule": "SEM006"
+    },
+    {
+      "diagnostics": [
+        "SEM006"
+      ],
+      "file": "invalid/SEM006/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "SEM006"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM006-boundary.svd",
+      "kind": "boundary",
+      "profile": "default",
+      "rule": "SEM006"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM007-positive.svd",
+      "kind": "positive",
+      "profile": "default",
+      "rule": "SEM007"
+    },
+    {
+      "diagnostics": [
+        "SEM007"
+      ],
+      "file": "invalid/SEM007/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "SEM007"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM007-boundary.svd",
+      "kind": "boundary",
+      "profile": "default",
+      "rule": "SEM007"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM008-positive.svd",
+      "kind": "positive",
+      "profile": "default",
+      "rule": "SEM008"
+    },
+    {
+      "diagnostics": [
+        "SEM008"
+      ],
+      "file": "invalid/SEM008/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "SEM008"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM008-boundary.svd",
+      "kind": "boundary",
+      "profile": "default",
+      "rule": "SEM008"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM009-positive.svd",
+      "kind": "positive",
+      "profile": "default",
+      "rule": "SEM009"
+    },
+    {
+      "diagnostics": [
+        "SEM009"
+      ],
+      "file": "invalid/SEM009/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "SEM009"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM009-boundary.svd",
+      "kind": "boundary",
+      "profile": "default",
+      "rule": "SEM009"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM010-positive.svd",
+      "kind": "positive",
+      "profile": "default",
+      "rule": "SEM010"
+    },
+    {
+      "diagnostics": [
+        "SEM010"
+      ],
+      "file": "invalid/SEM010/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "SEM010"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM010-boundary.svd",
+      "kind": "boundary",
+      "profile": "default",
+      "rule": "SEM010"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM011-positive.svd",
+      "kind": "positive",
+      "profile": "default",
+      "rule": "SEM011"
+    },
+    {
+      "diagnostics": [
+        "SEM011"
+      ],
+      "file": "invalid/SEM011/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "SEM011"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM011-boundary.svd",
+      "kind": "boundary",
+      "profile": "default",
+      "rule": "SEM011"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM012-positive.svd",
+      "kind": "positive",
+      "profile": "default",
+      "rule": "SEM012"
+    },
+    {
+      "diagnostics": [
+        "SEM012"
+      ],
+      "file": "invalid/SEM012/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "SEM012"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM012-boundary.svd",
+      "kind": "boundary",
+      "profile": "default",
+      "rule": "SEM012"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM013-positive.svd",
+      "kind": "positive",
+      "profile": "default",
+      "rule": "SEM013"
+    },
+    {
+      "diagnostics": [
+        "SEM013"
+      ],
+      "file": "invalid/SEM013/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "SEM013"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM013-boundary.svd",
+      "kind": "boundary",
+      "profile": "default",
+      "rule": "SEM013"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM014-positive.svd",
+      "kind": "positive",
+      "profile": "default",
+      "rule": "SEM014"
+    },
+    {
+      "diagnostics": [
+        "SEM014"
+      ],
+      "file": "invalid/SEM014/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "SEM014"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM014-boundary.svd",
+      "kind": "boundary",
+      "profile": "default",
+      "rule": "SEM014"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM015-positive.svd",
+      "kind": "positive",
+      "profile": "default",
+      "rule": "SEM015"
+    },
+    {
+      "diagnostics": [
+        "SEM015"
+      ],
+      "file": "invalid/SEM015/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "SEM015"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM015-boundary.svd",
+      "kind": "boundary",
+      "profile": "default",
+      "rule": "SEM015"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM016-positive.svd",
+      "kind": "positive",
+      "profile": "default",
+      "rule": "SEM016"
+    },
+    {
+      "diagnostics": [
+        "SEM016"
+      ],
+      "file": "invalid/SEM016/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "SEM016"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SEM016-boundary.svd",
+      "kind": "boundary",
+      "profile": "default",
+      "rule": "SEM016"
+    },
+    {
+      "diagnostics": [
+        "XML001"
+      ],
+      "file": "invalid/XML001/frontend-XML001.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "XML001"
+    },
+    {
+      "diagnostics": [
+        "SVD001"
+      ],
+      "file": "invalid/SVD001/frontend-SVD001.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "SVD001"
+    },
+    {
+      "diagnostics": [
+        "SVD002"
+      ],
+      "file": "invalid/SVD002/frontend-SVD002.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "SVD002"
+    },
+    {
+      "diagnostics": [
+        "SVD002"
+      ],
+      "file": "invalid/SVD002/frontend-SVD004.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "SVD002"
+    },
+    {
+      "diagnostics": [
+        "SVD005"
+      ],
+      "file": "invalid/SVD005/frontend-SVD005.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "SVD005"
+    },
+    {
+      "diagnostics": [
+        "SVD006"
+      ],
+      "file": "invalid/SVD006/frontend-SVD006.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "SVD006"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SVD007-positive.svd",
+      "kind": "positive",
+      "profile": "strict",
+      "rule": "SVD007"
+    },
+    {
+      "diagnostics": [
+        "SVD007"
+      ],
+      "file": "invalid/SVD007/SVD007-negative.svd",
+      "kind": "negative",
+      "profile": "strict",
+      "rule": "SVD007"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/SVD007-boundary.svd",
+      "kind": "boundary",
+      "profile": "strict",
+      "rule": "SVD007"
+    },
+    {
+      "diagnostics": [
+        "SVD006"
+      ],
+      "file": "regression/xml-depth-limit/input.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "SVD006"
+    },
+    {
+      "diagnostics": [
+        "NORM009"
+      ],
+      "file": "regression/derived-depth-limit/input.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "NORM009"
+    },
+    {
+      "diagnostics": [
+        "NORM002"
+      ],
+      "file": "invalid/NORM002/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "NORM002"
+    },
+    {
+      "diagnostics": [
+        "NORM003"
+      ],
+      "file": "invalid/NORM003/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "NORM003"
+    },
+    {
+      "diagnostics": [
+        "NORM004"
+      ],
+      "file": "invalid/NORM004/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "NORM004"
+    },
+    {
+      "diagnostics": [
+        "NORM005"
+      ],
+      "file": "invalid/NORM005/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "NORM005"
+    },
+    {
+      "diagnostics": [
+        "NORM006"
+      ],
+      "file": "invalid/NORM006/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "NORM006"
+    },
+    {
+      "diagnostics": [
+        "NORM007"
+      ],
+      "file": "invalid/NORM007/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "NORM007"
+    },
+    {
+      "diagnostics": [
+        "NORM008"
+      ],
+      "file": "invalid/NORM008/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "NORM008"
+    },
+    {
+      "diagnostics": [
+        "NORM009"
+      ],
+      "file": "invalid/NORM009/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "NORM009"
+    },
+    {
+      "diagnostics": [],
+      "file": "regression/dim-index-whitespace/input.svd",
+      "kind": "regression",
+      "profile": "default",
+      "rule": "NORM005"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/minimal.svd",
+      "kind": "positive",
+      "profile": "default",
+      "rule": "SVD001"
+    },
+    {
+      "diagnostics": [
+        "NORM001"
+      ],
+      "file": "invalid/NORM001/missing-reference.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "NORM001"
+    },
+    {
+      "diagnostics": [
+        "SVD003"
+      ],
+      "file": "invalid/SVD003/duplicate-version.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "SVD003"
+    },
+    {
+      "diagnostics": [
+        "SVD004"
+      ],
+      "file": "invalid/SVD004/empty-version.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "SVD004"
+    }
+  ],
+  "version": 1
+}

@@ -10,7 +10,9 @@ pub mod diagnostics;
 pub mod frontend;
 pub mod ir;
 pub mod normalize;
+pub mod registry;
 pub mod rules;
+pub mod schema;
 pub use rules::check_semantics;
 
 pub use ir::{

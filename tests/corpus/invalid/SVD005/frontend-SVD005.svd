@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<device schemaVersion="1.1">
+  <name>WarnOnly</name>
+  <version>1.0</version>
+  <description>Structurally valid, but a peripheral has no description</description>
+  <addressUnitBits>8</addressUnitBits>
+  <width>32</width>
+  <peripherals>
+    <peripheral>
+      <name>UART0</name>
+      <baseAddress>0x40001000</baseAddress>
+    </peripheral>
+  </peripherals>
+</device>

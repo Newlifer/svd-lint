@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<chip schemaVersion="1.1">
+  <name>WrongRoot</name>
+  <version>1.0</version>
+  <description>Root element is not device</description>
+  <addressUnitBits>8</addressUnitBits>
+  <width>32</width>
+  <peripherals>
+    <peripheral>
+      <name>P0</name>
+      <description>p</description>
+      <baseAddress>0x40000000</baseAddress>
+    </peripheral>
+  </peripherals>
+</chip>

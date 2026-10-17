@@ -1,0 +1,17 @@
+[
+  {
+    "name": "SVDSuite",
+    "url": "https://github.com/ARMify-Project/SVDSuite.git",
+    "commit": "fb45cbd1f3cef157a715f4de28ecc2e548cae47e"
+  },
+  {
+    "name": "cmsis-svd-data",
+    "url": "https://github.com/cmsis-svd/cmsis-svd-data.git",
+    "commit": "c65f8551e57c770344d229dcaa0bf838fa29aff4"
+  },
+  {
+    "name": "svd-schema",
+    "url": "https://github.com/cmsis-svd/svd-schema.git",
+    "commit": "9af51f729eb4c8128903b43e8046e769267906b5"
+  }
+]

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<device schemaVersion="1.1">
+  <name>Empty</name>
+  <version>1.0</version>
+  <description>No peripherals at all</description>
+  <addressUnitBits>8</addressUnitBits>
+  <width>32</width>
+  <peripherals>
+  </peripherals>
+</device>

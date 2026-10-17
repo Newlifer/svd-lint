@@ -46,6 +46,18 @@ impl FrontendResult {
 ///
 /// This function never panics on malformed user input.
 pub fn parse_svd(source: &SourceFile) -> FrontendResult {
+    if let Some(span) = excessive_nesting(source.text()) {
+        let mut diagnostic = Diagnostic::error(
+            DiagnosticCode::SvdParseError,
+            "XML element nesting exceeds the analysis limit of 64",
+        );
+        diagnostic.primary_span = Some(span);
+        return FrontendResult {
+            device: None,
+            diagnostics: vec![diagnostic],
+            source_map: None,
+        };
+    }
     let document = match roxmltree::Document::parse(source.text()) {
         Ok(document) => document,
         Err(err) => {
@@ -89,6 +101,65 @@ pub fn parse_svd(source: &SourceFile) -> FrontendResult {
         diagnostics,
         source_map,
     }
+}
+
+/// A lexical resource guard, not an XML validator. Skip quoted attributes,
+/// comments, CDATA and processing instructions before counting tag nesting.
+/// The recursive roxmltree tokenizer must not see an unbounded nesting depth.
+fn excessive_nesting(text: &str) -> Option<Span> {
+    let bytes = text.as_bytes();
+    let mut cursor = 0;
+    let mut depth = 0usize;
+    while cursor < bytes.len() {
+        if bytes[cursor] != b'<' {
+            cursor += 1;
+            continue;
+        }
+        let start = cursor;
+        let rest = &text[start..];
+        let terminator = if rest.starts_with("<!--") {
+            Some("-->")
+        } else if rest.starts_with("<![CDATA[") {
+            Some("]]>")
+        } else if rest.starts_with("<?") {
+            Some("?>")
+        } else {
+            None
+        };
+        if let Some(terminator) = terminator {
+            cursor = start + rest.find(terminator)? + terminator.len();
+            continue;
+        }
+        cursor += 1;
+        let mut quote = None;
+        while cursor < bytes.len() {
+            let b = bytes[cursor];
+            if let Some(q) = quote {
+                if b == q {
+                    quote = None;
+                }
+            } else if matches!(b, b'\'' | b'"') {
+                quote = Some(b);
+            } else if b == b'>' {
+                break;
+            }
+            cursor += 1;
+        }
+        if cursor == bytes.len() {
+            return None;
+        }
+        let tag = &text[start + 1..cursor];
+        if tag.starts_with('/') {
+            depth = depth.saturating_sub(1);
+        } else if !tag.starts_with('!') && !tag.trim_end().ends_with('/') {
+            depth += 1;
+            if depth > 64 {
+                return Span::new(start, cursor + 1).ok();
+            }
+        }
+        cursor += 1;
+    }
+    None
 }
 
 fn typed_parse(source: &SourceFile, diagnostics: &mut Vec<Diagnostic>) -> Option<Device> {

@@ -1,0 +1,27 @@
+[package]
+name = "svd-lint-fuzz"
+version = "0.0.0"
+edition = "2024"
+publish = false
+[package.metadata]
+cargo-fuzz = true
+[workspace]
+[dependencies]
+libfuzzer-sys = "0.4"
+svd-lint-core = { path = "../crates/svd-lint-core" }
+[[bin]]
+name = "parse_svd"
+path = "fuzz_targets/parse_svd.rs"
+test = false
+doc = false
+[[bin]]
+name = "normalize"
+path = "fuzz_targets/normalize.rs"
+test = false
+doc = false
+[[bin]]
+name = "analyze_svd"
+path = "fuzz_targets/analyze_svd.rs"
+test = false
+doc = false
+

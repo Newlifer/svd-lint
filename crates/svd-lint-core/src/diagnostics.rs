@@ -159,6 +159,11 @@ pub enum DiagnosticCode {
     SemMultipleEnumDefaults,
     SemInvalidWriteConstraint,
     SemAccessConflict,
+    XsdUnknownVersion,
+    XsdNonconformance,
+    XsdMissingSchema,
+    XsdBackendError,
+    LowQualityDescription,
 }
 
 impl DiagnosticCode {
@@ -198,6 +203,11 @@ impl DiagnosticCode {
         DiagnosticCode::SemMultipleEnumDefaults,
         DiagnosticCode::SemInvalidWriteConstraint,
         DiagnosticCode::SemAccessConflict,
+        DiagnosticCode::XsdUnknownVersion,
+        DiagnosticCode::XsdNonconformance,
+        DiagnosticCode::XsdMissingSchema,
+        DiagnosticCode::XsdBackendError,
+        DiagnosticCode::LowQualityDescription,
     ];
 
     /// Stable string representation, e.g. `IO001` or `SVD002`.
@@ -237,6 +247,11 @@ impl DiagnosticCode {
             DiagnosticCode::SemMultipleEnumDefaults => "SEM014",
             DiagnosticCode::SemInvalidWriteConstraint => "SEM015",
             DiagnosticCode::SemAccessConflict => "SEM016",
+            DiagnosticCode::XsdUnknownVersion => "XSD001",
+            DiagnosticCode::XsdNonconformance => "XSD002",
+            DiagnosticCode::XsdMissingSchema => "XSD003",
+            DiagnosticCode::XsdBackendError => "XSD004",
+            DiagnosticCode::LowQualityDescription => "SVD007",
         }
     }
 
@@ -277,6 +292,11 @@ impl DiagnosticCode {
             "SEM014" => DiagnosticCode::SemMultipleEnumDefaults,
             "SEM015" => DiagnosticCode::SemInvalidWriteConstraint,
             "SEM016" => DiagnosticCode::SemAccessConflict,
+            "XSD001" => DiagnosticCode::XsdUnknownVersion,
+            "XSD002" => DiagnosticCode::XsdNonconformance,
+            "XSD003" => DiagnosticCode::XsdMissingSchema,
+            "XSD004" => DiagnosticCode::XsdBackendError,
+            "SVD007" => DiagnosticCode::LowQualityDescription,
             _ => return None,
         })
     }
@@ -383,7 +403,7 @@ mod tests {
             "NORM001", "NORM002", "NORM003", "NORM004", "NORM005", "NORM006", "NORM007", "NORM008",
             "NORM009", "SEM001", "SEM002", "SEM003", "SEM004", "SEM005", "SEM006", "SEM007",
             "SEM008", "SEM009", "SEM010", "SEM011", "SEM012", "SEM013", "SEM014", "SEM015",
-            "SEM016",
+            "SEM016", "XSD001", "XSD002", "XSD003", "XSD004", "SVD007",
         ];
         let actual: Vec<&str> = DiagnosticCode::ALL.iter().map(|c| c.as_str()).collect();
         assert_eq!(actual, expected);

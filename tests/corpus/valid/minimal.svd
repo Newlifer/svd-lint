@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<device schemaVersion="1.1" xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:noNamespaceSchemaLocation="CMSIS-SVD_Schema_1_3.xsd">
+  <name>Minimal</name>
+  <version>1.0</version>
+  <description>Minimal valid test device</description>
+  <addressUnitBits>8</addressUnitBits>
+  <width>32</width>
+  <size>32</size>
+  <access>read-write</access>
+  <peripherals>
+    <peripheral>
+      <name>TIMER0</name>
+      <description>General purpose timer</description>
+      <baseAddress>0x40000000</baseAddress>
+      <addressBlock>
+        <offset>0</offset>
+        <size>0x100</size>
+        <usage>registers</usage>
+      </addressBlock>
+      <registers>
+        <register>
+          <name>CTRL</name>
+          <description>Control register</description>
+          <addressOffset>0x0</addressOffset>
+          <fields>
+            <field>
+              <name>EN</name>
+              <description>Timer enable</description>
+              <bitOffset>0</bitOffset>
+              <bitWidth>1</bitWidth>
+            </field>
+            <field>
+              <name>MODE</name>
+              <description>Timer mode</description>
+              <bitOffset>1</bitOffset>
+              <bitWidth>2</bitWidth>
+              <enumeratedValues>
+                <name>ModeValues</name>
+                <enumeratedValue>
+                  <name>OneShot</name>
+                  <description>One-shot mode</description>
+                  <value>0</value>
+                </enumeratedValue>
+                <enumeratedValue>
+                  <name>Continuous</name>
+                  <description>Continuous mode</description>
+                  <value>1</value>
+                </enumeratedValue>
+              </enumeratedValues>
+            </field>
+          </fields>
+        </register>
+      </registers>
+    </peripheral>
+  </peripherals>
+</device>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<device schemaVersion="1.1">
+  <name>NoVersion</name>
+  <description>Missing the required version element</description>
+  <addressUnitBits>8</addressUnitBits>
+  <width>32</width>
+  <peripherals>
+    <peripheral>
+      <name>P0</name>
+      <description>p</description>
+      <baseAddress>0x40000000</baseAddress>
+    </peripheral>
+  </peripherals>
+</device>

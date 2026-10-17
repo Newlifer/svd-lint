@@ -1,0 +1,13 @@
+# Default project profile; CLI --profile takes precedence.
+profile = "default"
+
+# Examples (opt in by removing the comment markers):
+# [rules.SEM004]
+# severity = "error"
+# [rules.SEM016]
+# enabled = false
+# [[overrides]]
+# files = ["vendor/*.svd"]
+# rules = ["SEM004"]
+# severity = "allow"
+

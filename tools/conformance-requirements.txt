@@ -1,0 +1,6 @@
+lxml==6.0.2
+rustworkx==0.17.1
+setuptools==80.9.0
+setuptools_scm==9.2.2
+pytest==8.4.2
+

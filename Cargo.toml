@@ -1,6 +1,7 @@
 [workspace]
 resolver = "3"
-members = ["crates/svd-lint-core", "crates/svd-lint-cli"]
+members = ["crates/svd-lint-core", "crates/svd-lint-cli", "tools/xtask"]
+exclude = ["tools/xsd-spike", "fuzz"]
 
 [workspace.package]
 version = "0.1.0"
@@ -17,6 +18,8 @@ roxmltree = "0.21"
 thiserror = "2"
 serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "1"
+toml = "0.8"
+globset = "0.4"
 clap = { version = "4", features = ["derive"] }
 miette = { version = "7", features = ["fancy"] }
 

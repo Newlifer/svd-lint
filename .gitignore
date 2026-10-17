@@ -1,1 +1,8 @@
 /target
+/tests/external/cache/
+/tests/external/reports/
+/tools/xsd-spike/target/
+/fuzz/target/
+/fuzz/artifacts/
+/fuzz/corpus/
+__pycache__/

@@ -1,8 +1,9 @@
 # svd-lint
 
-Статический анализатор CMSIS-SVD файлов. Реализованы **Stage 1–3**:
+Статический анализатор CMSIS-SVD файлов. Реализованы **Stage 1–4**:
 фронтенд разбора, Canonical IR, нормализация, семантические проверки и CLI
-с точными исходными позициями.
+с точными исходными позициями. Stage 4 добавляет профили, corpus, batch scan,
+SARIF и опциональный XSD backend.
 
 ## Структура
 
@@ -38,46 +39,16 @@ $ svd-lint dump-ir path/to/device.svd --format json
 | 1   | в SVD обнаружены ошибки |
 | 2   | файл невозможно прочитать или анализ невозможно начать |
 
-### Коды диагностик
+### Каталог правил
 
-| Код    | Значение |
-|--------|----------|
-| IO001  | не удалось прочитать файл |
-| IO002  | файл не содержит корректный UTF-8 |
-| XML001 | синтаксическая ошибка XML |
-| SVD001 | некорректный корневой элемент |
-| SVD002 | отсутствует обязательный элемент |
-| SVD003 | повторяется одиночный элемент |
-| SVD004 | обязательный элемент пуст |
-| SVD005 | отсутствует описание периферии (warning) |
-| SVD006 | ошибка типизированного разбора SVD |
-| NORM001 | не найдена ссылка derivedFrom |
-| NORM002 | циклическая зависимость derivedFrom |
-| NORM003 | неоднозначная ссылка или повторный путь IR |
-| NORM004 | некорректная размерность массива |
-| NORM005 | некорректные индексы массива |
-| NORM006 | некорректный шаблон имени массива |
-| NORM007 | переполнение адреса или смещения поля |
-| NORM008 | не удалось определить размер регистра |
-| NORM009 | превышен лимит материализации экземпляров |
-| SEM001 | нулевой размер регистра (error) |
-| SEM002 | нулевая ширина поля (error) |
-| SEM003 | поле вне границ регистра (error) |
-| SEM004 | пересечение полей (warning) |
-| SEM005 | resetValue не помещается в регистр (error) |
-| SEM006 | resetMask не помещается в регистр (error) |
-| SEM007 | resetValue содержит биты вне resetMask (warning) |
-| SEM008 | пересечение адресных диапазонов (warning / error) |
-| SEM009 | некорректный alternateRegister (error) |
-| SEM010 | регистр вне registers addressBlock (error) |
-| SEM011 | некорректные размер или границы addressBlock (error) |
-| SEM012 | значение перечисления не помещается в поле (error) |
-| SEM013 | дублирующиеся или противоречивые элементы перечисления (warning / error) |
-| SEM014 | несколько isDefault=true в одном наборе (error) |
-| SEM015 | некорректный writeConstraint (error) |
-| SEM016 | несовместимые доступ и эффекты чтения/записи (warning) |
+Стабильные коды, severity, происхождение проверок, примеры и ссылки на
+спецификацию: [генерируемый каталог](docs/rules.md).
+Соответствия внешней диагностике: [SVDConv coverage](docs/svdconv-coverage.md).
 
-Коды стабильны и не зависят от формулировок сообщений.
+```console
+svd-lint list-rules --format json
+svd-lint explain SEM004
+```
 
 ## Что делает Stage 1
 
@@ -191,7 +162,69 @@ use svd_lint_core::check_semantics;
 
 Перечень проверок, тесты и ограничения: [отчёт Stage 3](docs/stage3.md).
 
-## Последующие этапы
+## Stage 4: профили и tooling
 
-Конфигурация правил, массовая обработка каталогов, полная XSD-валидация, SARIF,
-автоисправления, GUI и Lean остаются для последующих этапов.
+```console
+svd-lint check device.svd --profile strict --fail-on warning
+svd-lint scan ./packs --recursive --exclude "**/legacy/*.svd" --format json
+svd-lint scan a.svd b.svd --format sarif
+svd-lint check device.svd --format sarif --config svd-lint.toml
+```
+
+Профиль `default` сохраняет диагностики Stage 3. `strict` добавляет проверку
+качества описаний регистров. `svdconv` включает эту проверку и повышает
+SEM004/SEM013 до Error; неоднозначные адресные наложения остаются Warning.
+
+Конфигурация `svd-lint.toml` загружается из рабочего каталога либо через
+`--config`. `--profile` имеет приоритет над профилем файла. Для lint-правил
+поддержаны `enabled`, severity `allow|warning|error` и файловые overrides с glob.
+Ошибки, препятствующие анализу, нельзя отключать или понижать до warning.
+
+```toml
+profile = "default"
+
+[rules.SEM004]
+severity = "error"
+
+[[overrides]]
+files = ["vendor/*.svd"]
+rules = ["SEM004"]
+severity = "allow"
+```
+
+JSON команды `check` сохранён. У `scan` отдельный формат версии 1 с отсортированными
+файлами, диагностикой и summary. Файлы обрабатываются последовательно; после
+каждого освобождаются XML и IR. Директории обходятся без перехода по вложенным
+symlink. SARIF 2.1.0 включает каталог правил, основные и связанные позиции;
+неизвестные координаты не подставляются. `--fail-on warning` возвращает 1 и
+при предупреждениях во всех форматах; значение по умолчанию — `error`.
+
+XSD используется только по запросу и при сборке с feature:
+
+```console
+cargo build -p svd-lint-cli --features xsd
+svd-lint check device.svd --xsd --schema-dir schemas --schema-version 1.3.10
+```
+
+Проверка XSD предшествует typed parsing. Схемы не включены в репозиторий:
+их лицензии проверяются по файлам, внешний каталог предоставляется явно.
+Маркер `schemaVersion="1.3"` выбирает 1.3.12 из pinned набора; явная patch-версия
+выбирается точно. Результаты допуска backend: [XSD spike](docs/xsd-spike.md).
+
+```console
+cargo xtask test-corpus
+cargo xtask generate-docs
+cargo xtask generate-docs --check
+cargo xtask fetch-conformance
+cargo xtask test-conformance --suite SVDSuite --limit 0
+cargo xtask test-conformance --suite data --limit 100
+```
+
+Обычные workspace tests не обращаются к сети. Для внешних тестов требуется
+отдельная Python-среда с [reference dependencies](tools/conformance-requirements.txt)
+и pinned SVDSuite. Подробности запуска, отчёты и ограничения:
+[Stage 4](docs/stage4.md), [external corpus](tests/external/README.md).
+Fuzz targets вынесены в [fuzz](fuzz/README.md).
+
+Автоисправления, генерация SVD/PAC/headers, LSP, GUI и Lean остаются для
+последующих проектов.

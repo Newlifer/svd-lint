@@ -331,50 +331,72 @@ impl<'a> Resolver<'a> {
     }
 
     pub fn resolve(&mut self, id: usize) -> Option<Definition> {
-        match &self.states[id] {
-            State::Resolved(v) => return Some((**v).clone()),
-            State::Failed => return None,
-            State::Visiting => {
-                let node = self.definitions[*self.stack.last().unwrap_or(&id)].node;
-                self.diagnostic(
-                    Code::NormCycle,
-                    node,
-                    "derivedFrom",
-                    "cyclic derivedFrom dependency",
-                );
-                let start = self.stack.iter().position(|v| *v == id).unwrap_or(0);
-                for &member in &self.stack[start..] {
-                    if let Some(info) = self.definitions[member].node.and_then(|n| self.map.node(n))
-                    {
-                        self.diagnostics
-                            .last_mut()
-                            .unwrap()
-                            .related
-                            .push(crate::RelatedSpan::new(
-                                info.range,
-                                self.definitions[member].path.clone(),
-                            ));
+        // Resolve direct dependency chains on the heap; recursive Rust frames
+        // can overflow long before the materialization instance budget is hit.
+        let mut pending = Vec::new();
+        let mut current = id;
+        let mut base = loop {
+            match &self.states[current] {
+                State::Resolved(v) => break Some((**v).clone()),
+                State::Failed => break None,
+                State::Visiting => {
+                    let node = self.definitions[*self.stack.last().unwrap_or(&current)].node;
+                    self.diagnostic(
+                        Code::NormCycle,
+                        node,
+                        "derivedFrom",
+                        "cyclic derivedFrom dependency",
+                    );
+                    let start = self.stack.iter().position(|v| *v == current).unwrap_or(0);
+                    for &member in &self.stack[start..] {
+                        if let Some(info) =
+                            self.definitions[member].node.and_then(|n| self.map.node(n))
+                        {
+                            self.diagnostics.last_mut().unwrap().related.push(
+                                crate::RelatedSpan::new(
+                                    info.range,
+                                    self.definitions[member].path.clone(),
+                                ),
+                            );
+                        }
                     }
+                    break None;
                 }
-                return None;
+                State::Unvisited => {}
             }
-            State::Unvisited => {}
-        }
-        self.states[id] = State::Visiting;
-        self.stack.push(id);
-        let mut definition = self.definitions[id].clone();
-        let mut success = true;
-        if let Some(reference) = definition.data.reference().map(str::to_owned) {
-            if let Some(base) = self
-                .target(&definition, &reference)
-                .and_then(|id| self.resolve(id))
-            {
-                if definition.inherits_children {
-                    definition.children = base.children.clone();
+            if self.stack.len() >= 64 {
+                self.diagnostic(
+                    Code::NormExpansionLimit,
+                    self.definitions[current].node,
+                    "derivedFrom",
+                    "derivedFrom dependency depth exceeds the analysis limit of 64",
+                );
+                self.states[current] = State::Failed;
+                break None;
+            }
+            self.states[current] = State::Visiting;
+            self.stack.push(current);
+            let definition = self.definitions[current].clone();
+            if let Some(reference) = definition.data.reference().map(str::to_owned) {
+                let target = self.target(&definition, &reference);
+                pending.push((current, definition));
+                match target {
+                    Some(target) => current = target,
+                    None => break None,
                 }
-                let derived = definition.data.derive(&base.data);
-                // Only properties actually inherited by svd-rs get base provenance.
-                for (key, mut origin) in base.origins {
+            } else {
+                self.stack.pop();
+                self.states[current] = State::Resolved(Box::new(definition.clone()));
+                break Some(definition);
+            }
+        };
+        while let Some((member, mut definition)) = pending.pop() {
+            if let Some(parent) = base {
+                if definition.inherits_children {
+                    definition.children = parent.children.clone();
+                }
+                let derived = definition.data.derive(&parent.data);
+                for (key, mut origin) in parent.origins {
                     if !definition.origins.contains_key(&key) {
                         origin.usage = definition.node;
                         if let Some(n) = definition.node {
@@ -383,21 +405,18 @@ impl<'a> Resolver<'a> {
                         definition.origins.insert(key, origin);
                     }
                 }
-                definition.origin.derived_from = base.origin.derived_from;
-                if let Some(n) = base.node {
+                definition.origin.derived_from = parent.origin.derived_from;
+                if let Some(n) = parent.node {
                     definition.origin.derived_from.push(n);
                 }
                 definition.data = derived;
+                self.states[member] = State::Resolved(Box::new(definition.clone()));
+                base = Some(definition);
             } else {
-                success = false;
+                self.states[member] = State::Failed;
             }
+            self.stack.pop();
         }
-        self.stack.pop();
-        self.states[id] = if success {
-            State::Resolved(Box::new(definition.clone()))
-        } else {
-            State::Failed
-        };
-        success.then_some(definition)
+        base
     }
 }

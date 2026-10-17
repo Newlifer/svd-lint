@@ -6,12 +6,17 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 
+[features]
+default = []
+xsd = ["dep:uppsala"]
+
 [dependencies]
 svd-parser.workspace = true
 svd-rs.workspace = true
 roxmltree.workspace = true
 thiserror.workspace = true
 serde.workspace = true
+uppsala = { version = "=0.10.1", optional = true }
 
 [dev-dependencies]
 insta.workspace = true

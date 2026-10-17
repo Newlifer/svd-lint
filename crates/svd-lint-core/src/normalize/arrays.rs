@@ -82,10 +82,10 @@ pub(super) fn instances(
             return Vec::new();
         }
         if let Some(indexes) = &dim.dim_index {
-            let unique: BTreeSet<_> = indexes.iter().collect();
+            let unique: BTreeSet<_> = indexes.iter().map(|s| s.trim()).collect();
             if indexes.len() != count
                 || unique.len() != count
-                || indexes.iter().any(|s| s.is_empty())
+                || indexes.iter().any(|s| s.trim().is_empty())
             {
                 resolver.diagnostic(
                     Code::NormInvalidIndex,
@@ -129,7 +129,7 @@ pub(super) fn instances(
                 let index = dim
                     .dim_index
                     .as_ref()
-                    .map(|v| v[ordinal].clone())
+                    .map(|v| v[ordinal].trim().to_owned())
                     .unwrap_or_else(|| ordinal.to_string());
                 origin.arrays.push(ArrayInstance {
                     declaration: definition.node,

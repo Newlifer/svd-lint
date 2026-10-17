@@ -1,0 +1,87 @@
+{
+  "tests/svd/application_of_default_values/custom_register_properties_on_device_level.svd": {
+    "status": "EXPECTED DIFFERENCE",
+    "reason": "SVDSuite adjusts register sizes from reset values or neighboring sizes; svd-lint preserves declared effective size and reports semantic bounds separately."
+  },
+  "tests/svd/cluster_inheritance_via_derivedfrom/override_behavior.svd": {
+    "status": "REFERENCE AMBIGUITY",
+    "reason": "Stage 2 replaces explicit child lists; SVDSuite merges inherited named children. This inherited-collection policy is preserved pending specification review."
+  },
+  "tests/svd/cluster_inheritance_via_derivedfrom/register_inheritance_overlap_address.svd": {
+    "status": "REFERENCE AMBIGUITY",
+    "reason": "Stage 2 replaces explicit child lists; SVDSuite merges inherited named children. This inherited-collection policy is preserved pending specification review."
+  },
+  "tests/svd/logical_integrity/field_illogical_values_in_bitrangepattern.svd": {
+    "status": "EXPECTED DIFFERENCE",
+    "reason": "SVDSuite repairs reversed bitRange endpoints; svd-lint rejects the malformed field rather than modifying it."
+  },
+  "tests/svd/logical_integrity/register_size_bit_width.svd": {
+    "status": "EXPECTED DIFFERENCE",
+    "reason": "SVDSuite discards non-byte-multiple register sizes; svd-lint retains them and computes ceil(size/addressUnitBits)."
+  },
+  "tests/svd/peripheral_inheritance_via_derivedfrom/override_behavior.svd": {
+    "status": "REFERENCE AMBIGUITY",
+    "reason": "Stage 2 replaces explicit child lists; SVDSuite merges inherited named children. This inherited-collection policy is preserved pending specification review."
+  },
+  "tests/svd/peripheral_inheritance_via_derivedfrom/register_inheritance_overlap_address.svd": {
+    "status": "REFERENCE AMBIGUITY",
+    "reason": "Stage 2 replaces explicit child lists; SVDSuite merges inherited named children. This inherited-collection policy is preserved pending specification review."
+  },
+  "tests/svd/register_inheritance_via_derivedfrom/override_behavior.svd": {
+    "status": "REFERENCE AMBIGUITY",
+    "reason": "Stage 2 replaces explicit child lists; SVDSuite merges inherited named children. This inherited-collection policy is preserved pending specification review."
+  },
+  "tests/svd/size_inheritance_and_adjustment/overlap_due_to_size_adjustment.svd": {
+    "status": "EXPECTED DIFFERENCE",
+    "reason": "SVDSuite adjusts register sizes from reset values or neighboring sizes; svd-lint preserves declared effective size and reports semantic bounds separately."
+  },
+  "tests/svd/size_inheritance_and_adjustment/simple_size_adjustment.svd": {
+    "status": "EXPECTED DIFFERENCE",
+    "reason": "SVDSuite adjusts register sizes from reset values or neighboring sizes; svd-lint preserves declared effective size and reports semantic bounds separately."
+  },
+  "tests/svd/cluster_inheritance_via_derivedfrom/register_inheritance_same_address.svd": {
+    "status": "REFERENCE AMBIGUITY",
+    "reason": "Explicit derived child collections replace base collections in Stage 2; SVDSuite merges inherited children. Both projections are retained pending specification review."
+  },
+  "tests/svd/cluster_inheritance_via_derivedfrom/size_inheritance.svd": {
+    "status": "REFERENCE AMBIGUITY",
+    "reason": "Explicit derived child collections replace base collections in Stage 2; SVDSuite merges inherited children. Both projections are retained pending specification review."
+  },
+  "tests/svd/enumerated_values/do_not_care_and_distinct_result_in_same_value.svd": {
+    "status": "EXPECTED DIFFERENCE",
+    "reason": "svd-lint retains conflicting enum entries for SEM013 diagnostics; SVDSuite removes subsequent conflicting entries from its processed model."
+  },
+  "tests/svd/enumerated_values/value_already_defined.svd": {
+    "status": "EXPECTED DIFFERENCE",
+    "reason": "svd-lint retains conflicting enum entries for SEM013 diagnostics; SVDSuite removes subsequent conflicting entries from its processed model."
+  },
+  "tests/svd/enumerated_values/value_name_already_defined_same_container.svd": {
+    "status": "EXPECTED DIFFERENCE",
+    "reason": "svd-lint retains conflicting enum entries for SEM013 diagnostics; SVDSuite removes subsequent conflicting entries from its processed model."
+  },
+  "tests/svd/field_inheritance_via_derivedfrom/override_behavior.svd": {
+    "status": "REFERENCE AMBIGUITY",
+    "reason": "Explicit derived child collections replace base collections in Stage 2; SVDSuite merges inherited children. Both projections are retained pending specification review."
+  },
+  "tests/svd/peripheral_inheritance_via_derivedfrom/register_inheritance_alternate_group.svd": {
+    "status": "REFERENCE AMBIGUITY",
+    "reason": "Explicit derived child collections replace base collections in Stage 2; SVDSuite merges inherited children. Both projections are retained pending specification review."
+  },
+  "tests/svd/peripheral_inheritance_via_derivedfrom/register_inheritance_alternate_register.svd": {
+    "status": "REFERENCE AMBIGUITY",
+    "reason": "Explicit derived child collections replace base collections in Stage 2; SVDSuite merges inherited children. Both projections are retained pending specification review."
+  },
+  "tests/svd/peripheral_inheritance_via_derivedfrom/register_inheritance_same_address.svd": {
+    "status": "REFERENCE AMBIGUITY",
+    "reason": "Explicit derived child collections replace base collections in Stage 2; SVDSuite merges inherited children. Both projections are retained pending specification review."
+  },
+  "tests/svd/peripheral_inheritance_via_derivedfrom/register_inheritance_same_address_dim.svd": {
+    "status": "REFERENCE AMBIGUITY",
+    "reason": "Explicit derived child collections replace base collections in Stage 2; SVDSuite merges inherited children. Both projections are retained pending specification review."
+  },
+  "tests/svd/size_inheritance_and_adjustment/complex_size_adjustment.svd": {
+    "status": "EXPECTED DIFFERENCE",
+    "reason": "SVDSuite widens neighboring sizes; svd-lint preserves effective sizes and computes physical ranges independently."
+  }
+}
+

@@ -54,7 +54,7 @@ impl Data {
             if dim
                 .dim_index
                 .as_ref()
-                .map(|v| v.iter().any(|s| s == index))
+                .map(|v| v.iter().any(|s| s.trim() == index))
                 .unwrap_or_else(|| {
                     index
                         .parse::<u32>()
