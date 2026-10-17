@@ -13,4 +13,4 @@ mod reset;
 pub use quality::check_quality;
 
 pub use context::CheckContext;
-pub use engine::{Rule, RuleEngine, check_semantics};
+pub use engine::{Rule, RuleEngine, check_rules};

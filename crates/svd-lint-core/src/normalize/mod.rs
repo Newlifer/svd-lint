@@ -1,4 +1,3 @@
-//! Stage 2: resolve definitions before applying container defaults and expanding arrays.
 mod arrays;
 mod derived;
 mod properties;
@@ -13,7 +12,7 @@ use std::collections::BTreeSet;
 
 #[derive(Clone, Debug)]
 pub struct NormalizeConfig {
-    /// Global budget for materialized peripherals, clusters, registers and fields.
+    /// Limit of overall objects in memory
     pub max_instances: usize,
 }
 

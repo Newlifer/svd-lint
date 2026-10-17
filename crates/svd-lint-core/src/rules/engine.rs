@@ -59,6 +59,6 @@ impl RuleEngine {
     }
 }
 
-pub fn check_semantics(device: &CanonicalDevice, source_map: &SourceMap) -> Vec<Diagnostic> {
+pub fn check_rules(device: &CanonicalDevice, source_map: &SourceMap) -> Vec<Diagnostic> {
     RuleEngine.check(&CheckContext { device, source_map })
 }

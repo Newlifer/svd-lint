@@ -8,7 +8,6 @@ fn source(xml: &str) -> SourceFile {
 }
 
 fn valid(xml: &str) -> CanonicalDevice {
-    // These tests exercise Stage 2 independently of semantic validity.
     let parsed = parse_svd(&source(xml));
     assert!(!parsed.has_errors(), "{:?}", parsed.diagnostics);
     let result = normalize(

@@ -729,8 +729,8 @@ fn semantic_analysis_is_repeatable_and_does_not_mutate_ir() {
     );
     let ir: CanonicalDevice = normalized.device.unwrap();
     let before = serde_json::to_string(&ir).unwrap();
-    let first = check_semantics(&ir, &map);
-    assert_eq!(first, check_semantics(&ir, &map));
+    let first = check_rules(&ir, &map);
+    assert_eq!(first, check_rules(&ir, &map));
     assert_eq!(before, serde_json::to_string(&ir).unwrap());
     assert!(analyze_svd(&input).device.is_some());
     assert!(analyze_svd(&input).has_errors());

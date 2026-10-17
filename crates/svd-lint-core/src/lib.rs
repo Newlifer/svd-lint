@@ -13,7 +13,7 @@ pub mod normalize;
 pub mod registry;
 pub mod rules;
 pub mod schema;
-pub use rules::check_semantics;
+pub use rules::check_rules;
 
 pub use ir::{
     CanonicalAddressBlock, CanonicalDevice, CanonicalField, CanonicalPeripheral, CanonicalRegister,
@@ -21,7 +21,6 @@ pub use ir::{
 };
 pub use normalize::{NormalizeConfig, NormalizeResult, normalize};
 
-/// Analysis of Stages 1–3. Semantic errors leave the complete IR available.
 /// SourceMap owns the meaning of IR node ids.
 #[derive(Debug)]
 pub struct AnalysisResult {
@@ -41,9 +40,12 @@ pub fn analyze_svd(source: &SourceFile) -> AnalysisResult {
 }
 
 pub fn analyze_svd_with_config(source: &SourceFile, config: &NormalizeConfig) -> AnalysisResult {
+    // Phase 1:Parse file and run preflight checks: XML is good, SVD structure is good
     let parsed = parse_svd(source);
     let mut diagnostics = parsed.diagnostics;
+
     let mut diagnostic_device = None;
+    // Phase 2: Check semantics and normalize (expand from xml description)
     let device = if let (Some(device), Some(map)) = (&parsed.device, &parsed.source_map) {
         let (normalized, recovered) = normalize::normalize_for_analysis(device, map, config);
         diagnostic_device = recovered;
@@ -52,12 +54,15 @@ pub fn analyze_svd_with_config(source: &SourceFile, config: &NormalizeConfig) ->
     } else {
         None
     };
+
+    // Phase 3: Check diagnostic rules
     if let (Some(device), Some(map)) = (
         device.as_ref().or(diagnostic_device.as_ref()),
         &parsed.source_map,
     ) {
-        diagnostics.extend(check_semantics(device, map));
+        diagnostics.extend(check_rules(device, map));
     }
+
     diagnostics.sort_by_key(|d| {
         (
             d.primary_span.map(|s| (s.start, s.end)),
@@ -65,6 +70,7 @@ pub fn analyze_svd_with_config(source: &SourceFile, config: &NormalizeConfig) ->
             d.message.clone(),
         )
     });
+
     AnalysisResult {
         device,
         diagnostics,
