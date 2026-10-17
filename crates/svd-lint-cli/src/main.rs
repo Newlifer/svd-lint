@@ -2,10 +2,8 @@
 mod config;
 mod output;
 mod sarif;
-mod scan;
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use config::{Config, Profile};
-use serde_json::{Value, json};
 use std::{path::PathBuf, process::ExitCode};
 use svd_lint_core::{
     Diagnostic, DiagnosticCode, Severity, SourceFile, analyze_svd,
@@ -25,7 +23,6 @@ struct Cli {
 enum Commands {
     Check(CheckArgs),
     DumpIr(CheckArgs),
-    Scan(ScanArgs),
     ListRules {
         #[arg(long,value_enum,default_value_t=Format::Text)]
         format: Format,
@@ -68,17 +65,6 @@ struct Options {
 #[derive(Args)]
 struct CheckArgs {
     file: PathBuf,
-    #[command(flatten)]
-    options: Options,
-}
-#[derive(Args)]
-struct ScanArgs {
-    #[arg(required = true)]
-    paths: Vec<PathBuf>,
-    #[arg(long)]
-    recursive: bool,
-    #[arg(long)]
-    exclude: Vec<String>,
     #[command(flatten)]
     options: Options,
 }
@@ -191,7 +177,6 @@ fn main() -> ExitCode {
         },
         Commands::Check(args) => run_check(&args, false),
         Commands::DumpIr(args) => run_check(&args, true),
-        Commands::Scan(args) => run_scan(&args),
     };
     match result {
         Ok(code) => ExitCode::from(code),
@@ -289,70 +274,4 @@ fn emit(format: Format, path: &str, diagnostics: &[Diagnostic], source: Option<&
             .unwrap()
         ),
     }
-}
-fn run_scan(args: &ScanArgs) -> Result<u8, String> {
-    let config = Config::load(args.options.config.as_deref())?;
-    let paths = scan::collect(&args.paths, args.recursive, &args.exclude)?;
-    let mut files = Vec::new();
-    let mut results = Vec::new();
-    let (mut errors, mut warnings, mut parsed, mut normalization_failures, mut code) =
-        (0, 0, 0, 0, 0);
-    for path in paths {
-        let path_text = path.to_string_lossy().replace('\\', "/");
-        let (source, diagnostics, io) = match read(&path) {
-            Ok(source) => {
-                let (d, ir) = analyze(&source, &args.options, &config);
-                drop(ir);
-                (Some(source), d, false)
-            }
-            Err(d) => (None, vec![d], true),
-        };
-        if !io
-            && !diagnostics.iter().any(|d| {
-                matches!(
-                    d.code.as_str(),
-                    "XML001" | "SVD001" | "SVD002" | "SVD003" | "SVD004" | "SVD006"
-                ) || d.code.as_str().starts_with("XSD")
-            })
-        {
-            parsed += 1;
-        }
-        if diagnostics
-            .iter()
-            .any(|d| d.code.as_str().starts_with("NORM"))
-        {
-            normalization_failures += 1;
-        }
-        errors += diagnostics
-            .iter()
-            .filter(|d| d.severity == Severity::Error)
-            .count();
-        warnings += diagnostics
-            .iter()
-            .filter(|d| d.severity == Severity::Warning)
-            .count();
-        code = code.max(fail(&diagnostics, args.options.fail_on, io));
-        match args.options.format {
-            Format::Text => emit(Format::Text, &path_text, &diagnostics, source.as_ref()),
-            Format::Json => {
-                let report: Value = serde_json::from_str(&output::render_json(
-                    &path_text,
-                    &diagnostics,
-                    source.as_ref(),
-                ))
-                .unwrap();
-                files.push(json!({"path":path_text,"diagnostics":report["diagnostics"]}));
-            }
-            Format::Sarif => {
-                results.extend(sarif::results(&path_text, &diagnostics, source.as_ref()))
-            }
-        }
-        // XML and IR are dropped here; only rendered diagnostic data remains.
-    }
-    match args.options.format {
-Format::Json=>println!("{}",serde_json::to_string_pretty(&json!({"version":1,"summary":{"files":files.len(),"errors":errors,"warnings":warnings,"successfully_parsed":parsed,"normalization_failures":normalization_failures},"files":files})).unwrap()),
-Format::Sarif=>println!("{}",serde_json::to_string_pretty(&sarif::document(results)).unwrap()),
-Format::Text=>{}
-}
-    Ok(code)
 }

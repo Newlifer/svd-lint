@@ -8,28 +8,23 @@ fn fixture(name: &str) -> String {
 }
 
 #[test]
-fn duplicate_field_names_do_not_hide_semantic_errors_in_check_or_scan() {
+fn duplicate_field_names_do_not_hide_semantic_errors_in_check() {
     let input = "../../tests/corpus/regression/duplicate-fields-semantic-checks/input.svd";
-    for command in ["check", "scan"] {
-        for format in ["text", "json", "sarif"] {
-            let result = cli()
-                .args([command, input, "--format", format])
-                .assert()
-                .code(1);
-            let output = if format == "text" {
-                &result.get_output().stderr
-            } else {
-                &result.get_output().stdout
-            };
-            let output = String::from_utf8_lossy(output);
-            for code in [
-                "NORM003", "SEM003", "SEM004", "SEM005", "SEM008", "SEM010", "SEM012",
-            ] {
-                assert!(
-                    output.contains(code),
-                    "{command}/{format} is missing {code}"
-                );
-            }
+    for format in ["text", "json", "sarif"] {
+        let result = cli()
+            .args(["check", input, "--format", format])
+            .assert()
+            .code(1);
+        let output = if format == "text" {
+            &result.get_output().stderr
+        } else {
+            &result.get_output().stdout
+        };
+        let output = String::from_utf8_lossy(output);
+        for code in [
+            "NORM003", "SEM003", "SEM004", "SEM005", "SEM008", "SEM010", "SEM012",
+        ] {
+            assert!(output.contains(code), "check/{format} is missing {code}");
         }
     }
     let result = cli()
@@ -162,59 +157,6 @@ fn strict_quality_and_cli_profile_precedence_work() {
         .args(["--profile", "default", "--fail-on", "warning"])
         .assert()
         .success();
-}
-#[test]
-fn scan_sorts_deduplicates_recurses_excludes_and_honors_fail_policy() {
-    let dir = tempfile::tempdir().unwrap();
-    std::fs::create_dir(dir.path().join("sub")).unwrap();
-    std::fs::copy(fixture("valid/minimal.svd"), dir.path().join("z.svd")).unwrap();
-    std::fs::copy(
-        fixture("valid/warning_no_description.svd"),
-        dir.path().join("a.svd"),
-    )
-    .unwrap();
-    std::fs::copy(
-        fixture("invalid/bad_xml.svd"),
-        dir.path().join("sub/bad.svd"),
-    )
-    .unwrap();
-    let result = cli()
-        .arg("scan")
-        .arg(dir.path())
-        .arg(dir.path().join("z.svd"))
-        .args(["--format", "json"])
-        .assert()
-        .success();
-    let data: Value = serde_json::from_slice(&result.get_output().stdout).unwrap();
-    assert_eq!(data["summary"]["files"], 2);
-    assert!(
-        data["files"][0]["path"]
-            .as_str()
-            .unwrap()
-            .ends_with("a.svd")
-    );
-    for format in ["text", "json", "sarif"] {
-        cli()
-            .arg("scan")
-            .arg(dir.path())
-            .args(["--format", format, "--recursive"])
-            .assert()
-            .code(1);
-        cli()
-            .arg("scan")
-            .arg(dir.path())
-            .args([
-                "--format",
-                format,
-                "--recursive",
-                "--exclude",
-                "**/bad.svd",
-                "--fail-on",
-                "warning",
-            ])
-            .assert()
-            .code(1);
-    }
 }
 #[test]
 fn sarif_contains_metadata_primary_related_and_omits_unknown_positions() {
