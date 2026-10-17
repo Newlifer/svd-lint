@@ -43,14 +43,19 @@ pub fn analyze_svd(source: &SourceFile) -> AnalysisResult {
 pub fn analyze_svd_with_config(source: &SourceFile, config: &NormalizeConfig) -> AnalysisResult {
     let parsed = parse_svd(source);
     let mut diagnostics = parsed.diagnostics;
+    let mut diagnostic_device = None;
     let device = if let (Some(device), Some(map)) = (&parsed.device, &parsed.source_map) {
-        let normalized = normalize(device, map, config);
+        let (normalized, recovered) = normalize::normalize_for_analysis(device, map, config);
+        diagnostic_device = recovered;
         diagnostics.extend(normalized.diagnostics);
         normalized.device
     } else {
         None
     };
-    if let (Some(device), Some(map)) = (&device, &parsed.source_map) {
+    if let (Some(device), Some(map)) = (
+        device.as_ref().or(diagnostic_device.as_ref()),
+        &parsed.source_map,
+    ) {
         diagnostics.extend(check_semantics(device, map));
     }
     diagnostics.sort_by_key(|d| {

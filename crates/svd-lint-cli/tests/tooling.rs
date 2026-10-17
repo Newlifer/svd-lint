@@ -6,6 +6,46 @@ fn cli() -> Command {
 fn fixture(name: &str) -> String {
     format!("../../tests/fixtures/{name}")
 }
+
+#[test]
+fn duplicate_field_names_do_not_hide_semantic_errors_in_check_or_scan() {
+    let input = "../../tests/corpus/regression/duplicate-fields-semantic-checks/input.svd";
+    for command in ["check", "scan"] {
+        for format in ["text", "json", "sarif"] {
+            let result = cli()
+                .args([command, input, "--format", format])
+                .assert()
+                .code(1);
+            let output = if format == "text" {
+                &result.get_output().stderr
+            } else {
+                &result.get_output().stdout
+            };
+            let output = String::from_utf8_lossy(output);
+            for code in [
+                "NORM003", "SEM003", "SEM004", "SEM005", "SEM008", "SEM010", "SEM012",
+            ] {
+                assert!(
+                    output.contains(code),
+                    "{command}/{format} is missing {code}"
+                );
+            }
+        }
+    }
+    let result = cli()
+        .args(["dump-ir", input, "--format", "json"])
+        .assert()
+        .code(1);
+    let report: Value = serde_json::from_slice(&result.get_output().stdout).unwrap();
+    assert!(report.get("peripherals").is_none());
+    assert!(
+        report["diagnostics"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|d| d["code"] == "NORM003")
+    );
+}
 #[test]
 fn registry_and_explain_are_machine_readable() {
     let result = cli()

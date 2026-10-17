@@ -1,0 +1,13 @@
+{
+  "expected": [
+    "NORM003",
+    "SEM003",
+    "SEM004",
+    "SEM005",
+    "SEM008",
+    "SEM010",
+    "SEM012"
+  ],
+  "profile": "default",
+  "unexpected": []
+}

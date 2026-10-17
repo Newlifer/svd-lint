@@ -543,6 +543,21 @@
       "rule": "NORM005"
     },
     {
+      "diagnostics": [
+        "NORM003",
+        "SEM003",
+        "SEM004",
+        "SEM005",
+        "SEM008",
+        "SEM010",
+        "SEM012"
+      ],
+      "file": "regression/duplicate-fields-semantic-checks/input.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "NORM003"
+    },
+    {
       "diagnostics": [],
       "file": "valid/minimal.svd",
       "kind": "positive",

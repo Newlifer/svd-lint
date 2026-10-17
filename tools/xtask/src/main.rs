@@ -179,6 +179,9 @@ fn generate_corpus() -> Result<(), Box<dyn std::error::Error>> {
         "NORM005",
         "regression",
     )?);
+    let regression = "regression/duplicate-fields-semantic-checks/input.svd";
+    let input = fs::read_to_string(Path::new("tests/corpus").join(regression))?;
+    cases.push(case(regression, &input, "NORM003", "negative")?);
     cases.push(case("valid/minimal.svd", &minimal, "SVD001", "positive")?);
     let derived = minimal.replace("<register>", "<register derivedFrom=\"MISSING\">");
     cases.push(case(

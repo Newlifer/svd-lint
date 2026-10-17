@@ -37,6 +37,17 @@ pub fn normalize(
     source_map: &SourceMap,
     config: &NormalizeConfig,
 ) -> NormalizeResult {
+    normalize_for_analysis(device, source_map, config).0
+}
+
+/// A diagnostic-only model may retain duplicate field names when every value
+/// was resolved. It must never be exported as a successfully normalized device.
+/// Other failures, including ambiguous derivedFrom targets, remain blocking.
+pub(crate) fn normalize_for_analysis(
+    device: &svd::Device,
+    source_map: &SourceMap,
+    config: &NormalizeConfig,
+) -> (NormalizeResult, Option<CanonicalDevice>) {
     let (resolver, roots) = Resolver::new(device, source_map);
     let mut builder = Builder {
         resolver,
@@ -44,6 +55,7 @@ pub fn normalize(
         created: 0,
         names: BTreeSet::new(),
         active: Vec::new(),
+        duplicate_fields: 0,
     };
     // Resolve even unused definitions so independent bad references are reported.
     for id in 0..builder.resolver.definitions.len() {
@@ -152,6 +164,7 @@ pub fn normalize(
             peripherals.push(peripheral);
         }
     }
+    let duplicate_fields = builder.duplicate_fields;
     let mut diagnostics = builder.resolver.diagnostics;
     diagnostics.sort_by_key(|d| (d.primary_span.map(|s| (s.start, s.end)), d.code.as_str()));
     let mut metadata = device.clone();
@@ -165,10 +178,21 @@ pub fn normalize(
         unmodeled_nodes: unmodeled::nodes(source_map),
         origin,
     };
-    NormalizeResult {
-        device: (!diagnostics.iter().any(|d| d.severity.is_error())).then_some(canonical),
-        diagnostics,
-    }
+    let errors = diagnostics.iter().filter(|d| d.severity.is_error()).count();
+    let (device, diagnostic_device) = if errors == 0 {
+        (Some(canonical), None)
+    } else if errors == duplicate_fields {
+        (None, Some(canonical))
+    } else {
+        (None, None)
+    };
+    (
+        NormalizeResult {
+            device,
+            diagnostics,
+        },
+        diagnostic_device,
+    )
 }
 
 struct Builder<'a> {
@@ -177,6 +201,7 @@ struct Builder<'a> {
     created: usize,
     names: BTreeSet<String>,
     active: Vec<usize>,
+    duplicate_fields: usize,
 }
 
 impl Builder<'_> {
@@ -349,7 +374,10 @@ impl Builder<'_> {
         ) {
             let qualified_name = format!("{parent}.{}", instance.name);
             if !self.unique(&qualified_name, &definition) {
-                continue;
+                // Bit ranges, values and source identities remain known. Keep
+                // both fields for independent checks instead of silently losing
+                // the later declaration. Reference resolution stays strict.
+                self.duplicate_fields += 1;
             }
             let offset = u64::from(raw.bit_range.offset)
                 .checked_add(instance.increment)
