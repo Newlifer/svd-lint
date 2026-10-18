@@ -178,7 +178,7 @@ fn failures_have_codes_attribute_spans_and_cycle_members() {
     let missing = result
         .diagnostics
         .iter()
-        .find(|d| d.code == DiagnosticCode::NormMissingReference)
+        .find(|d| d.code == DiagnosticCode::new("NORM001"))
         .unwrap();
     assert_eq!(
         input.snippet(missing.primary_span.unwrap()),
@@ -187,7 +187,7 @@ fn failures_have_codes_attribute_spans_and_cycle_members() {
     let cycles: Vec<_> = result
         .diagnostics
         .iter()
-        .filter(|d| d.code == DiagnosticCode::NormCycle)
+        .filter(|d| d.code == DiagnosticCode::new("NORM002"))
         .collect();
     assert_eq!(cycles.len(), 2);
     assert!(cycles.iter().any(|d| d.related.len() == 3));
@@ -207,7 +207,7 @@ fn missing_size_is_error_and_independent_branches_continue() {
         result
             .diagnostics
             .iter()
-            .any(|d| d.code == DiagnosticCode::NormMissingProperty)
+            .any(|d| d.code == DiagnosticCode::new("NORM008"))
     );
 }
 
@@ -224,17 +224,14 @@ fn expansion_budget_is_global_and_checked_before_allocation() {
         result
             .diagnostics
             .iter()
-            .any(|d| d.code == DiagnosticCode::NormExpansionLimit)
+            .any(|d| d.code == DiagnosticCode::new("NORM009"))
     );
     let huge = wrap(
         "<size>32</size>",
         "<register><dim>4294967295</dim><dimIncrement>4</dimIncrement><name>R%s</name><addressOffset>0</addressOffset></register>",
     );
     let result = analyze_svd(&source(&huge));
-    assert_eq!(
-        result.diagnostics[0].code,
-        DiagnosticCode::NormExpansionLimit
-    );
+    assert_eq!(result.diagnostics[0].code, DiagnosticCode::new("NORM009"));
 }
 
 #[test]
@@ -247,7 +244,7 @@ fn ambiguous_reference_is_not_selected_by_document_order() {
     let d = result
         .diagnostics
         .iter()
-        .find(|d| d.code == DiagnosticCode::NormAmbiguousReference && d.related.len() == 2)
+        .find(|d| d.code == DiagnosticCode::new("NORM003") && d.related.len() == 2)
         .unwrap();
     assert!(d.primary_span.is_some());
     assert!(result.device.is_none());
@@ -409,7 +406,7 @@ fn malformed_dim_index_and_name_already_rejected_by_stage_one_are_not_duplicated
         let result = analyze_svd(&source(&wrap("<size>32</size>", registers)));
         assert!(result.device.is_none());
         assert_eq!(result.diagnostics.len(), 1);
-        assert_eq!(result.diagnostics[0].code, DiagnosticCode::SvdParseError);
+        assert_eq!(result.diagnostics[0].code, DiagnosticCode::new("SVD006"));
     }
 }
 
@@ -425,13 +422,13 @@ fn duplicate_indexes_and_bit_offset_overflow_are_normalization_errors() {
         result
             .diagnostics
             .iter()
-            .any(|d| d.code == DiagnosticCode::NormInvalidIndex)
+            .any(|d| d.code == DiagnosticCode::new("NORM005"))
     );
     assert!(
         result
             .diagnostics
             .iter()
-            .any(|d| d.code == DiagnosticCode::NormAddressOverflow)
+            .any(|d| d.code == DiagnosticCode::new("NORM007"))
     );
 }
 
@@ -447,7 +444,7 @@ fn cluster_container_recursion_is_reported_instead_of_expanding_forever() {
         result
             .diagnostics
             .iter()
-            .any(|d| d.code == DiagnosticCode::NormCycle)
+            .any(|d| d.code == DiagnosticCode::new("NORM002"))
     );
     assert!(!result.diagnostics[0].related.is_empty());
 }
@@ -541,7 +538,7 @@ fn cycles_are_detected_for_cluster_field_and_enumerated_values() {
         let result = analyze_svd(&source(&wrap("<size>32</size>", registers)));
         assert!(result.device.is_none());
         assert_eq!(result.diagnostics.len(), 1, "{:?}", result.diagnostics);
-        assert_eq!(result.diagnostics[0].code, DiagnosticCode::NormCycle);
+        assert_eq!(result.diagnostics[0].code, DiagnosticCode::new("NORM002"));
         assert_eq!(result.diagnostics[0].related.len(), 3);
     }
 }

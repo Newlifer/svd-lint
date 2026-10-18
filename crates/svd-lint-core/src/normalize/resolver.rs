@@ -1,3 +1,4 @@
+use super::diagnostics;
 use std::collections::BTreeMap;
 
 use super::derived::Data;
@@ -239,7 +240,7 @@ impl<'a> Resolver<'a> {
             [id] => Some(*id),
             [] => {
                 self.diagnostic(
-                    Code::NormMissingReference,
+                    diagnostics::MISSING_REFERENCE.code(),
                     definition.node,
                     "derivedFrom",
                     format!(
@@ -251,7 +252,7 @@ impl<'a> Resolver<'a> {
             }
             _ => {
                 self.diagnostic(
-                    Code::NormAmbiguousReference,
+                    diagnostics::AMBIGUOUS_REFERENCE.code(),
                     definition.node,
                     "derivedFrom",
                     format!("ambiguous derivedFrom target `{reference}`"),
@@ -342,7 +343,7 @@ impl<'a> Resolver<'a> {
                 State::Visiting => {
                     let node = self.definitions[*self.stack.last().unwrap_or(&current)].node;
                     self.diagnostic(
-                        Code::NormCycle,
+                        diagnostics::CYCLE.code(),
                         node,
                         "derivedFrom",
                         "cyclic derivedFrom dependency",
@@ -366,7 +367,7 @@ impl<'a> Resolver<'a> {
             }
             if self.stack.len() >= 64 {
                 self.diagnostic(
-                    Code::NormExpansionLimit,
+                    diagnostics::EXPANSION_LIMIT.code(),
                     self.definitions[current].node,
                     "derivedFrom",
                     "derivedFrom dependency depth exceeds the analysis limit of 64",

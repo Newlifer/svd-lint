@@ -1,8 +1,9 @@
 //! Frontend entry point: XML preflight + typed `svd-parser` pass.
 
+use super::diagnostics;
 use svd_parser::svd::Device;
 
-use crate::diagnostics::{Diagnostic, DiagnosticCode, Span};
+use crate::diagnostic::{Diagnostic, Span};
 
 use super::preflight;
 use super::source::SourceFile;
@@ -48,7 +49,7 @@ impl FrontendResult {
 pub fn parse_svd(source: &SourceFile) -> FrontendResult {
     if let Some(span) = excessive_nesting(source.text()) {
         let mut diagnostic = Diagnostic::error(
-            DiagnosticCode::SvdParseError,
+            diagnostics::SVD_PARSE_ERROR.code(),
             "XML element nesting exceeds the analysis limit of 64",
         );
         diagnostic.primary_span = Some(span);
@@ -77,7 +78,7 @@ pub fn parse_svd(source: &SourceFile) -> FrontendResult {
             // Should never happen with roxmltree-produced ranges; report
             // instead of panicking.
             diagnostics.push(Diagnostic::error(
-                DiagnosticCode::XmlSyntax,
+                diagnostics::XML_SYNTAX.code(),
                 err.to_string(),
             ));
             None
@@ -173,7 +174,7 @@ fn typed_parse(source: &SourceFile, diagnostics: &mut Vec<Diagnostic>) -> Option
             // svd-parser does not expose source positions for its errors;
             // per policy no coordinates are invented.
             diagnostics.push(Diagnostic::error(
-                DiagnosticCode::SvdParseError,
+                diagnostics::SVD_PARSE_ERROR.code(),
                 format!("failed to parse SVD: {err}"),
             ));
             None
@@ -196,7 +197,7 @@ fn xml_error_diagnostic(source: &SourceFile, err: &roxmltree::Error) -> Diagnost
             .and_then(|offset| Span::new(offset, offset).ok())
     };
     let mut diagnostic = Diagnostic::error(
-        DiagnosticCode::XmlSyntax,
+        diagnostics::XML_SYNTAX.code(),
         format!("XML syntax error: {err}"),
     );
     diagnostic.primary_span = span;
@@ -246,7 +247,7 @@ mod tests {
         assert!(result.source_map.is_none());
         assert_eq!(result.diagnostics.len(), 1);
         let diag = &result.diagnostics[0];
-        assert_eq!(diag.code, DiagnosticCode::XmlSyntax);
+        assert_eq!(diag.code, diagnostics::XML_SYNTAX.code());
         assert!(diag.primary_span.is_some());
     }
 
@@ -259,7 +260,7 @@ mod tests {
         assert_eq!(result.diagnostics.len(), 1);
         assert_eq!(
             result.diagnostics[0].code,
-            DiagnosticCode::MissingRequiredElement
+            diagnostics::MISSING_REQUIRED_ELEMENT.code()
         );
     }
 
@@ -272,7 +273,10 @@ mod tests {
         );
         assert!(result.device.is_none());
         assert_eq!(result.diagnostics.len(), 1);
-        assert_eq!(result.diagnostics[0].code, DiagnosticCode::SvdParseError);
+        assert_eq!(
+            result.diagnostics[0].code,
+            diagnostics::SVD_PARSE_ERROR.code()
+        );
         // No position is known, so no position is reported.
         assert!(result.diagnostics[0].primary_span.is_none());
     }

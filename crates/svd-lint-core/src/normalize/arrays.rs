@@ -1,11 +1,9 @@
+use super::diagnostics;
 use super::{
     NormalizeConfig,
     resolver::{Definition, Resolver},
 };
-use crate::{
-    DiagnosticCode as Code,
-    ir::{ArrayInstance, Origin},
-};
+use crate::ir::{ArrayInstance, Origin};
 use std::collections::BTreeSet;
 
 pub(super) struct Instance {
@@ -30,7 +28,7 @@ pub(super) fn instances(
         .is_some_and(|n| n.parent == definition.node);
     if dim.is_none() && explicit_dim {
         resolver.diagnostic(
-            Code::NormInvalidDimension,
+            diagnostics::INVALID_DIMENSION.code(),
             definition.node,
             "dim",
             "dim requires dimIncrement",
@@ -40,7 +38,7 @@ pub(super) fn instances(
     let count = dim.map(|d| d.dim as usize).unwrap_or(1);
     if count == 0 {
         resolver.diagnostic(
-            Code::NormInvalidDimension,
+            diagnostics::INVALID_DIMENSION.code(),
             definition.node,
             "dim",
             "array dimension must be positive",
@@ -49,7 +47,7 @@ pub(super) fn instances(
     }
     if count > config.max_instances.saturating_sub(*created) {
         resolver.diagnostic(
-            Code::NormExpansionLimit,
+            diagnostics::EXPANSION_LIMIT.code(),
             definition.node,
             "dim",
             format!(
@@ -62,7 +60,7 @@ pub(super) fn instances(
     let template = definition.data.name();
     if dim.is_none() && template.contains("%s") {
         resolver.diagnostic(
-            Code::NormInvalidTemplate,
+            diagnostics::INVALID_TEMPLATE.code(),
             definition.node,
             "name",
             "array placeholder requires dim",
@@ -74,7 +72,7 @@ pub(super) fn instances(
             || (template.contains("[%s]") && !template.ends_with("[%s]"))
         {
             resolver.diagnostic(
-                Code::NormInvalidTemplate,
+                diagnostics::INVALID_TEMPLATE.code(),
                 definition.node,
                 "name",
                 format!("invalid array name template `{template}`"),
@@ -88,7 +86,7 @@ pub(super) fn instances(
                 || indexes.iter().any(|s| s.trim().is_empty())
             {
                 resolver.diagnostic(
-                    Code::NormInvalidIndex,
+                    diagnostics::INVALID_INDEX.code(),
                     definition.node,
                     "dimIndex",
                     "dimIndex must contain one distinct nonempty index per instance",

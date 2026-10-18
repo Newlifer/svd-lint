@@ -3,7 +3,7 @@ struct Rejected;
 impl SchemaValidator for Rejected {
     fn validate(&self, _: &SourceFile, _: SchemaVersion) -> Vec<Diagnostic> {
         vec![Diagnostic::error(
-            DiagnosticCode::XsdNonconformance,
+            DiagnosticCode::new("XSD002"),
             "invalid schema content",
         )]
     }
@@ -25,10 +25,7 @@ fn schema_failure_stops_typed_parse_cascades() {
     );
     assert!(result.device.is_none());
     assert_eq!(result.diagnostics.len(), 1);
-    assert_eq!(
-        result.diagnostics[0].code,
-        DiagnosticCode::XsdNonconformance
-    );
+    assert_eq!(result.diagnostics[0].code, DiagnosticCode::new("XSD002"));
 }
 #[test]
 fn accepted_schema_runs_existing_pipeline() {

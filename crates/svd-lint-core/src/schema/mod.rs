@@ -1,4 +1,5 @@
 //! Optional schema boundary. No experimental validator is part of the default pipeline.
+pub mod diagnostics;
 mod provider;
 mod validator;
 pub use provider::{DirectoryProvider, SchemaVersion};

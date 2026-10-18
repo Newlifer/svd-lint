@@ -24,18 +24,18 @@ fn xml_depth_guard_has_a_boundary_and_skips_xml_literals() {
         result
             .diagnostics
             .iter()
-            .any(|d| d.code == DiagnosticCode::InvalidRootElement)
+            .any(|d| d.code == DiagnosticCode::new("SVD001"))
     );
     assert!(
         !result
             .diagnostics
             .iter()
-            .any(|d| d.code == DiagnosticCode::SvdParseError)
+            .any(|d| d.code == DiagnosticCode::new("SVD006"))
     );
     let input = format!("{}{}", "<node>".repeat(65), "</node>".repeat(65));
     let result = parse_svd(&SourceFile::new("deep.svd", input));
     assert_eq!(result.diagnostics.len(), 1);
-    assert_eq!(result.diagnostics[0].code, DiagnosticCode::SvdParseError);
+    assert_eq!(result.diagnostics[0].code, DiagnosticCode::new("SVD006"));
     assert!(result.source_map.is_none());
 }
 #[test]
@@ -87,44 +87,48 @@ fn registry_documents_every_code_and_enforces_semantic_case_coverage() {
     let docs = fs::read_to_string(root.join("docs/rules.md")).unwrap();
     let mut seen = BTreeSet::new();
     for rule in rule_registry() {
-        assert!(seen.insert(rule.code), "duplicate {}", rule.code);
-        assert!(DiagnosticCode::from_code(rule.code).is_some());
-        assert!(docs.contains(&format!("## {} —", rule.code)));
+        assert!(
+            seen.insert(rule.code.as_str()),
+            "duplicate {}",
+            rule.code.as_str()
+        );
+        assert!(DiagnosticCode::from_code(rule.code.as_str()).is_some());
+        assert!(docs.contains(&format!("## {} —", rule.code.as_str())));
         assert!(!rule.description.is_empty());
         assert!(
             manifest["cases"]
                 .as_array()
                 .unwrap()
                 .iter()
-                .any(|case| case["rule"] == rule.code)
+                .any(|case| case["rule"] == rule.code.as_str())
                 || matches!(
-                    rule.code,
+                    rule.code.as_str(),
                     "IO001" | "IO002" | "XSD001" | "XSD002" | "XSD003" | "XSD004"
                 ),
             "{} has no corpus or dedicated I/O/schema integration test",
-            rule.code
+            rule.code.as_str()
         );
         if rule.source == RuleSource::CmsisSvd {
-            assert!(!rule.spec_refs.is_empty(), "{}", rule.code);
+            assert!(!rule.spec_refs.is_empty(), "{}", rule.code.as_str());
         }
         if rule.source == RuleSource::SvdConvCompatibility {
             assert!(!rule.svdconv_codes.is_empty());
         }
-        if rule.code.starts_with("SEM") {
+        if rule.code.as_str().starts_with("SEM") {
             for kind in ["negative", "positive", "boundary"] {
                 assert!(
                     manifest["cases"]
                         .as_array()
                         .unwrap()
                         .iter()
-                        .any(|c| c["rule"] == rule.code && c["kind"] == kind),
+                        .any(|c| c["rule"] == rule.code.as_str() && c["kind"] == kind),
                     "{} missing {kind}",
-                    rule.code
+                    rule.code.as_str()
                 );
             }
         }
     }
-    assert_eq!(seen.len(), DiagnosticCode::ALL.len());
+    assert_eq!(seen.len(), DiagnosticCode::all().len());
 }
 
 #[test]

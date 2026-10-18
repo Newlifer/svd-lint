@@ -1,5 +1,6 @@
 //! SVD frontend: source handling, XML structure and typed parsing.
 
+pub mod diagnostics;
 mod parser;
 mod preflight;
 mod source;

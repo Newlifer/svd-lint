@@ -4,7 +4,7 @@ use std::sync::atomic::{AtomicU32, Ordering};
 
 use serde::{Deserialize, Serialize};
 
-use crate::diagnostics::{Span, SpanError};
+use crate::diagnostic::{Span, SpanError};
 
 static NEXT_SOURCE_ID: AtomicU32 = AtomicU32::new(0);
 

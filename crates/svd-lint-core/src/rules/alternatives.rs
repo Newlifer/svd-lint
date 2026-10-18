@@ -2,7 +2,10 @@ use super::{
     CheckContext, Rule,
     ranges::{self, Interval},
 };
-use crate::{Diagnostic, DiagnosticCode as Code, Severity, ir::*};
+use crate::registry::{
+    Compatibility, DiagnosticDefinition, RuleCategory, RuleSource, SpecReference, SvdConvReference,
+};
+use crate::{Diagnostic, Severity, ir::*};
 use std::collections::{BTreeMap, BTreeSet};
 
 #[derive(Clone, Copy, Debug)]
@@ -165,35 +168,64 @@ impl<'a> Layout<'a> {
     }
 }
 
-pub(super) struct Alternatives;
-impl Rule for Alternatives {
-    fn id(&self) -> &'static str {
-        "alternatives"
-    }
-    fn check(&self, context: &CheckContext<'_>, diagnostics: &mut Vec<Diagnostic>) {
-        for peripheral in &context.device.peripherals {
-            let layout = Layout::new(peripheral, context.device.address_unit_bits);
-            for (i, (r, status)) in peripheral
-                .registers
-                .iter()
-                .zip(&layout.alternatives)
-                .enumerate()
-            {
-                if let Alternate::Invalid(reason) = status {
-                    let mut d = context.diagnostic(
-                        Code::SemInvalidAlternateRegister,
-                        Severity::Error,
-                        *reason,
-                        &r.origin,
-                        "alternateRegister",
-                    );
-                    if let Some(target) =
-                        layout.targets[i].map(|target| &peripheral.registers[target])
-                    {
-                        context.related(&mut d, &target.origin, "name", "referenced register");
-                    }
-                    diagnostics.push(d);
+pub(crate) static INVALID_ALTERNATE_REGISTER: DiagnosticDefinition = DiagnosticDefinition {
+    code: crate::DiagnosticCode::new("SEM009"),
+    name: "invalid-alternate-register",
+    description: "The alternate register reference or memory range is invalid.",
+    category: RuleCategory::Addressing,
+    default_severity: Severity::Error,
+    source: RuleSource::CmsisSvd,
+    configurable: true,
+    svdconv_codes: &[
+        SvdConvReference {
+            code: "M348",
+            compatibility: Compatibility::Partial,
+        },
+        SvdConvReference {
+            code: "M349",
+            compatibility: Compatibility::Partial,
+        },
+    ],
+    spec_refs: &[SpecReference {
+        title: "Addressing / invalid-alternate-register",
+        url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_peripherals.html",
+    }],
+    tags: &["check"],
+};
+
+pub(crate) static INVALID_ALTERNATE_REGISTER_CHECK: Rule = Rule {
+    name: INVALID_ALTERNATE_REGISTER.name,
+    description: INVALID_ALTERNATE_REGISTER.description,
+    diagnostics: &[&INVALID_ALTERNATE_REGISTER],
+    check: |context, output| check_alternatives_code(&INVALID_ALTERNATE_REGISTER, context, output),
+};
+
+fn check_alternatives_code(
+    definition: &DiagnosticDefinition,
+    context: &CheckContext<'_>,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    for peripheral in &context.device.peripherals {
+        let layout = Layout::new(peripheral, context.device.address_unit_bits);
+        for (i, (r, status)) in peripheral
+            .registers
+            .iter()
+            .zip(&layout.alternatives)
+            .enumerate()
+        {
+            if let Alternate::Invalid(reason) = status {
+                let mut d = context.diagnostic(
+                    definition,
+                    Severity::Error,
+                    *reason,
+                    &r.origin,
+                    "alternateRegister",
+                );
+                if let Some(target) = layout.targets[i].map(|target| &peripheral.registers[target])
+                {
+                    context.related(&mut d, &target.origin, "name", "referenced register");
                 }
+                diagnostics.push(d);
             }
         }
     }

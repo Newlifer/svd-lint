@@ -367,7 +367,7 @@ fn invalid_fields_do_not_create_overlap_cascades() {
         !result
             .diagnostics
             .iter()
-            .any(|d| d.code == DiagnosticCode::SemFieldOverlap)
+            .any(|d| d.code == DiagnosticCode::new("SEM004"))
     );
 }
 
@@ -477,10 +477,7 @@ fn address_blocks_remain_disjoint_and_invalid_blocks_do_not_cascade() {
         &(reg("A", 0, 8, "", "") + &reg("B", 1, 8, "", "")),
     ));
     assert_eq!(result.diagnostics.len(), 1);
-    assert_eq!(
-        result.diagnostics[0].code,
-        DiagnosticCode::SemInvalidAddressBlock
-    );
+    assert_eq!(result.diagnostics[0].code, DiagnosticCode::new("SEM011"));
     clean(&one(8, "", "").replace("<registers>", "<addressBlock><offset>0</offset><size>1</size><usage>buffer</usage></addressBlock><registers>"));
 }
 
@@ -492,7 +489,7 @@ fn array_containment_and_conflicts_keep_distinct_physical_addresses() {
         result
             .diagnostics
             .iter()
-            .filter(|d| d.code == DiagnosticCode::SemRegisterOutsideBlock)
+            .filter(|d| d.code == DiagnosticCode::new("SEM010"))
             .count(),
         2
     );
@@ -505,7 +502,7 @@ fn array_containment_and_conflicts_keep_distinct_physical_addresses() {
         result
             .diagnostics
             .iter()
-            .filter(|d| d.code == DiagnosticCode::SemRegisterOverlap)
+            .filter(|d| d.code == DiagnosticCode::new("SEM008"))
             .count(),
         3
     );
@@ -516,10 +513,7 @@ fn large_arrays_deduplicate_declaration_errors_and_degenerate_ranges() {
     let array = "<register><dim>5000</dim><dimIncrement>1</dimIncrement><name>R%s</name><addressOffset>0</addressOffset><size>8</size></register>";
     let result = run(&xml("<resetValue>256</resetValue>", "", array));
     assert_eq!(result.diagnostics.len(), 1);
-    assert_eq!(
-        result.diagnostics[0].code,
-        DiagnosticCode::SemResetValueOutOfBounds
-    );
+    assert_eq!(result.diagnostics[0].code, DiagnosticCode::new("SEM005"));
     let result = run(&xml(
         "",
         "",
@@ -529,10 +523,7 @@ fn large_arrays_deduplicate_declaration_errors_and_degenerate_ranges() {
         ),
     ));
     assert_eq!(result.diagnostics.len(), 1);
-    assert_eq!(
-        result.diagnostics[0].code,
-        DiagnosticCode::SemRegisterOverlap
-    );
+    assert_eq!(result.diagnostics[0].code, DiagnosticCode::new("SEM008"));
 }
 
 #[test]
@@ -558,10 +549,12 @@ fn wildcard_enum_values_and_defaults_are_not_numeric_duplicates() {
         .replace("<enumeratedValues>", "<enumeratedValues><name>E</name>")
         .replace("</fields>", "<field><name>DERIVED</name><bitOffset>0</bitOffset><bitWidth>2</bitWidth><enumeratedValues derivedFrom=\"F.E\"/></field></fields>");
     let result = run(&input);
-    assert!(!result.diagnostics.iter().any(|d| matches!(
-        d.code,
-        DiagnosticCode::SemDuplicateEnumEntry | DiagnosticCode::SemEnumValueOutOfBounds
-    )));
+    assert!(
+        !result
+            .diagnostics
+            .iter()
+            .any(|d| matches!(d.code.as_str(), "SEM013" | "SEM012"))
+    );
 }
 
 #[test]
@@ -691,7 +684,7 @@ fn inherited_property_positions_and_conflict_related_spans_are_honest() {
     let d = result
         .diagnostics
         .iter()
-        .find(|d| d.code == DiagnosticCode::SemResetValueOutOfBounds)
+        .find(|d| d.code == DiagnosticCode::new("SEM005"))
         .unwrap();
     assert_eq!(
         source.snippet(d.primary_span.unwrap()),
@@ -704,7 +697,7 @@ fn inherited_property_positions_and_conflict_related_spans_are_honest() {
     let d = result
         .diagnostics
         .iter()
-        .find(|d| d.code == DiagnosticCode::SemFieldOverlap)
+        .find(|d| d.code == DiagnosticCode::new("SEM004"))
         .unwrap();
     assert_eq!(
         source.snippet(d.primary_span.unwrap()),

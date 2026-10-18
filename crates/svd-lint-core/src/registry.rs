@@ -1,25 +1,30 @@
-//! Central, renderer-independent catalogue of diagnostic rules.
+//! Общий каталог всех проверок. Для списков в cli, вывода help и так далее.
 use crate::Severity;
 use serde::Serialize;
+
+/// Типы проверок
 #[derive(Clone, Copy, Debug, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case")]
 pub enum RuleCategory {
-    Structure,
-    Normalization,
-    Fields,
-    Registers,
-    Addressing,
-    Reset,
-    Enumerations,
-    Access,
-    Quality,
+    Structure, /// структура XML и обязательные части SVD файликов
+    Normalization, /// наследование, массивы и ссылки
+    Fields, /// ширина, границы и пересечения полей
+    Registers, /// размеры и свойства регистров
+    Addressing, /// адреса, перечисления регистров и адресные блоки
+    Reset, /// значения после сброса и маски сброса
+    Enumerations, /// ошибки в перечислениях (дубли, значения по умолчанию)
+    Access, /// ошибки доступа (запись, чтение)
+    Quality, // рекомендации по описанию
 }
+
 #[derive(Clone, Copy, Debug, Serialize, PartialEq, Eq)]
 pub enum RuleSource {
     CmsisSvd,
     SvdConvCompatibility,
     SvdLint,
 }
+
+/// Совместимость наших проверок с SVDConv
 #[derive(Clone, Copy, Debug, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum Compatibility {
@@ -28,677 +33,144 @@ pub enum Compatibility {
     Partial,
     Related,
 }
+
+
+/// Ссылка на спецификацию
 #[derive(Clone, Debug, Serialize)]
 pub struct SpecReference {
     pub title: &'static str,
     pub url: &'static str,
 }
+
+/// Ссылка на спецификацию SVDConv
 #[derive(Clone, Debug, Serialize)]
 pub struct SvdConvReference {
     pub code: &'static str,
     pub compatibility: Compatibility,
 }
-#[derive(Clone, Debug, Serialize)]
-pub struct RuleMetadata {
-    pub code: &'static str,
-    pub name: &'static str,
-    pub description: &'static str,
-    pub category: RuleCategory,
-    pub default_severity: Severity,
-    pub source: RuleSource,
-    pub configurable: bool,
-    pub svdconv_codes: &'static [SvdConvReference],
+
+/// Метаданные проверки
+#[derive(Clone, Copy, Debug, Serialize)]
+pub struct DiagnosticDefinition {
+    pub code: crate::DiagnosticCode, /// наш внутренний код проверки
+    pub name: &'static str, /// название её
+    pub description: &'static str, /// и её описание
+    pub category: RuleCategory, /// категория
+    pub default_severity: Severity, /// тяжесть греха
+    pub source: RuleSource, /// откуда проверка? SVDConv или наша
+    pub configurable: bool, /// можно ли настраивать
+    pub svdconv_codes: &'static [SvdConvReference], // совместимые коды SVDConv
     pub spec_refs: &'static [SpecReference],
     pub tags: &'static [&'static str],
 }
-pub fn rule_registry() -> &'static [RuleMetadata] {
-    RULES
+
+impl DiagnosticDefinition {
+    pub fn diagnostic(&self, message: impl Into<String>) -> crate::Diagnostic {
+        crate::Diagnostic::new(self.code, self.default_severity, message)
+    }
+
+    /// The diagnostic identifier owned by this metadata.
+    pub const fn code(&self) -> crate::DiagnosticCode {
+        self.code
+    }
 }
-pub fn find_rule(code: &str) -> Option<&'static RuleMetadata> {
-    RULES.iter().find(|r| r.code == code)
+
+enum Entry {
+    Pipeline(&'static DiagnosticDefinition),
+    Check(&'static crate::rules::Rule, bool),
 }
-static RULES: &[RuleMetadata] = &[
-    RuleMetadata {
-        code: "SVD007",
-        name: "low-quality-description",
-        description: "A register description repeats its name or is too short to explain its purpose.",
-        category: RuleCategory::Quality,
-        default_severity: Severity::Warning,
-        source: RuleSource::SvdLint,
-        configurable: true,
-        svdconv_codes: &[SvdConvReference {
-            code: "M320",
-            compatibility: Compatibility::Related,
-        }],
-        spec_refs: &[],
-        tags: &["quality", "strict"],
-    },
-    RuleMetadata {
-        code: "IO001",
-        name: "io-read-failed",
-        description: "The input file could not be read.",
-        category: RuleCategory::Structure,
-        default_severity: Severity::Error,
-        source: RuleSource::SvdLint,
-        configurable: false,
-        svdconv_codes: &[],
-        spec_refs: &[],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "IO002",
-        name: "io-invalid-utf8",
-        description: "The input is not valid UTF-8.",
-        category: RuleCategory::Structure,
-        default_severity: Severity::Error,
-        source: RuleSource::SvdLint,
-        configurable: false,
-        svdconv_codes: &[],
-        spec_refs: &[],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "XML001",
-        name: "xml-syntax",
-        description: "The input is not well-formed XML.",
-        category: RuleCategory::Structure,
-        default_severity: Severity::Error,
-        source: RuleSource::CmsisSvd,
-        configurable: false,
-        svdconv_codes: &[],
-        spec_refs: &[SpecReference {
-            title: "Structure / xml-syntax",
-            url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_device.html",
-        }],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "SVD001",
-        name: "invalid-root",
-        description: "The root element must be device.",
-        category: RuleCategory::Structure,
-        default_severity: Severity::Error,
-        source: RuleSource::CmsisSvd,
-        configurable: false,
-        svdconv_codes: &[],
-        spec_refs: &[SpecReference {
-            title: "Structure / invalid-root",
-            url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_device.html",
-        }],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "SVD002",
-        name: "missing-required-element",
-        description: "A required element is absent.",
-        category: RuleCategory::Structure,
-        default_severity: Severity::Error,
-        source: RuleSource::CmsisSvd,
-        configurable: false,
-        svdconv_codes: &[SvdConvReference {
-            code: "M316",
-            compatibility: Compatibility::Partial,
-        }],
-        spec_refs: &[SpecReference {
-            title: "Structure / missing-required-element",
-            url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_device.html",
-        }],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "SVD003",
-        name: "duplicate-singleton",
-        description: "A singleton element is repeated.",
-        category: RuleCategory::Structure,
-        default_severity: Severity::Error,
-        source: RuleSource::CmsisSvd,
-        configurable: false,
-        svdconv_codes: &[SvdConvReference {
-            code: "M203",
-            compatibility: Compatibility::Partial,
-        }],
-        spec_refs: &[SpecReference {
-            title: "Structure / duplicate-singleton",
-            url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_device.html",
-        }],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "SVD004",
-        name: "empty-required-element",
-        description: "A required element is empty.",
-        category: RuleCategory::Structure,
-        default_severity: Severity::Error,
-        source: RuleSource::CmsisSvd,
-        configurable: false,
-        svdconv_codes: &[SvdConvReference {
-            code: "M205",
-            compatibility: Compatibility::Partial,
-        }],
-        spec_refs: &[SpecReference {
-            title: "Structure / empty-required-element",
-            url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_device.html",
-        }],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "SVD005",
-        name: "missing-peripheral-description",
-        description: "A peripheral description improves readability.",
-        category: RuleCategory::Quality,
-        default_severity: Severity::Warning,
-        source: RuleSource::SvdLint,
-        configurable: true,
-        svdconv_codes: &[SvdConvReference {
-            code: "M317",
-            compatibility: Compatibility::Partial,
-        }],
-        spec_refs: &[],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "SVD006",
-        name: "typed-parse-failed",
-        description: "The typed SVD model could not be built, or XML nesting exceeds the tool resource limit.",
-        category: RuleCategory::Structure,
-        default_severity: Severity::Error,
-        source: RuleSource::SvdLint,
-        configurable: false,
-        svdconv_codes: &[
-            SvdConvReference {
-                code: "M202",
-                compatibility: Compatibility::Partial,
-            },
-            SvdConvReference {
-                code: "M204",
-                compatibility: Compatibility::Partial,
-            },
-        ],
-        spec_refs: &[],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "NORM001",
-        name: "missing-reference",
-        description: "A derivedFrom target cannot be resolved.",
-        category: RuleCategory::Normalization,
-        default_severity: Severity::Error,
-        source: RuleSource::CmsisSvd,
-        configurable: false,
-        svdconv_codes: &[SvdConvReference {
-            code: "M206",
-            compatibility: Compatibility::Equivalent,
-        }],
-        spec_refs: &[SpecReference {
-            title: "Normalization / missing-reference",
-            url: "https://arm-software.github.io/CMSIS_5/SVD/html/svd_description.html",
-        }],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "NORM002",
-        name: "reference-cycle",
-        description: "A derivedFrom cycle prevents normalization.",
-        category: RuleCategory::Normalization,
-        default_severity: Severity::Error,
-        source: RuleSource::CmsisSvd,
-        configurable: false,
-        svdconv_codes: &[],
-        spec_refs: &[SpecReference {
-            title: "Normalization / reference-cycle",
-            url: "https://arm-software.github.io/CMSIS_5/SVD/html/svd_description.html",
-        }],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "NORM003",
-        name: "ambiguous-reference",
-        description: "A reference or canonical path is ambiguous.",
-        category: RuleCategory::Normalization,
-        default_severity: Severity::Error,
-        source: RuleSource::SvdLint,
-        configurable: false,
-        svdconv_codes: &[SvdConvReference {
-            code: "M336",
-            compatibility: Compatibility::Partial,
-        }],
-        spec_refs: &[],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "NORM004",
-        name: "invalid-dimension",
-        description: "An array dimension is invalid.",
-        category: RuleCategory::Normalization,
-        default_severity: Severity::Error,
-        source: RuleSource::CmsisSvd,
-        configurable: false,
-        svdconv_codes: &[],
-        spec_refs: &[SpecReference {
-            title: "Normalization / invalid-dimension",
-            url: "https://arm-software.github.io/CMSIS_5/SVD/html/svd_description.html",
-        }],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "NORM005",
-        name: "invalid-array-index",
-        description: "Array indices do not match the dimension.",
-        category: RuleCategory::Normalization,
-        default_severity: Severity::Error,
-        source: RuleSource::CmsisSvd,
-        configurable: false,
-        svdconv_codes: &[SvdConvReference {
-            code: "M308",
-            compatibility: Compatibility::Partial,
-        }],
-        spec_refs: &[SpecReference {
-            title: "Normalization / invalid-array-index",
-            url: "https://arm-software.github.io/CMSIS_5/SVD/html/svd_description.html",
-        }],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "NORM006",
-        name: "invalid-array-template",
-        description: "The array name template cannot be expanded.",
-        category: RuleCategory::Normalization,
-        default_severity: Severity::Error,
-        source: RuleSource::CmsisSvd,
-        configurable: false,
-        svdconv_codes: &[
-            SvdConvReference {
-                code: "M207",
-                compatibility: Compatibility::Partial,
-            },
-            SvdConvReference {
-                code: "M239",
-                compatibility: Compatibility::Partial,
-            },
-        ],
-        spec_refs: &[SpecReference {
-            title: "Normalization / invalid-array-template",
-            url: "https://arm-software.github.io/CMSIS_5/SVD/html/svd_description.html",
-        }],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "NORM007",
-        name: "address-overflow",
-        description: "An address or field offset cannot be represented.",
-        category: RuleCategory::Normalization,
-        default_severity: Severity::Error,
-        source: RuleSource::SvdLint,
-        configurable: false,
-        svdconv_codes: &[],
-        spec_refs: &[],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "NORM008",
-        name: "missing-register-size",
-        description: "The effective register size cannot be determined.",
-        category: RuleCategory::Normalization,
-        default_severity: Severity::Error,
-        source: RuleSource::SvdLint,
-        configurable: false,
-        svdconv_codes: &[],
-        spec_refs: &[],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "NORM009",
-        name: "expansion-limit",
-        description: "The materialization budget or dependency depth limit was exceeded.",
-        category: RuleCategory::Normalization,
-        default_severity: Severity::Error,
-        source: RuleSource::SvdLint,
-        configurable: false,
-        svdconv_codes: &[],
-        spec_refs: &[],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "SEM001",
-        name: "zero-register-size",
-        description: "A register must occupy a positive number of bits.",
-        category: RuleCategory::Registers,
-        default_severity: Severity::Error,
-        source: RuleSource::CmsisSvd,
-        configurable: true,
-        svdconv_codes: &[SvdConvReference {
-            code: "M302",
-            compatibility: Compatibility::Partial,
-        }],
-        spec_refs: &[SpecReference {
-            title: "Registers / zero-register-size",
-            url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_registers.html",
-        }],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "SEM002",
-        name: "zero-field-width",
-        description: "A field must occupy a positive number of bits.",
-        category: RuleCategory::Fields,
-        default_severity: Severity::Error,
-        source: RuleSource::CmsisSvd,
-        configurable: true,
-        svdconv_codes: &[SvdConvReference {
-            code: "M310",
-            compatibility: Compatibility::Partial,
-        }],
-        spec_refs: &[SpecReference {
-            title: "Fields / zero-field-width",
-            url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_registers.html",
-        }],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "SEM003",
-        name: "field-out-of-bounds",
-        description: "A field extends past its register size.",
-        category: RuleCategory::Fields,
-        default_severity: Severity::Error,
-        source: RuleSource::CmsisSvd,
-        configurable: true,
-        svdconv_codes: &[
-            SvdConvReference {
-                code: "M324",
-                compatibility: Compatibility::Partial,
-            },
-            SvdConvReference {
-                code: "M345",
-                compatibility: Compatibility::Partial,
-            },
-        ],
-        spec_refs: &[SpecReference {
-            title: "Fields / field-out-of-bounds",
-            url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_registers.html",
-        }],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "SEM004",
-        name: "overlapping-fields",
-        description: "Two fields occupy overlapping bit ranges.",
-        category: RuleCategory::Fields,
-        default_severity: Severity::Warning,
-        source: RuleSource::SvdLint,
-        configurable: true,
-        svdconv_codes: &[SvdConvReference {
-            code: "M338",
-            compatibility: Compatibility::Equivalent,
-        }],
-        spec_refs: &[],
-        tags: &["heuristic"],
-    },
-    RuleMetadata {
-        code: "SEM005",
-        name: "reset-value-out-of-bounds",
-        description: "The effective reset value exceeds register width.",
-        category: RuleCategory::Reset,
-        default_severity: Severity::Error,
-        source: RuleSource::CmsisSvd,
-        configurable: true,
-        svdconv_codes: &[],
-        spec_refs: &[SpecReference {
-            title: "Reset / reset-value-out-of-bounds",
-            url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_registers.html",
-        }],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "SEM006",
-        name: "reset-mask-out-of-bounds",
-        description: "The effective reset mask exceeds register width.",
-        category: RuleCategory::Reset,
-        default_severity: Severity::Error,
-        source: RuleSource::CmsisSvd,
-        configurable: true,
-        svdconv_codes: &[],
-        spec_refs: &[SpecReference {
-            title: "Reset / reset-mask-out-of-bounds",
-            url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_registers.html",
-        }],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "SEM007",
-        name: "reset-outside-mask",
-        description: "Reset bits outside the declared mask may be suspicious.",
-        category: RuleCategory::Reset,
-        default_severity: Severity::Warning,
-        source: RuleSource::SvdLint,
-        configurable: true,
-        svdconv_codes: &[],
-        spec_refs: &[],
-        tags: &["heuristic"],
-    },
-    RuleMetadata {
-        code: "SEM008",
-        name: "overlapping-registers",
-        description: "Register address ranges overlap without confirmed alternatives.",
-        category: RuleCategory::Addressing,
-        default_severity: Severity::Error,
-        source: RuleSource::SvdLint,
-        configurable: true,
-        svdconv_codes: &[
-            SvdConvReference {
-                code: "M339",
-                compatibility: Compatibility::Partial,
-            },
-            SvdConvReference {
-                code: "M365",
-                compatibility: Compatibility::Partial,
-            },
-            SvdConvReference {
-                code: "M366",
-                compatibility: Compatibility::Partial,
-            },
-        ],
-        spec_refs: &[],
-        tags: &["heuristic"],
-    },
-    RuleMetadata {
-        code: "SEM009",
-        name: "invalid-alternate-register",
-        description: "The alternate register reference or memory range is invalid.",
-        category: RuleCategory::Addressing,
-        default_severity: Severity::Error,
-        source: RuleSource::CmsisSvd,
-        configurable: true,
-        svdconv_codes: &[
-            SvdConvReference {
-                code: "M348",
-                compatibility: Compatibility::Partial,
-            },
-            SvdConvReference {
-                code: "M349",
-                compatibility: Compatibility::Partial,
-            },
-        ],
-        spec_refs: &[SpecReference {
-            title: "Addressing / invalid-alternate-register",
-            url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_peripherals.html",
-        }],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "SEM010",
-        name: "register-outside-block",
-        description: "A register must fit wholly within a registers addressBlock.",
-        category: RuleCategory::Addressing,
-        default_severity: Severity::Error,
-        source: RuleSource::CmsisSvd,
-        configurable: true,
-        svdconv_codes: &[SvdConvReference {
-            code: "M344",
-            compatibility: Compatibility::Equivalent,
-        }],
-        spec_refs: &[SpecReference {
-            title: "Addressing / register-outside-block",
-            url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_peripherals.html",
-        }],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "SEM011",
-        name: "invalid-address-block",
-        description: "An addressBlock size or address boundary is invalid.",
-        category: RuleCategory::Addressing,
-        default_severity: Severity::Error,
-        source: RuleSource::CmsisSvd,
-        configurable: true,
-        svdconv_codes: &[
-            SvdConvReference {
-                code: "M315",
-                compatibility: Compatibility::Partial,
-            },
-            SvdConvReference {
-                code: "M360",
-                compatibility: Compatibility::Partial,
-            },
-        ],
-        spec_refs: &[SpecReference {
-            title: "Addressing / invalid-address-block",
-            url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_peripherals.html",
-        }],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "SEM012",
-        name: "enum-out-of-bounds",
-        description: "A numeric enum value exceeds the field width.",
-        category: RuleCategory::Enumerations,
-        default_severity: Severity::Error,
-        source: RuleSource::CmsisSvd,
-        configurable: true,
-        svdconv_codes: &[SvdConvReference {
-            code: "M335",
-            compatibility: Compatibility::Equivalent,
-        }],
-        spec_refs: &[SpecReference {
-            title: "Enumerations / enum-out-of-bounds",
-            url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_registers.html",
-        }],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "SEM013",
-        name: "duplicate-enum-entry",
-        description: "Names or semantic descriptions conflict within one enum usage set.",
-        category: RuleCategory::Enumerations,
-        default_severity: Severity::Error,
-        source: RuleSource::SvdLint,
-        configurable: true,
-        svdconv_codes: &[SvdConvReference {
-            code: "M333",
-            compatibility: Compatibility::Partial,
-        }],
-        spec_refs: &[],
-        tags: &["heuristic"],
-    },
-    RuleMetadata {
-        code: "SEM014",
-        name: "multiple-enum-defaults",
-        description: "Only one entry may be default in an enum set.",
-        category: RuleCategory::Enumerations,
-        default_severity: Severity::Error,
-        source: RuleSource::CmsisSvd,
-        configurable: true,
-        svdconv_codes: &[],
-        spec_refs: &[SpecReference {
-            title: "Enumerations / multiple-enum-defaults",
-            url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_registers.html",
-        }],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "SEM015",
-        name: "invalid-write-constraint",
-        description: "A write constraint has invalid bounds or lacks writable enums.",
-        category: RuleCategory::Access,
-        default_severity: Severity::Error,
-        source: RuleSource::CmsisSvd,
-        configurable: true,
-        svdconv_codes: &[],
-        spec_refs: &[SpecReference {
-            title: "Access / invalid-write-constraint",
-            url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_registers.html",
-        }],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "SEM016",
-        name: "access-conflict",
-        description: "Access and read/write effects may be incompatible.",
-        category: RuleCategory::Access,
-        default_severity: Severity::Warning,
-        source: RuleSource::SvdLint,
-        configurable: true,
-        svdconv_codes: &[SvdConvReference {
-            code: "M367",
-            compatibility: Compatibility::Partial,
-        }],
-        spec_refs: &[],
-        tags: &["heuristic"],
-    },
-    RuleMetadata {
-        code: "XSD001",
-        name: "unknown-schema-version",
-        description: "schemaVersion is missing or unsupported.",
-        category: RuleCategory::Structure,
-        default_severity: Severity::Error,
-        source: RuleSource::CmsisSvd,
-        configurable: false,
-        svdconv_codes: &[SvdConvReference {
-            code: "M306",
-            compatibility: Compatibility::Partial,
-        }],
-        spec_refs: &[SpecReference {
-            title: "Structure / unknown-schema-version",
-            url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_device.html",
-        }],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "XSD002",
-        name: "schema-nonconformance",
-        description: "The document fails XSD validation.",
-        category: RuleCategory::Structure,
-        default_severity: Severity::Error,
-        source: RuleSource::CmsisSvd,
-        configurable: false,
-        svdconv_codes: &[],
-        spec_refs: &[SpecReference {
-            title: "Structure / schema-nonconformance",
-            url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_device.html",
-        }],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "XSD003",
-        name: "schema-not-found",
-        description: "The requested schema is unavailable.",
-        category: RuleCategory::Structure,
-        default_severity: Severity::Error,
-        source: RuleSource::SvdLint,
-        configurable: false,
-        svdconv_codes: &[],
-        spec_refs: &[],
-        tags: &["check"],
-    },
-    RuleMetadata {
-        code: "XSD004",
-        name: "schema-backend-failed",
-        description: "The XSD backend could not load or compile a schema.",
-        category: RuleCategory::Structure,
-        default_severity: Severity::Error,
-        source: RuleSource::SvdLint,
-        configurable: false,
-        svdconv_codes: &[],
-        spec_refs: &[],
-        tags: &["check"],
-    },
+
+impl Entry {
+    const fn passive(metadata: &'static DiagnosticDefinition) -> Self {
+        Self::Pipeline(metadata)
+    }
+    const fn active(rule: &'static crate::rules::Rule) -> Self {
+        Self::Check(rule, true)
+    }
+    const fn optional(rule: &'static crate::rules::Rule) -> Self {
+        Self::Check(rule, false)
+    }
+}
+
+static ENTRIES: &[Entry] = &[
+    Entry::optional(&crate::rules::quality::LOW_QUALITY_DESCRIPTION_CHECK),
+    Entry::passive(&crate::frontend::diagnostics::IO_READ_FAILED),
+    Entry::passive(&crate::frontend::diagnostics::IO_INVALID_UTF8),
+    Entry::passive(&crate::frontend::diagnostics::XML_SYNTAX),
+    Entry::passive(&crate::frontend::diagnostics::INVALID_ROOT_ELEMENT),
+    Entry::passive(&crate::frontend::diagnostics::MISSING_REQUIRED_ELEMENT),
+    Entry::passive(&crate::frontend::diagnostics::DUPLICATE_SINGLETON_ELEMENT),
+    Entry::passive(&crate::frontend::diagnostics::EMPTY_REQUIRED_ELEMENT),
+    Entry::passive(&crate::frontend::diagnostics::MISSING_PERIPHERAL_DESCRIPTION),
+    Entry::passive(&crate::frontend::diagnostics::SVD_PARSE_ERROR),
+    Entry::passive(&crate::normalize::diagnostics::MISSING_REFERENCE),
+    Entry::passive(&crate::normalize::diagnostics::CYCLE),
+    Entry::passive(&crate::normalize::diagnostics::AMBIGUOUS_REFERENCE),
+    Entry::passive(&crate::normalize::diagnostics::INVALID_DIMENSION),
+    Entry::passive(&crate::normalize::diagnostics::INVALID_INDEX),
+    Entry::passive(&crate::normalize::diagnostics::INVALID_TEMPLATE),
+    Entry::passive(&crate::normalize::diagnostics::ADDRESS_OVERFLOW),
+    Entry::passive(&crate::normalize::diagnostics::MISSING_PROPERTY),
+    Entry::passive(&crate::normalize::diagnostics::EXPANSION_LIMIT),
+    Entry::active(&crate::rules::registers::ZERO_REGISTER_SIZE_CHECK),
+    Entry::active(&crate::rules::fields::ZERO_FIELD_WIDTH_CHECK),
+    Entry::active(&crate::rules::fields::FIELD_OUT_OF_BOUNDS_CHECK),
+    Entry::active(&crate::rules::fields::FIELD_OVERLAP_CHECK),
+    Entry::active(&crate::rules::reset::RESET_VALUE_OUT_OF_BOUNDS_CHECK),
+    Entry::active(&crate::rules::reset::RESET_MASK_OUT_OF_BOUNDS_CHECK),
+    Entry::active(&crate::rules::reset::RESET_OUTSIDE_MASK_CHECK),
+    Entry::active(&crate::rules::memory::REGISTER_OVERLAP_CHECK),
+    Entry::active(&crate::rules::alternatives::INVALID_ALTERNATE_REGISTER_CHECK),
+    Entry::active(&crate::rules::memory::REGISTER_OUTSIDE_BLOCK_CHECK),
+    Entry::active(&crate::rules::memory::INVALID_ADDRESS_BLOCK_CHECK),
+    Entry::active(&crate::rules::enums::ENUM_VALUE_OUT_OF_BOUNDS_CHECK),
+    Entry::active(&crate::rules::enums::DUPLICATE_ENUM_ENTRY_CHECK),
+    Entry::active(&crate::rules::enums::MULTIPLE_ENUM_DEFAULTS_CHECK),
+    Entry::active(&crate::rules::access::INVALID_WRITE_CONSTRAINT_CHECK),
+    Entry::active(&crate::rules::access::ACCESS_CONFLICT_CHECK),
+    Entry::passive(&crate::schema::diagnostics::UNKNOWN_VERSION),
+    Entry::passive(&crate::schema::diagnostics::NONCONFORMANCE),
+    Entry::passive(&crate::schema::diagnostics::MISSING_SCHEMA),
+    Entry::passive(&crate::schema::diagnostics::BACKEND_ERROR),
 ];
+
+pub fn rule_registry() -> &'static [&'static DiagnosticDefinition] {
+    static CATALOGUE: std::sync::OnceLock<Vec<&'static DiagnosticDefinition>> =
+        std::sync::OnceLock::new();
+    CATALOGUE.get_or_init(|| collect_metadata(ENTRIES))
+}
+
+fn collect_metadata(entries: &[Entry]) -> Vec<&'static DiagnosticDefinition> {
+    let mut catalogue = Vec::new();
+    for entry in entries {
+        match entry {
+            Entry::Pipeline(metadata) => catalogue.push(*metadata),
+            Entry::Check(rule, _) => {
+                catalogue.extend_from_slice(rule.diagnostics);
+            }
+        }
+    }
+    catalogue
+}
+
+pub fn find_rule(code: &str) -> Option<&'static DiagnosticDefinition> {
+    rule_registry()
+        .iter()
+        .copied()
+        .find(|metadata| metadata.code.as_str() == code)
+}
+
+/// All registered executable checks, including opt-in quality checks.
+pub fn executable_rules() -> impl Iterator<Item = &'static crate::rules::Rule> {
+    ENTRIES.iter().filter_map(|entry| match entry {
+        Entry::Check(rule, _) => Some(*rule),
+        Entry::Pipeline(_) => None,
+    })
+}
+
+pub(crate) fn default_rules() -> impl Iterator<Item = &'static crate::rules::Rule> {
+    ENTRIES.iter().filter_map(|entry| match entry {
+        Entry::Check(rule, true) => Some(*rule),
+        _ => None,
+    })
+}

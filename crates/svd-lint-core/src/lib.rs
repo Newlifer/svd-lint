@@ -3,10 +3,10 @@
 //! Provides the source handling ([`frontend::SourceFile`]), XML position
 //! index ([`frontend::SourceMap`]), preflight checks, the typed
 //! `svd-parser` frontend ([`frontend::parse_svd`]) and the renderer-agnostic
-//! [`diagnostics`] model, plus [`ir`] and [`normalize`]. Rendering lives in `svd-lint-cli`;
+//! [`diagnostic`] model, plus [`ir`] and [`normalize`]. Rendering lives in `svd-lint-cli`;
 //! this crate never depends on it.
 
-pub mod diagnostics;
+pub mod diagnostic;
 pub mod frontend;
 pub mod ir;
 pub mod normalize;
@@ -78,7 +78,7 @@ pub fn analyze_svd_with_config(source: &SourceFile, config: &NormalizeConfig) ->
     }
 }
 
-pub use diagnostics::{Diagnostic, DiagnosticCode, RelatedSpan, Severity, Span, SpanError};
+pub use diagnostic::{Diagnostic, DiagnosticCode, RelatedSpan, Severity, Span, SpanError};
 pub use frontend::{
     AttributeSpan, FrontendResult, LineCol, NodeId, NodeInfo, SourceFile, SourceId, SourceMap,
     SourceMapError, parse_svd,

@@ -1,13 +1,14 @@
-use super::{
-    CheckContext, access::Access, alternatives::Alternatives, enums::Enums, fields::Fields,
-    memory::Memory, registers::Registers, reset::Reset,
-};
+use super::CheckContext;
+use crate::registry::DiagnosticDefinition;
 use crate::{Diagnostic, SourceMap, ir::CanonicalDevice};
 use std::collections::BTreeSet;
 
-pub trait Rule {
-    fn id(&self) -> &'static str;
-    fn check(&self, context: &CheckContext<'_>, diagnostics: &mut Vec<Diagnostic>);
+/// An ordinary function or a closure without captures checks immutable IR.
+pub struct Rule {
+    pub name: &'static str,
+    pub description: &'static str,
+    pub diagnostics: &'static [&'static DiagnosticDefinition],
+    pub check: fn(&CheckContext<'_>, &mut Vec<Diagnostic>),
 }
 
 /// Stateless built-in rules. Individual rules are independent of CLI and each other.
@@ -15,18 +16,9 @@ pub struct RuleEngine;
 
 impl RuleEngine {
     pub fn check(&self, context: &CheckContext<'_>) -> Vec<Diagnostic> {
-        let rules: &[&dyn Rule] = &[
-            &Registers,
-            &Fields,
-            &Reset,
-            &Memory,
-            &Alternatives,
-            &Enums,
-            &Access,
-        ];
         let mut diagnostics = Vec::new();
-        for rule in rules {
-            rule.check(context, &mut diagnostics);
+        for rule in crate::registry::default_rules() {
+            (rule.check)(context, &mut diagnostics);
         }
         // Messages encode semantic values, intervals and addresses, not array
         // names. Source-identical declaration errors collapse; distinct physical

@@ -1,15 +1,15 @@
 //! Independent semantic checks over immutable Canonical IR.
-mod access;
-mod alternatives;
+pub(crate) mod access;
+pub(crate) mod alternatives;
 pub mod context;
 pub mod engine;
-mod enums;
-mod fields;
-mod memory;
-mod quality;
+pub(crate) mod enums;
+pub(crate) mod fields;
+pub(crate) mod memory;
+pub(crate) mod quality;
 mod ranges;
-mod registers;
-mod reset;
+pub(crate) mod registers;
+pub(crate) mod reset;
 pub use quality::check_quality;
 
 pub use context::CheckContext;

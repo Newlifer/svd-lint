@@ -8,7 +8,7 @@
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::diagnostics::Span;
+use crate::diagnostic::Span;
 
 use super::source::{SourceFile, SourceId};
 

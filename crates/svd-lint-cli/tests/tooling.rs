@@ -50,7 +50,7 @@ fn registry_and_explain_are_machine_readable() {
     let rules: Value = serde_json::from_slice(&result.get_output().stdout).unwrap();
     assert_eq!(
         rules.as_array().unwrap().len(),
-        svd_lint_core::DiagnosticCode::ALL.len()
+        svd_lint_core::DiagnosticCode::all().len()
     );
     let result = cli()
         .args(["explain", "SEM004", "--format", "json"])
@@ -176,7 +176,7 @@ fn sarif_contains_metadata_primary_related_and_omits_unknown_positions() {
             .as_array()
             .unwrap()
             .len(),
-        svd_lint_core::DiagnosticCode::ALL.len()
+        svd_lint_core::DiagnosticCode::all().len()
     );
     let results = data["runs"][0]["results"].as_array().unwrap();
     assert!(results.iter().any(|r| r.get("relatedLocations").is_some()));

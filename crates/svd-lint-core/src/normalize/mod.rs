@@ -1,10 +1,11 @@
 mod arrays;
 mod derived;
+pub mod diagnostics;
 mod properties;
 mod resolver;
 mod unmodeled;
 
-use crate::{Diagnostic, DiagnosticCode as Code, SourceMap, ir::*, svd};
+use crate::{Diagnostic, SourceMap, ir::*, svd};
 use derived::Data;
 use properties::{contextualize, contextualize_properties, from_raw, properties, resolved};
 use resolver::{Definition, Resolver};
@@ -216,7 +217,7 @@ impl Builder<'_> {
             .and_then(|v| v.checked_add(increment));
         if address.is_none() {
             self.resolver.diagnostic(
-                Code::NormAddressOverflow,
+                diagnostics::ADDRESS_OVERFLOW.code(),
                 definition.node,
                 "addressOffset",
                 format!("address overflow for `{}`", definition.path),
@@ -230,7 +231,7 @@ impl Builder<'_> {
             return true;
         }
         self.resolver.diagnostic(
-            Code::NormAmbiguousReference,
+            diagnostics::AMBIGUOUS_REFERENCE.code(),
             definition.node,
             "name",
             format!("duplicate canonical path `{name}`"),
@@ -255,7 +256,7 @@ impl Builder<'_> {
         // structural recursion separately from reference-graph cycles.
         if self.active.contains(&id) {
             self.resolver.diagnostic(
-                Code::NormCycle,
+                diagnostics::CYCLE.code(),
                 definition.node,
                 "derivedFrom",
                 "recursive inherited cluster containment",
@@ -322,7 +323,7 @@ impl Builder<'_> {
                     };
                     if props.size.is_none() {
                         self.resolver.diagnostic(
-                            Code::NormMissingProperty,
+                            diagnostics::MISSING_PROPERTY.code(),
                             definition.node,
                             "size",
                             format!("cannot resolve register size for `{name}`"),
@@ -383,7 +384,7 @@ impl Builder<'_> {
                 .and_then(|v| u32::try_from(v).ok());
             let Some(bit_offset) = offset else {
                 self.resolver.diagnostic(
-                    Code::NormAddressOverflow,
+                    diagnostics::ADDRESS_OVERFLOW.code(),
                     definition.node,
                     "bitOffset",
                     "field bit offset overflow",

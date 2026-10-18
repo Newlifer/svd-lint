@@ -6,9 +6,10 @@
 //! checked. When the XML is well-formed, all detected problems are
 //! collected and returned together.
 
+use super::diagnostics;
 use roxmltree::Document;
 
-use crate::diagnostics::{Diagnostic, DiagnosticCode, Span};
+use crate::diagnostic::{Diagnostic, Span};
 
 /// Required direct children of `<device>`, in specification order.
 ///
@@ -33,7 +34,7 @@ pub fn check_document(document: &Document) -> Vec<Diagnostic> {
     if root.tag_name().name() != "device" {
         diagnostics.push(
             Diagnostic::error(
-                DiagnosticCode::InvalidRootElement,
+                diagnostics::INVALID_ROOT_ELEMENT.code(),
                 format!(
                     "root element must be <device>, found <{}>",
                     root.tag_name().name()
@@ -60,7 +61,7 @@ fn check_required_singletons(root: roxmltree::Node<'_, '_>, diagnostics: &mut Ve
         match elements.as_slice() {
             [] => diagnostics.push(
                 Diagnostic::error(
-                    DiagnosticCode::MissingRequiredElement,
+                    diagnostics::MISSING_REQUIRED_ELEMENT.code(),
                     format!("missing required element <{name}>"),
                 )
                 .with_span(span_of(root.range())),
@@ -71,7 +72,7 @@ fn check_required_singletons(root: roxmltree::Node<'_, '_>, diagnostics: &mut Ve
                 if name != "peripherals" && element_text_is_empty(*first) {
                     diagnostics.push(
                         Diagnostic::error(
-                            DiagnosticCode::EmptyRequiredElement,
+                            diagnostics::EMPTY_REQUIRED_ELEMENT.code(),
                             format!("required element <{name}> must not be empty"),
                         )
                         .with_span(span_of(first.range())),
@@ -80,7 +81,7 @@ fn check_required_singletons(root: roxmltree::Node<'_, '_>, diagnostics: &mut Ve
                 for duplicate in duplicates {
                     diagnostics.push(
                         Diagnostic::error(
-                            DiagnosticCode::DuplicateSingletonElement,
+                            diagnostics::DUPLICATE_SINGLETON_ELEMENT.code(),
                             format!("element <{name}> must appear only once"),
                         )
                         .with_span(span_of(duplicate.range()))
@@ -109,7 +110,7 @@ fn check_peripherals(root: roxmltree::Node<'_, '_>, diagnostics: &mut Vec<Diagno
     if peripheral_nodes.is_empty() {
         diagnostics.push(
             Diagnostic::error(
-                DiagnosticCode::MissingRequiredElement,
+                diagnostics::MISSING_REQUIRED_ELEMENT.code(),
                 "element <peripherals> must contain at least one <peripheral>",
             )
             .with_span(span_of(peripherals.range())),
@@ -137,7 +138,7 @@ fn check_peripherals(root: roxmltree::Node<'_, '_>, diagnostics: &mut Vec<Diagno
                 .unwrap_or("<unnamed>");
             diagnostics.push(
                 Diagnostic::warning(
-                    DiagnosticCode::MissingPeripheralDescription,
+                    diagnostics::MISSING_PERIPHERAL_DESCRIPTION.code(),
                     format!("peripheral <{name}> has no description"),
                 )
                 .with_span(span_of(peripheral.range())),
@@ -164,7 +165,7 @@ fn sorted(mut diagnostics: Vec<Diagnostic>) -> Vec<Diagnostic> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::diagnostics::Severity;
+    use crate::diagnostic::{DiagnosticCode, Severity};
 
     fn check(xml: &str) -> Vec<Diagnostic> {
         let doc = Document::parse(xml).unwrap();
@@ -199,7 +200,7 @@ mod tests {
     #[test]
     fn wrong_root_is_svd001() {
         let diags = check("<chip><name>D</name></chip>");
-        assert_eq!(codes(&diags), [DiagnosticCode::InvalidRootElement]);
+        assert_eq!(codes(&diags), [diagnostics::INVALID_ROOT_ELEMENT.code()]);
         assert_eq!(diags[0].severity, Severity::Error);
     }
 
@@ -207,7 +208,10 @@ mod tests {
     fn missing_required_element_is_svd002() {
         let xml = VALID.replace("  <version>1.0</version>\n", "");
         let diags = check(&xml);
-        assert_eq!(codes(&diags), [DiagnosticCode::MissingRequiredElement]);
+        assert_eq!(
+            codes(&diags),
+            [diagnostics::MISSING_REQUIRED_ELEMENT.code()]
+        );
         assert!(diags[0].message.contains("<version>"));
     }
 
@@ -218,7 +222,10 @@ mod tests {
             "  <version>1.0</version>\n  <version>2.0</version>",
         );
         let diags = check(&xml);
-        assert_eq!(codes(&diags), [DiagnosticCode::DuplicateSingletonElement]);
+        assert_eq!(
+            codes(&diags),
+            [diagnostics::DUPLICATE_SINGLETON_ELEMENT.code()]
+        );
         assert_eq!(diags[0].related.len(), 1);
         // The related span points at the first occurrence.
         let first_start = xml.find("<version>").unwrap();
@@ -232,14 +239,14 @@ mod tests {
             "<description>  </description>",
         );
         let diags = check(&xml);
-        assert_eq!(codes(&diags), [DiagnosticCode::EmptyRequiredElement]);
+        assert_eq!(codes(&diags), [diagnostics::EMPTY_REQUIRED_ELEMENT.code()]);
     }
 
     #[test]
     fn self_closing_required_element_is_svd004() {
         let xml = VALID.replace("<width>32</width>", "<width/>");
         let diags = check(&xml);
-        assert_eq!(codes(&diags), [DiagnosticCode::EmptyRequiredElement]);
+        assert_eq!(codes(&diags), [diagnostics::EMPTY_REQUIRED_ELEMENT.code()]);
     }
 
     #[test]
@@ -255,7 +262,10 @@ mod tests {
   </peripherals>
 </device>";
         let diags = check(xml);
-        assert_eq!(codes(&diags), [DiagnosticCode::MissingRequiredElement]);
+        assert_eq!(
+            codes(&diags),
+            [diagnostics::MISSING_REQUIRED_ELEMENT.code()]
+        );
         assert!(diags[0].message.contains("peripheral"));
     }
 
@@ -265,7 +275,7 @@ mod tests {
         let diags = check(&xml);
         assert_eq!(
             codes(&diags),
-            [DiagnosticCode::MissingPeripheralDescription]
+            [diagnostics::MISSING_PERIPHERAL_DESCRIPTION.code()]
         );
         assert_eq!(diags[0].severity, Severity::Warning);
         assert!(diags[0].message.contains("P0"));
@@ -301,10 +311,10 @@ mod tests {
         let codes = codes(&diags);
         // missing <width>, duplicate <version>, empty <description>,
         // missing peripheral description.
-        assert!(codes.contains(&DiagnosticCode::MissingRequiredElement));
-        assert!(codes.contains(&DiagnosticCode::DuplicateSingletonElement));
-        assert!(codes.contains(&DiagnosticCode::EmptyRequiredElement));
-        assert!(codes.contains(&DiagnosticCode::MissingPeripheralDescription));
+        assert!(codes.contains(&diagnostics::MISSING_REQUIRED_ELEMENT.code()));
+        assert!(codes.contains(&diagnostics::DUPLICATE_SINGLETON_ELEMENT.code()));
+        assert!(codes.contains(&diagnostics::EMPTY_REQUIRED_ELEMENT.code()));
+        assert!(codes.contains(&diagnostics::MISSING_PERIPHERAL_DESCRIPTION.code()));
         assert_eq!(diags.len(), 4);
         // Diagnostics are ordered by position in the document.
         let starts: Vec<_> = diags

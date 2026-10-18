@@ -24,7 +24,7 @@ fn duplicate_fields_preserve_semantic_checks_but_do_not_export_ir() {
     let overlap = result
         .diagnostics
         .iter()
-        .find(|d| d.code == DiagnosticCode::SemFieldOverlap)
+        .find(|d| d.code == DiagnosticCode::new("SEM004"))
         .unwrap();
     let primary = overlap.primary_span.unwrap();
     let related = overlap.related.first().unwrap().span;
@@ -42,7 +42,7 @@ fn duplicate_fields_preserve_semantic_checks_but_do_not_export_ir() {
         normalized
             .diagnostics
             .iter()
-            .all(|d| d.code == DiagnosticCode::NormAmbiguousReference)
+            .all(|d| d.code == DiagnosticCode::new("NORM003"))
     );
     assert_eq!(
         serde_json::to_value(result.diagnostics).unwrap(),
@@ -63,7 +63,7 @@ fn ambiguous_derived_from_stays_blocking_without_picking_a_duplicate() {
         result
             .diagnostics
             .iter()
-            .any(|d| d.code == DiagnosticCode::NormAmbiguousReference
+            .any(|d| d.code == DiagnosticCode::new("NORM003")
                 && d.message.contains("ambiguous derivedFrom")
                 && d.related.len() == 2)
     );
@@ -83,7 +83,7 @@ fn missing_effective_properties_are_not_recovered_as_a_complete_model() {
         result
             .diagnostics
             .iter()
-            .any(|d| d.code == DiagnosticCode::NormMissingProperty)
+            .any(|d| d.code == DiagnosticCode::new("NORM008"))
     );
     assert!(
         !result
@@ -102,7 +102,7 @@ fn unique_names_restore_public_ir_without_hiding_semantic_errors() {
         result
             .diagnostics
             .iter()
-            .any(|d| d.code == DiagnosticCode::SemFieldOverlap)
+            .any(|d| d.code == DiagnosticCode::new("SEM004"))
     );
     assert!(
         !result

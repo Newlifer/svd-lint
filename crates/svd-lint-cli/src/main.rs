@@ -6,8 +6,10 @@ use clap::{Args, Parser, Subcommand, ValueEnum};
 use config::{Config, Profile};
 use std::{path::PathBuf, process::ExitCode};
 use svd_lint_core::{
-    Diagnostic, DiagnosticCode, Severity, SourceFile, analyze_svd,
+    Diagnostic, Severity, SourceFile, analyze_svd,
+    frontend::diagnostics as frontend_diagnostics,
     registry::{find_rule, rule_registry},
+    schema::diagnostics as schema_diagnostics,
 };
 #[derive(Parser)]
 #[command(
@@ -95,26 +97,26 @@ fn schema_diagnostics(source: &SourceFile, options: &Options) -> Vec<Diagnostic>
         .or_else(|| SchemaVersion::detect(source))
     else {
         return vec![Diagnostic::error(
-            DiagnosticCode::XsdUnknownVersion,
+            schema_diagnostics::UNKNOWN_VERSION.code(),
             "schemaVersion is missing",
         )];
     };
     if !version.supported() {
         return vec![Diagnostic::error(
-            DiagnosticCode::XsdUnknownVersion,
+            schema_diagnostics::UNKNOWN_VERSION.code(),
             format!("unsupported schemaVersion {}", version.0),
         )];
     }
     if let Some(dir) = &options.schema_dir {
         if DirectoryProvider::new(dir).schema(&version).is_none() {
             return vec![Diagnostic::error(
-                DiagnosticCode::XsdMissingSchema,
+                schema_diagnostics::MISSING_SCHEMA.code(),
                 format!("schema {} not found in {}", version.0, dir.display()),
             )];
         }
     } else {
         return vec![Diagnostic::error(
-            DiagnosticCode::XsdMissingSchema,
+            schema_diagnostics::MISSING_SCHEMA.code(),
             "provide --schema-dir with versioned CMSIS-SVD schemas",
         )];
     }
@@ -129,7 +131,7 @@ fn schema_diagnostics(source: &SourceFile, options: &Options) -> Vec<Diagnostic>
     #[cfg(not(feature = "xsd"))]
     {
         vec![Diagnostic::error(
-            DiagnosticCode::XsdBackendError,
+            schema_diagnostics::BACKEND_ERROR.code(),
             "XSD validation requires a build with --features xsd",
         )]
     }
@@ -190,13 +192,13 @@ fn read(path: &PathBuf) -> Result<SourceFile, Diagnostic> {
     let name = path.to_string_lossy().replace('\\', "/");
     let bytes = std::fs::read(path).map_err(|e| {
         Diagnostic::error(
-            DiagnosticCode::IoReadFailed,
+            frontend_diagnostics::IO_READ_FAILED.code(),
             format!("failed to read `{name}`: {e}"),
         )
     })?;
     let text = String::from_utf8(bytes).map_err(|_| {
         Diagnostic::error(
-            DiagnosticCode::IoInvalidUtf8,
+            frontend_diagnostics::IO_INVALID_UTF8.code(),
             format!("`{name}` is not valid UTF-8"),
         )
     })?;
