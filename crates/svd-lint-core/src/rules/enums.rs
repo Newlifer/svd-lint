@@ -1,5 +1,5 @@
 use super::{CheckContext, ranges::fits};
-use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory, RuleSource};
+use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory};
 use crate::{Diagnostic, Severity, ir::*};
 use std::collections::BTreeMap;
 
@@ -9,7 +9,6 @@ pub(crate) static ENUM_VALUE_OUT_OF_BOUNDS: DiagnosticDefinition = DiagnosticDef
     description: "A numeric enum value exceeds the field width.",
     category: RuleCategory::Enumerations,
     default_severity: Severity::Error,
-    source: RuleSource::CmsisSvd,
     configurable: true,
     tags: &["check"],
 };
@@ -20,7 +19,6 @@ pub(crate) static DUPLICATE_ENUM_ENTRY: DiagnosticDefinition = DiagnosticDefinit
     description: "Names or semantic descriptions conflict within one enum usage set.",
     category: RuleCategory::Enumerations,
     default_severity: Severity::Error,
-    source: RuleSource::SvdLint,
     configurable: true,
     tags: &["heuristic"],
 };
@@ -31,12 +29,12 @@ pub(crate) static MULTIPLE_ENUM_DEFAULTS: DiagnosticDefinition = DiagnosticDefin
     description: "Only one entry may be default in an enum set.",
     category: RuleCategory::Enumerations,
     default_severity: Severity::Error,
-    source: RuleSource::CmsisSvd,
     configurable: true,
     tags: &["check"],
 };
 
-pub(super) fn check_enums(context: &CheckContext<'_>, diagnostics: &mut Vec<Diagnostic>) {
+pub(super) fn check_enums(context: &CheckContext<'_>) -> Vec<Diagnostic> {
+    let mut diagnostics = Vec::new();
     for peripheral in &context.device.peripherals {
         for register in &peripheral.registers {
             for field in &register.fields {
@@ -44,19 +42,21 @@ pub(super) fn check_enums(context: &CheckContext<'_>, diagnostics: &mut Vec<Diag
                     continue;
                 }
                 for values in &field.enumerated_values {
-                    check_set(context, field, values, diagnostics);
+                    diagnostics.extend(check_set(context, field, values));
                 }
             }
         }
     }
+
+    diagnostics
 }
 
 fn check_set(
     context: &CheckContext<'_>,
     field: &CanonicalField,
     values: &CanonicalEnumeratedValues,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
+) -> Vec<Diagnostic> {
+    let mut diagnostics = Vec::new();
     let mut names: BTreeMap<&str, usize> = BTreeMap::new();
     let mut numbers = BTreeMap::new();
     let mut default = None;
@@ -155,4 +155,6 @@ fn check_set(
             diagnostics.push(d);
         }
     }
+
+    diagnostics
 }

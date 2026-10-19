@@ -1,12 +1,11 @@
 //! Diagnostic metadata for this pipeline component.
-use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory, RuleSource};
+use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory};
 pub static UNKNOWN_VERSION: DiagnosticDefinition = DiagnosticDefinition {
     code: crate::DiagnosticCode::new("XSD001"),
     name: "unknown-schema-version",
     description: "schemaVersion is missing or unsupported.",
     category: RuleCategory::Structure,
     default_severity: crate::Severity::Error,
-    source: RuleSource::CmsisSvd,
     configurable: false,
     tags: &["check"],
 };
@@ -17,7 +16,6 @@ pub static NONCONFORMANCE: DiagnosticDefinition = DiagnosticDefinition {
     description: "The document fails XSD validation.",
     category: RuleCategory::Structure,
     default_severity: crate::Severity::Error,
-    source: RuleSource::CmsisSvd,
     configurable: false,
     tags: &["check"],
 };
@@ -28,7 +26,6 @@ pub static MISSING_SCHEMA: DiagnosticDefinition = DiagnosticDefinition {
     description: "The requested schema is unavailable.",
     category: RuleCategory::Structure,
     default_severity: crate::Severity::Error,
-    source: RuleSource::SvdLint,
     configurable: false,
     tags: &["check"],
 };
@@ -39,7 +36,6 @@ pub static BACKEND_ERROR: DiagnosticDefinition = DiagnosticDefinition {
     description: "The XSD backend could not load or compile a schema.",
     category: RuleCategory::Structure,
     default_severity: crate::Severity::Error,
-    source: RuleSource::SvdLint,
     configurable: false,
     tags: &["check"],
 };

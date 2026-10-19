@@ -1,5 +1,5 @@
 use super::{CheckContext, alternatives::Layout, ranges};
-use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory, RuleSource};
+use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory};
 use crate::{Diagnostic, Severity};
 use std::collections::BTreeMap;
 
@@ -9,13 +9,12 @@ pub(crate) static REGISTER_OVERLAP: DiagnosticDefinition = DiagnosticDefinition 
     description: "Register address ranges overlap without confirmed alternatives.",
     category: RuleCategory::Addressing,
     default_severity: Severity::Error,
-    source: RuleSource::SvdLint,
     configurable: true,
     tags: &["heuristic"],
 };
 
-pub(super) fn check_register_overlaps(context: &CheckContext<'_>, output: &mut Vec<Diagnostic>) {
-    check_memory_code(&REGISTER_OVERLAP, context, output);
+pub(super) fn check_register_overlaps(context: &CheckContext<'_>) -> Vec<Diagnostic> {
+    check_memory_code(&REGISTER_OVERLAP, context)
 }
 
 pub(crate) static REGISTER_OUTSIDE_BLOCK: DiagnosticDefinition = DiagnosticDefinition {
@@ -24,13 +23,12 @@ pub(crate) static REGISTER_OUTSIDE_BLOCK: DiagnosticDefinition = DiagnosticDefin
     description: "A register must fit wholly within a registers addressBlock.",
     category: RuleCategory::Addressing,
     default_severity: Severity::Error,
-    source: RuleSource::CmsisSvd,
     configurable: true,
     tags: &["check"],
 };
 
-pub(super) fn check_register_blocks(context: &CheckContext<'_>, output: &mut Vec<Diagnostic>) {
-    check_memory_code(&REGISTER_OUTSIDE_BLOCK, context, output);
+pub(super) fn check_register_blocks(context: &CheckContext<'_>) -> Vec<Diagnostic> {
+    check_memory_code(&REGISTER_OUTSIDE_BLOCK, context)
 }
 
 pub(crate) static INVALID_ADDRESS_BLOCK: DiagnosticDefinition = DiagnosticDefinition {
@@ -39,20 +37,19 @@ pub(crate) static INVALID_ADDRESS_BLOCK: DiagnosticDefinition = DiagnosticDefini
     description: "An addressBlock size or address boundary is invalid.",
     category: RuleCategory::Addressing,
     default_severity: Severity::Error,
-    source: RuleSource::CmsisSvd,
     configurable: true,
     tags: &["check"],
 };
 
-pub(super) fn check_address_blocks(context: &CheckContext<'_>, output: &mut Vec<Diagnostic>) {
-    check_memory_code(&INVALID_ADDRESS_BLOCK, context, output);
+pub(super) fn check_address_blocks(context: &CheckContext<'_>) -> Vec<Diagnostic> {
+    check_memory_code(&INVALID_ADDRESS_BLOCK, context)
 }
 
 fn check_memory_code(
     definition: &DiagnosticDefinition,
     context: &CheckContext<'_>,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
+) -> Vec<Diagnostic> {
+    let mut diagnostics = Vec::new();
     let code = definition.code();
     let unit = context.device.address_unit_bits;
     let blocks = code == INVALID_ADDRESS_BLOCK.code();
@@ -162,7 +159,7 @@ fn check_memory_code(
             );
             if let Some((previous, reported)) = unique.get_mut(&key) {
                 if !*reported {
-                    overlap(definition, context, &layout, *previous, i, diagnostics);
+                    diagnostics.extend(overlap(definition, context, &layout, *previous, i));
                     *reported = true;
                 }
             } else {
@@ -177,11 +174,13 @@ fn check_memory_code(
                     break;
                 }
                 if range.overlaps(other) {
-                    overlap(definition, context, &layout, left, right, diagnostics);
+                    diagnostics.extend(overlap(definition, context, &layout, left, right));
                 }
             }
         }
     }
+
+    diagnostics
 }
 
 fn overlap(
@@ -190,15 +189,15 @@ fn overlap(
     layout: &Layout<'_>,
     a: usize,
     b: usize,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
+) -> Vec<Diagnostic> {
+    let mut diagnostics = Vec::new();
     if layout.permitted(a, b) {
-        return;
+        return diagnostics;
     }
     let left = &layout.peripheral.registers[a];
     let right = &layout.peripheral.registers[b];
     let (Some(x), Some(y)) = (layout.intervals[a], layout.intervals[b]) else {
-        return;
+        return diagnostics;
     };
     let severity = if layout.uncertain(a, b) {
         Severity::Warning
@@ -222,4 +221,6 @@ fn overlap(
         "overlapping register",
     );
     diagnostics.push(d);
+
+    diagnostics
 }

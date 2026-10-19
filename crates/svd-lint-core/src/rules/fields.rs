@@ -1,5 +1,5 @@
 use super::{CheckContext, ranges};
-use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory, RuleSource};
+use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory};
 use crate::{Diagnostic, Severity};
 
 pub(crate) static ZERO_FIELD_WIDTH: DiagnosticDefinition = DiagnosticDefinition {
@@ -8,7 +8,6 @@ pub(crate) static ZERO_FIELD_WIDTH: DiagnosticDefinition = DiagnosticDefinition 
     description: "A field must occupy a positive number of bits.",
     category: RuleCategory::Fields,
     default_severity: Severity::Error,
-    source: RuleSource::CmsisSvd,
     configurable: true,
     tags: &["check"],
 };
@@ -19,7 +18,6 @@ pub(crate) static FIELD_OUT_OF_BOUNDS: DiagnosticDefinition = DiagnosticDefiniti
     description: "A field extends past its register size.",
     category: RuleCategory::Fields,
     default_severity: Severity::Error,
-    source: RuleSource::CmsisSvd,
     configurable: true,
     tags: &["check"],
 };
@@ -30,12 +28,12 @@ pub(crate) static FIELD_OVERLAP: DiagnosticDefinition = DiagnosticDefinition {
     description: "Two fields occupy overlapping bit ranges.",
     category: RuleCategory::Fields,
     default_severity: Severity::Warning,
-    source: RuleSource::SvdLint,
     configurable: true,
     tags: &["heuristic"],
 };
 
-pub(super) fn check_fields(context: &CheckContext<'_>, diagnostics: &mut Vec<Diagnostic>) {
+pub(super) fn check_fields(context: &CheckContext<'_>) -> Vec<Diagnostic> {
+    let mut diagnostics = Vec::new();
     for peripheral in &context.device.peripherals {
         for register in &peripheral.registers {
             let size = register.properties.size.as_ref();
@@ -99,4 +97,6 @@ pub(super) fn check_fields(context: &CheckContext<'_>, diagnostics: &mut Vec<Dia
             }
         }
     }
+
+    diagnostics
 }

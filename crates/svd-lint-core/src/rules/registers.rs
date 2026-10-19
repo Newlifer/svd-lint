@@ -1,5 +1,5 @@
 use super::CheckContext;
-use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory, RuleSource};
+use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory};
 use crate::{Diagnostic, Severity};
 
 pub(crate) static ZERO_REGISTER_SIZE: DiagnosticDefinition = DiagnosticDefinition {
@@ -8,12 +8,12 @@ pub(crate) static ZERO_REGISTER_SIZE: DiagnosticDefinition = DiagnosticDefinitio
     description: "A register must occupy a positive number of bits.",
     category: RuleCategory::Registers,
     default_severity: Severity::Error,
-    source: RuleSource::CmsisSvd,
     configurable: true,
     tags: &["check"],
 };
 
-pub(super) fn check_registers(context: &CheckContext<'_>, diagnostics: &mut Vec<Diagnostic>) {
+pub(super) fn check_registers(context: &CheckContext<'_>) -> Vec<Diagnostic> {
+    let mut diagnostics = Vec::new();
     let definition = &ZERO_REGISTER_SIZE;
     for peripheral in &context.device.peripherals {
         for register in &peripheral.registers {
@@ -30,4 +30,6 @@ pub(super) fn check_registers(context: &CheckContext<'_>, diagnostics: &mut Vec<
             }
         }
     }
+
+    diagnostics
 }

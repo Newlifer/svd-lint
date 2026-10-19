@@ -68,7 +68,7 @@ pub fn document(results: Vec<Value>) -> Value {
                 "id":r.code,"name":r.name,"shortDescription":{"text":r.description},
                 "helpUri":"https://github.com/Newlifer/svd-lint/blob/main/docs/rules.md",
                 "defaultConfiguration":{"level":r.default_severity},
-                "properties":{"category":r.category,"source":r.source}
+                "properties":{"category":r.category}
             })
         })
         .collect();

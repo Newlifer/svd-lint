@@ -1,6 +1,6 @@
 //! Opt-in description quality check.
 use super::CheckContext;
-use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory, RuleSource};
+use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory};
 use crate::{CanonicalDevice, Diagnostic, Severity, SourceMap};
 
 pub(crate) static LOW_QUALITY_DESCRIPTION: DiagnosticDefinition = DiagnosticDefinition {
@@ -9,12 +9,12 @@ pub(crate) static LOW_QUALITY_DESCRIPTION: DiagnosticDefinition = DiagnosticDefi
     description: "A register description repeats its name or is too short to explain its purpose.",
     category: RuleCategory::Quality,
     default_severity: Severity::Warning,
-    source: RuleSource::SvdLint,
     configurable: true,
     tags: &["quality", "strict"],
 };
 
-pub(super) fn check_descriptions(context: &CheckContext<'_>, diagnostics: &mut Vec<Diagnostic>) {
+pub(super) fn check_descriptions(context: &CheckContext<'_>) -> Vec<Diagnostic> {
+    let mut diagnostics = Vec::new();
     let definition = &LOW_QUALITY_DESCRIPTION;
     let mut seen = std::collections::BTreeSet::new();
     for p in &context.device.peripherals {
@@ -38,6 +38,8 @@ pub(super) fn check_descriptions(context: &CheckContext<'_>, diagnostics: &mut V
         }
     }
     diagnostics.sort_by_key(|d| d.primary_span.map(|s| s.start));
+
+    diagnostics
 }
 
 pub fn check_quality(device: &CanonicalDevice, map: &SourceMap) -> Vec<Diagnostic> {
@@ -45,7 +47,5 @@ pub fn check_quality(device: &CanonicalDevice, map: &SourceMap) -> Vec<Diagnosti
         device,
         source_map: map,
     };
-    let mut diagnostics = Vec::new();
-    check_descriptions(&context, &mut diagnostics);
-    diagnostics
+    check_descriptions(&context)
 }

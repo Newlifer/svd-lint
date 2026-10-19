@@ -1,5 +1,5 @@
 use super::{CheckContext, ranges::fits};
-use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory, RuleSource};
+use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory};
 use crate::{Diagnostic, Severity};
 
 pub(crate) static RESET_VALUE_OUT_OF_BOUNDS: DiagnosticDefinition = DiagnosticDefinition {
@@ -8,7 +8,6 @@ pub(crate) static RESET_VALUE_OUT_OF_BOUNDS: DiagnosticDefinition = DiagnosticDe
     description: "The effective reset value exceeds register width.",
     category: RuleCategory::Reset,
     default_severity: Severity::Error,
-    source: RuleSource::CmsisSvd,
     configurable: true,
     tags: &["check"],
 };
@@ -19,7 +18,6 @@ pub(crate) static RESET_MASK_OUT_OF_BOUNDS: DiagnosticDefinition = DiagnosticDef
     description: "The effective reset mask exceeds register width.",
     category: RuleCategory::Reset,
     default_severity: Severity::Error,
-    source: RuleSource::CmsisSvd,
     configurable: true,
     tags: &["check"],
 };
@@ -30,12 +28,12 @@ pub(crate) static RESET_OUTSIDE_MASK: DiagnosticDefinition = DiagnosticDefinitio
     description: "Reset bits outside the declared mask may be suspicious.",
     category: RuleCategory::Reset,
     default_severity: Severity::Warning,
-    source: RuleSource::SvdLint,
     configurable: true,
     tags: &["heuristic"],
 };
 
-pub(super) fn check_reset(context: &CheckContext<'_>, diagnostics: &mut Vec<Diagnostic>) {
+pub(super) fn check_reset(context: &CheckContext<'_>) -> Vec<Diagnostic> {
+    let mut diagnostics = Vec::new();
     for peripheral in &context.device.peripherals {
         for register in &peripheral.registers {
             let Some(size) = register.properties.size.as_ref().filter(|s| s.value > 0) else {
@@ -100,4 +98,6 @@ pub(super) fn check_reset(context: &CheckContext<'_>, diagnostics: &mut Vec<Diag
             }
         }
     }
+
+    diagnostics
 }

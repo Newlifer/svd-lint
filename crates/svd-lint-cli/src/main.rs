@@ -158,12 +158,11 @@ fn main() -> ExitCode {
                     println!("{}", serde_json::to_string_pretty(rule).unwrap());
                 } else {
                     println!(
-                        "{} — {}\n\nSeverity: {:?}\nCategory: {:?}\nSource: {:?}\n\n{}",
+                        "{} — {}\n\nSeverity: {:?}\nCategory: {:?}\n\n{}",
                         rule.code,
                         rule.name,
                         rule.default_severity,
                         rule.category,
-                        rule.source,
                         rule.description
                     );
                 }

@@ -1,5 +1,5 @@
 use super::{CheckContext, ranges::fits};
-use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory, RuleSource};
+use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory};
 use crate::{Diagnostic, Origin, Severity, ir::*, svd};
 
 pub(crate) static INVALID_WRITE_CONSTRAINT: DiagnosticDefinition = DiagnosticDefinition {
@@ -8,7 +8,6 @@ pub(crate) static INVALID_WRITE_CONSTRAINT: DiagnosticDefinition = DiagnosticDef
     description: "A write constraint has invalid bounds or lacks writable enums.",
     category: RuleCategory::Access,
     default_severity: Severity::Error,
-    source: RuleSource::CmsisSvd,
     configurable: true,
     tags: &["check"],
 };
@@ -19,12 +18,12 @@ pub(crate) static ACCESS_CONFLICT: DiagnosticDefinition = DiagnosticDefinition {
     description: "Access and read/write effects may be incompatible.",
     category: RuleCategory::Access,
     default_severity: Severity::Warning,
-    source: RuleSource::SvdLint,
     configurable: true,
     tags: &["heuristic"],
 };
 
-pub(super) fn check_access(context: &CheckContext<'_>, diagnostics: &mut Vec<Diagnostic>) {
+pub(super) fn check_access(context: &CheckContext<'_>) -> Vec<Diagnostic> {
+    let mut diagnostics = Vec::new();
     for peripheral in &context.device.peripherals {
         for register in &peripheral.registers {
             let constraint = register.metadata.write_constraint;
@@ -40,41 +39,38 @@ pub(super) fn check_access(context: &CheckContext<'_>, diagnostics: &mut Vec<Dia
                     .iter()
                     .flat_map(|f| &f.enumerated_values)
                     .any(writable_enum);
-                check_constraint(
+                diagnostics.extend(check_constraint(
                     context,
                     constraint,
                     width.value,
                     &origin,
                     write_enums,
-                    diagnostics,
-                );
+                ));
             }
 
-            check_operations(
+            diagnostics.extend(check_operations(
                 context,
                 register.properties.access.as_ref(),
                 register.metadata.read_action,
                 register.metadata.modified_write_values,
                 &metadata_origin(context, &register.origin, "readAction"),
                 &metadata_origin(context, &register.origin, "modifiedWriteValues"),
-                diagnostics,
-            );
+            ));
 
             for field in &register.fields {
                 if let Some(constraint) = field.write_constraint.as_ref() {
                     if field.bit_width > 0 {
-                        check_constraint(
+                        diagnostics.extend(check_constraint(
                             context,
                             constraint.value,
                             field.bit_width,
                             &constraint.origin,
                             field.enumerated_values.iter().any(writable_enum),
-                            diagnostics,
-                        );
+                        ));
                     }
                 }
 
-                check_operations(
+                diagnostics.extend(check_operations(
                     context,
                     field.access.as_ref(),
                     field.read_action.as_ref().map(|v| v.value),
@@ -89,11 +85,12 @@ pub(super) fn check_access(context: &CheckContext<'_>, diagnostics: &mut Vec<Dia
                         .as_ref()
                         .map(|v| v.origin.clone())
                         .unwrap_or_else(|| field.origin.clone()),
-                    diagnostics,
-                );
+                ));
             }
         }
     }
+
+    diagnostics
 }
 
 fn metadata_origin(context: &CheckContext<'_>, origin: &Origin, tag: &str) -> Origin {
@@ -117,8 +114,8 @@ fn check_constraint(
     width: u32,
     origin: &Origin,
     write_enums: bool,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
+) -> Vec<Diagnostic> {
+    let mut diagnostics = Vec::new();
     let reason = match constraint {
         svd::WriteConstraint::Range(range) if range.min > range.max => {
             Some("writeConstraint minimum exceeds maximum".to_owned())
@@ -145,6 +142,8 @@ fn check_constraint(
             "writeConstraint",
         ));
     }
+
+    diagnostics
 }
 
 fn writable_enum(e: &CanonicalEnumeratedValues) -> bool {
@@ -158,7 +157,6 @@ fn writable_enum(e: &CanonicalEnumeratedValues) -> bool {
         )
 }
 
-#[allow(clippy::too_many_arguments)]
 fn check_operations(
     context: &CheckContext<'_>,
     access: Option<&crate::Resolved<svd::Access>>,
@@ -166,9 +164,11 @@ fn check_operations(
     write: Option<svd::ModifiedWriteValues>,
     read_origin: &Origin,
     write_origin: &Origin,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
-    let Some(access) = access else { return };
+) -> Vec<Diagnostic> {
+    let mut diagnostics = Vec::new();
+    let Some(access) = access else {
+        return diagnostics;
+    };
     let (readable, writable) = match access.value {
         svd::Access::ReadOnly => (true, false),
         svd::Access::WriteOnly | svd::Access::WriteOnce => (false, true),
@@ -200,4 +200,6 @@ fn check_operations(
             diagnostics.push(d);
         }
     }
+
+    diagnostics
 }

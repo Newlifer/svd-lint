@@ -2,7 +2,7 @@ use super::{
     CheckContext,
     ranges::{self, Interval},
 };
-use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory, RuleSource};
+use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory};
 use crate::{Diagnostic, Severity, ir::*};
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -172,12 +172,12 @@ pub(crate) static INVALID_ALTERNATE_REGISTER: DiagnosticDefinition = DiagnosticD
     description: "The alternate register reference or memory range is invalid.",
     category: RuleCategory::Addressing,
     default_severity: Severity::Error,
-    source: RuleSource::CmsisSvd,
     configurable: true,
     tags: &["check"],
 };
 
-pub(super) fn check_alternatives(context: &CheckContext<'_>, diagnostics: &mut Vec<Diagnostic>) {
+pub(super) fn check_alternatives(context: &CheckContext<'_>) -> Vec<Diagnostic> {
+    let mut diagnostics = Vec::new();
     for peripheral in &context.device.peripherals {
         let layout = Layout::new(peripheral, context.device.address_unit_bits);
         for (i, (r, status)) in peripheral
@@ -202,6 +202,8 @@ pub(super) fn check_alternatives(context: &CheckContext<'_>, diagnostics: &mut V
             }
         }
     }
+
+    diagnostics
 }
 
 fn root(parents: &mut [usize], mut id: usize) -> usize {

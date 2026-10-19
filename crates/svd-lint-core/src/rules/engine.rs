@@ -6,15 +6,15 @@ use std::collections::BTreeSet;
 pub fn check_rules(device: &CanonicalDevice, source_map: &SourceMap) -> Vec<Diagnostic> {
     let context = CheckContext { device, source_map };
     let mut diagnostics = Vec::new();
-    super::registers::check_registers(&context, &mut diagnostics);
-    super::fields::check_fields(&context, &mut diagnostics);
-    super::reset::check_reset(&context, &mut diagnostics);
-    super::memory::check_register_overlaps(&context, &mut diagnostics);
-    super::alternatives::check_alternatives(&context, &mut diagnostics);
-    super::memory::check_register_blocks(&context, &mut diagnostics);
-    super::memory::check_address_blocks(&context, &mut diagnostics);
-    super::enums::check_enums(&context, &mut diagnostics);
-    super::access::check_access(&context, &mut diagnostics);
+    diagnostics.extend(super::registers::check_registers(&context));
+    diagnostics.extend(super::fields::check_fields(&context));
+    diagnostics.extend(super::reset::check_reset(&context));
+    diagnostics.extend(super::memory::check_register_overlaps(&context));
+    diagnostics.extend(super::alternatives::check_alternatives(&context));
+    diagnostics.extend(super::memory::check_register_blocks(&context));
+    diagnostics.extend(super::memory::check_address_blocks(&context));
+    diagnostics.extend(super::enums::check_enums(&context));
+    diagnostics.extend(super::access::check_access(&context));
     // Messages encode semantic values, intervals and addresses, not array
     // names. Source-identical declaration errors collapse; distinct physical
     // conflicts remain distinguishable. Usage notes do not split a finding.

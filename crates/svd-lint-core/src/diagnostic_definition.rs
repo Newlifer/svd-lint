@@ -25,13 +25,6 @@ pub enum RuleCategory {
     Quality, // рекомендации по описанию
 }
 
-#[derive(Clone, Copy, Debug, Serialize, PartialEq, Eq)]
-pub enum RuleSource {
-    CmsisSvd,
-    SvdConvCompatibility,
-    SvdLint,
-}
-
 /// Метаданные проверки
 #[derive(Clone, Copy, Debug, Serialize)]
 pub struct DiagnosticDefinition {
@@ -45,8 +38,6 @@ pub struct DiagnosticDefinition {
     /// категория
     pub default_severity: Severity,
     /// тяжесть греха
-    pub source: RuleSource,
-    /// откуда проверка? SVDConv или наша
     pub configurable: bool,
     /// можно ли настраивать
     pub tags: &'static [&'static str],
