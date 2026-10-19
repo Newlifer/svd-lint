@@ -1,6 +1,7 @@
 //! Independent semantic checks over immutable Canonical IR.
 pub(crate) mod access;
 pub(crate) mod alternatives;
+mod checks;
 pub mod context;
 pub mod engine;
 pub(crate) mod enums;
