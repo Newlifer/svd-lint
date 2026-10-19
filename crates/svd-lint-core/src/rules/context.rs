@@ -40,7 +40,7 @@ impl CheckContext<'_> {
 
     pub(super) fn diagnostic(
         &self,
-        definition: &crate::registry::DiagnosticDefinition,
+        definition: &crate::diagnostic_definition::DiagnosticDefinition,
         severity: Severity,
         message: impl Into<String>,
         origin: &Origin,

@@ -57,7 +57,9 @@ fn registry_and_explain_are_machine_readable() {
         .assert()
         .success();
     let rule: Value = serde_json::from_slice(&result.get_output().stdout).unwrap();
-    assert_eq!(rule["svdconv_codes"][0]["code"], "M338");
+    assert_eq!(rule["code"], "SEM004");
+    assert!(rule.get("svdconv_codes").is_none());
+    assert!(rule.get("spec_refs").is_none());
     cli().args(["explain", "M338"]).assert().code(2);
 }
 #[test]

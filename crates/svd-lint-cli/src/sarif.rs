@@ -61,12 +61,17 @@ pub fn results(path: &str, diagnostics: &[Diagnostic], source: Option<&SourceFil
         .collect()
 }
 pub fn document(results: Vec<Value>) -> Value {
-    let rules:Vec<_>=rule_registry().iter().map(|r|json!({
-        "id":r.code,"name":r.name,"shortDescription":{"text":r.description},
-        "helpUri":r.spec_refs.first().map(|s|s.url).unwrap_or("https://github.com/Newlifer/svd-lint/blob/main/docs/rules.md"),
-        "defaultConfiguration":{"level":r.default_severity},
-        "properties":{"category":r.category,"source":r.source,"svdconv":r.svdconv_codes}
-    })).collect();
+    let rules: Vec<_> = rule_registry()
+        .iter()
+        .map(|r| {
+            json!({
+                "id":r.code,"name":r.name,"shortDescription":{"text":r.description},
+                "helpUri":"https://github.com/Newlifer/svd-lint/blob/main/docs/rules.md",
+                "defaultConfiguration":{"level":r.default_severity},
+                "properties":{"category":r.category,"source":r.source}
+            })
+        })
+        .collect();
     json!({"$schema":"https://json.schemastore.org/sarif-2.1.0.json","version":"2.1.0","runs":[{
         "tool":{"driver":{"name":"svd-lint","version":env!("CARGO_PKG_VERSION"),"rules":rules}},
         "columnKind":"unicodeCodePoints","results":results

@@ -1,9 +1,5 @@
 use std::collections::BTreeSet;
-use svd_lint_core::{
-    registry,
-    rules::{CheckContext, Rule},
-    *,
-};
+use svd_lint_core::{registry, *};
 
 #[test]
 fn codes_are_string_values_with_stable_registered_serialization() {
@@ -27,107 +23,47 @@ fn codes_are_string_values_with_stable_registered_serialization() {
 }
 
 #[test]
-fn every_rule_uses_its_declared_diagnostic_definitions() {
-    let source = SourceFile::new(
-        "invalid.svd",
+fn checks_emit_registered_diagnostics_and_keep_all_semantic_checks() {
+    let mut emitted = BTreeSet::new();
+    for input in [
         include_str!("../../../tests/fixtures/semantics/invalid.svd"),
-    );
-    let parsed = parse_svd(&source);
-    let map = parsed.source_map.unwrap();
-    let normalized = normalize(
-        parsed.device.as_ref().unwrap(),
-        &map,
-        &NormalizeConfig::default(),
-    );
-    let device = normalized.device.unwrap();
-    let context = CheckContext {
-        device: &device,
-        source_map: &map,
-    };
-    let mut executed = BTreeSet::new();
-    for rule in registry::executable_rules() {
-        assert!(!rule.diagnostics.is_empty());
-        for definition in rule.diagnostics {
-            assert!(executed.insert(definition.code));
-            assert!(std::ptr::eq(
-                registry::find_rule(definition.code.as_str()).unwrap(),
-                *definition
-            ));
-            let generated = definition.diagnostic("Additional explanation");
-            assert_eq!(generated.code, definition.code);
-            assert_eq!(generated.severity, definition.default_severity);
+        include_str!("../../../tests/corpus/invalid/SVD007/SVD007-negative.svd"),
+    ] {
+        let source = SourceFile::new("registry.svd", input);
+        let mut result = analyze_svd(&source);
+        let device = result.device.as_ref().expect("fixture must normalize");
+        let map = result.source_map.as_ref().unwrap();
+        result.diagnostics.extend(rules::check_quality(device, map));
+        for diagnostic in result.diagnostics {
+            assert!(
+                registry::find_rule(diagnostic.code.as_str()).is_some(),
+                "unregistered diagnostic: {}",
+                diagnostic.code,
+            );
+            emitted.insert(diagnostic.code);
         }
-        let mut diagnostics = Vec::new();
-        (rule.check)(&context, &mut diagnostics);
-        assert!(
-            diagnostics.iter().all(|d| rule
-                .diagnostics
-                .iter()
-                .any(|definition| definition.code == d.code)),
-            "{} emitted another rule's code",
-            rule.name
-        );
     }
     let expected = registry::rule_registry()
         .iter()
-        .filter(|r| r.code.as_str().starts_with("SEM") || r.code.as_str() == "SVD007")
-        .map(|r| r.code)
+        .filter(|definition| {
+            definition.code.as_str().starts_with("SEM") || definition.code.as_str() == "SVD007"
+        })
+        .map(|definition| definition.code)
         .collect::<BTreeSet<_>>();
-    assert_eq!(executed, expected);
+    assert_eq!(emitted, expected);
 }
 
 #[test]
-fn inline_check_reports_multiple_codes_with_independent_severity() {
-    use registry::DiagnosticDefinition;
-    static WARNING: DiagnosticDefinition = DiagnosticDefinition {
-        code: DiagnosticCode::new("TEST001"),
-        default_severity: Severity::Warning,
-        ..frontend::diagnostics::IO_READ_FAILED
-    };
-    static ERROR: DiagnosticDefinition = DiagnosticDefinition {
-        code: DiagnosticCode::new("TEST002"),
-        default_severity: Severity::Error,
-        ..WARNING
-    };
-    static RULE: Rule = Rule {
-        name: "multiple-findings",
-        description: "One check can emit findings with different severities.",
-        diagnostics: &[&WARNING, &ERROR],
-        check: |_, output| {
-            output.push(WARNING.diagnostic("A warning"));
-            output.push(ERROR.diagnostic("An error"));
-        },
-    };
-    let source = SourceFile::new(
-        "valid.svd",
-        include_str!("../../../tests/fixtures/semantics/valid.svd"),
-    );
-    let parsed = parse_svd(&source);
-    let map = parsed.source_map.unwrap();
-    let device = normalize(
-        parsed.device.as_ref().unwrap(),
-        &map,
-        &NormalizeConfig::default(),
-    )
-    .device
-    .unwrap();
-    let mut diagnostics = Vec::new();
-    (RULE.check)(
-        &CheckContext {
-            device: &device,
-            source_map: &map,
-        },
-        &mut diagnostics,
-    );
-    assert_eq!(
-        diagnostics
-            .iter()
-            .map(|d| (d.code, d.severity))
-            .collect::<Vec<_>>(),
-        [
-            (WARNING.code, Severity::Warning),
-            (ERROR.code, Severity::Error)
-        ]
-    );
-    assert_eq!(RULE.diagnostics.len(), 2);
+fn catalogue_definitions_construct_their_own_diagnostics() {
+    let mut codes = BTreeSet::new();
+    for definition in registry::rule_registry() {
+        assert!(
+            codes.insert(definition.code),
+            "duplicate code: {}",
+            definition.code
+        );
+        let diagnostic = definition.diagnostic("A finding");
+        assert_eq!(diagnostic.code, definition.code);
+        assert_eq!(diagnostic.severity, definition.default_severity);
+    }
 }

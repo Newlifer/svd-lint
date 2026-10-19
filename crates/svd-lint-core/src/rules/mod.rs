@@ -13,4 +13,4 @@ pub(crate) mod reset;
 pub use quality::check_quality;
 
 pub use context::CheckContext;
-pub use engine::{Rule, RuleEngine, check_rules};
+pub use engine::check_rules;

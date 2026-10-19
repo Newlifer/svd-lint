@@ -166,12 +166,6 @@ fn main() -> ExitCode {
                         rule.source,
                         rule.description
                     );
-                    for r in rule.svdconv_codes {
-                        println!("SVDConv: {} ({:?})", r.code, r.compatibility);
-                    }
-                    for r in rule.spec_refs {
-                        println!("CMSIS-SVD: {} — {}", r.title, r.url);
-                    }
                 }
                 Ok(0)
             }

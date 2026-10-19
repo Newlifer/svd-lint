@@ -1,5 +1,5 @@
-use super::{CheckContext, Rule, ranges::fits};
-use crate::registry::{DiagnosticDefinition, RuleCategory, RuleSource, SpecReference};
+use super::{CheckContext, ranges::fits};
+use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory, RuleSource};
 use crate::{Diagnostic, Severity};
 
 pub(crate) static RESET_VALUE_OUT_OF_BOUNDS: DiagnosticDefinition = DiagnosticDefinition {
@@ -10,19 +10,7 @@ pub(crate) static RESET_VALUE_OUT_OF_BOUNDS: DiagnosticDefinition = DiagnosticDe
     default_severity: Severity::Error,
     source: RuleSource::CmsisSvd,
     configurable: true,
-    svdconv_codes: &[],
-    spec_refs: &[SpecReference {
-        title: "Reset / reset-value-out-of-bounds",
-        url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_registers.html",
-    }],
     tags: &["check"],
-};
-
-pub(crate) static RESET_VALUE_OUT_OF_BOUNDS_CHECK: Rule = Rule {
-    name: RESET_VALUE_OUT_OF_BOUNDS.name,
-    description: RESET_VALUE_OUT_OF_BOUNDS.description,
-    diagnostics: &[&RESET_VALUE_OUT_OF_BOUNDS],
-    check: |context, output| check_reset_code(&RESET_VALUE_OUT_OF_BOUNDS, context, output),
 };
 
 pub(crate) static RESET_MASK_OUT_OF_BOUNDS: DiagnosticDefinition = DiagnosticDefinition {
@@ -33,19 +21,7 @@ pub(crate) static RESET_MASK_OUT_OF_BOUNDS: DiagnosticDefinition = DiagnosticDef
     default_severity: Severity::Error,
     source: RuleSource::CmsisSvd,
     configurable: true,
-    svdconv_codes: &[],
-    spec_refs: &[SpecReference {
-        title: "Reset / reset-mask-out-of-bounds",
-        url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_registers.html",
-    }],
     tags: &["check"],
-};
-
-pub(crate) static RESET_MASK_OUT_OF_BOUNDS_CHECK: Rule = Rule {
-    name: RESET_MASK_OUT_OF_BOUNDS.name,
-    description: RESET_MASK_OUT_OF_BOUNDS.description,
-    diagnostics: &[&RESET_MASK_OUT_OF_BOUNDS],
-    check: |context, output| check_reset_code(&RESET_MASK_OUT_OF_BOUNDS, context, output),
 };
 
 pub(crate) static RESET_OUTSIDE_MASK: DiagnosticDefinition = DiagnosticDefinition {
@@ -56,62 +32,28 @@ pub(crate) static RESET_OUTSIDE_MASK: DiagnosticDefinition = DiagnosticDefinitio
     default_severity: Severity::Warning,
     source: RuleSource::SvdLint,
     configurable: true,
-    svdconv_codes: &[],
-    spec_refs: &[],
     tags: &["heuristic"],
 };
 
-pub(crate) static RESET_OUTSIDE_MASK_CHECK: Rule = Rule {
-    name: RESET_OUTSIDE_MASK.name,
-    description: RESET_OUTSIDE_MASK.description,
-    diagnostics: &[&RESET_OUTSIDE_MASK],
-    check: |context, output| check_reset_code(&RESET_OUTSIDE_MASK, context, output),
-};
-
-fn check_reset_code(
-    definition: &DiagnosticDefinition,
-    context: &CheckContext<'_>,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
-    let code = definition.code();
+pub(super) fn check_reset(context: &CheckContext<'_>, diagnostics: &mut Vec<Diagnostic>) {
     for peripheral in &context.device.peripherals {
         for register in &peripheral.registers {
-            let Some(width) = register
-                .properties
-                .size
-                .as_ref()
-                .filter(|s| s.value > 0)
-                .map(|s| s.value)
-            else {
+            let Some(size) = register.properties.size.as_ref().filter(|s| s.value > 0) else {
                 continue;
             };
-            if code == RESET_OUTSIDE_MASK.code() {
-                if let (Some(value), Some(mask)) = (
+            let width = size.value;
+            for (definition, value, tag) in [
+                (
+                    &RESET_VALUE_OUT_OF_BOUNDS,
                     &register.properties.reset_value,
+                    "resetValue",
+                ),
+                (
+                    &RESET_MASK_OUT_OF_BOUNDS,
                     &register.properties.reset_mask,
-                ) {
-                    if fits(value.value, width)
-                        && fits(mask.value, width)
-                        && value.value & !mask.value != 0
-                    {
-                        let mut d = context.diagnostic(definition, Severity::Warning,
-                            format!("resetValue has bits {:#x} outside resetMask; those reset bits are unspecified", value.value & !mask.value),
-                            &value.origin, "resetValue");
-                        context.related(
-                            &mut d,
-                            &mask.origin,
-                            "resetMask",
-                            "reset mask declared here",
-                        );
-                        diagnostics.push(d);
-                    }
-                }
-            } else {
-                let (value, tag) = if code == RESET_VALUE_OUT_OF_BOUNDS.code() {
-                    (&register.properties.reset_value, "resetValue")
-                } else {
-                    (&register.properties.reset_mask, "resetMask")
-                };
+                    "resetMask",
+                ),
+            ] {
                 if let Some(value) = value {
                     if !fits(value.value, width) {
                         let mut d = context.diagnostic(
@@ -123,12 +65,37 @@ fn check_reset_code(
                         );
                         context.related(
                             &mut d,
-                            &register.properties.size.as_ref().unwrap().origin,
+                            &size.origin,
                             "size",
                             "register size declared here",
                         );
                         diagnostics.push(d);
                     }
+                }
+            }
+            if let (Some(value), Some(mask)) = (
+                &register.properties.reset_value,
+                &register.properties.reset_mask,
+            ) {
+                // Invalid widths are diagnosed above; do not cascade into a mask warning.
+                if fits(value.value, width)
+                    && fits(mask.value, width)
+                    && value.value & !mask.value != 0
+                {
+                    let mut d = context.diagnostic(
+                        &RESET_OUTSIDE_MASK,
+                        Severity::Warning,
+                        format!("resetValue has bits {:#x} outside resetMask; those reset bits are unspecified", value.value & !mask.value),
+                        &value.origin,
+                        "resetValue",
+                    );
+                    context.related(
+                        &mut d,
+                        &mask.origin,
+                        "resetMask",
+                        "reset mask declared here",
+                    );
+                    diagnostics.push(d);
                 }
             }
         }

@@ -29,17 +29,17 @@ fn real_backend_validates_and_positions_schema_errors_before_typed_parse() {
         result
             .diagnostics
             .iter()
-            .all(|d| d.code == DiagnosticCode::XsdNonconformance)
+            .all(|d| d.code == DiagnosticCode::new("XSD002"))
     );
     assert!(result.diagnostics.iter().any(|d| d.primary_span.is_some()));
     std::fs::write(&schema, "<not-a-schema/>").unwrap();
     assert_eq!(
         validator.validate(&input, version.clone())[0].code,
-        DiagnosticCode::XsdBackendError
+        DiagnosticCode::new("XSD004")
     );
     std::fs::remove_file(&schema).unwrap();
     assert_eq!(
         validator.validate(&input, version)[0].code,
-        DiagnosticCode::XsdMissingSchema
+        DiagnosticCode::new("XSD003")
     );
 }

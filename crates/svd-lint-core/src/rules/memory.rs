@@ -1,7 +1,5 @@
-use super::{CheckContext, Rule, alternatives::Layout, ranges};
-use crate::registry::{
-    Compatibility, DiagnosticDefinition, RuleCategory, RuleSource, SpecReference, SvdConvReference,
-};
+use super::{CheckContext, alternatives::Layout, ranges};
+use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory, RuleSource};
 use crate::{Diagnostic, Severity};
 use std::collections::BTreeMap;
 
@@ -13,30 +11,12 @@ pub(crate) static REGISTER_OVERLAP: DiagnosticDefinition = DiagnosticDefinition 
     default_severity: Severity::Error,
     source: RuleSource::SvdLint,
     configurable: true,
-    svdconv_codes: &[
-        SvdConvReference {
-            code: "M339",
-            compatibility: Compatibility::Partial,
-        },
-        SvdConvReference {
-            code: "M365",
-            compatibility: Compatibility::Partial,
-        },
-        SvdConvReference {
-            code: "M366",
-            compatibility: Compatibility::Partial,
-        },
-    ],
-    spec_refs: &[],
     tags: &["heuristic"],
 };
 
-pub(crate) static REGISTER_OVERLAP_CHECK: Rule = Rule {
-    name: REGISTER_OVERLAP.name,
-    description: REGISTER_OVERLAP.description,
-    diagnostics: &[&REGISTER_OVERLAP],
-    check: |context, output| check_memory_code(&REGISTER_OVERLAP, context, output),
-};
+pub(super) fn check_register_overlaps(context: &CheckContext<'_>, output: &mut Vec<Diagnostic>) {
+    check_memory_code(&REGISTER_OVERLAP, context, output);
+}
 
 pub(crate) static REGISTER_OUTSIDE_BLOCK: DiagnosticDefinition = DiagnosticDefinition {
     code: crate::DiagnosticCode::new("SEM010"),
@@ -46,23 +26,12 @@ pub(crate) static REGISTER_OUTSIDE_BLOCK: DiagnosticDefinition = DiagnosticDefin
     default_severity: Severity::Error,
     source: RuleSource::CmsisSvd,
     configurable: true,
-    svdconv_codes: &[SvdConvReference {
-        code: "M344",
-        compatibility: Compatibility::Equivalent,
-    }],
-    spec_refs: &[SpecReference {
-        title: "Addressing / register-outside-block",
-        url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_peripherals.html",
-    }],
     tags: &["check"],
 };
 
-pub(crate) static REGISTER_OUTSIDE_BLOCK_CHECK: Rule = Rule {
-    name: REGISTER_OUTSIDE_BLOCK.name,
-    description: REGISTER_OUTSIDE_BLOCK.description,
-    diagnostics: &[&REGISTER_OUTSIDE_BLOCK],
-    check: |context, output| check_memory_code(&REGISTER_OUTSIDE_BLOCK, context, output),
-};
+pub(super) fn check_register_blocks(context: &CheckContext<'_>, output: &mut Vec<Diagnostic>) {
+    check_memory_code(&REGISTER_OUTSIDE_BLOCK, context, output);
+}
 
 pub(crate) static INVALID_ADDRESS_BLOCK: DiagnosticDefinition = DiagnosticDefinition {
     code: crate::DiagnosticCode::new("SEM011"),
@@ -72,29 +41,12 @@ pub(crate) static INVALID_ADDRESS_BLOCK: DiagnosticDefinition = DiagnosticDefini
     default_severity: Severity::Error,
     source: RuleSource::CmsisSvd,
     configurable: true,
-    svdconv_codes: &[
-        SvdConvReference {
-            code: "M315",
-            compatibility: Compatibility::Partial,
-        },
-        SvdConvReference {
-            code: "M360",
-            compatibility: Compatibility::Partial,
-        },
-    ],
-    spec_refs: &[SpecReference {
-        title: "Addressing / invalid-address-block",
-        url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_peripherals.html",
-    }],
     tags: &["check"],
 };
 
-pub(crate) static INVALID_ADDRESS_BLOCK_CHECK: Rule = Rule {
-    name: INVALID_ADDRESS_BLOCK.name,
-    description: INVALID_ADDRESS_BLOCK.description,
-    diagnostics: &[&INVALID_ADDRESS_BLOCK],
-    check: |context, output| check_memory_code(&INVALID_ADDRESS_BLOCK, context, output),
-};
+pub(super) fn check_address_blocks(context: &CheckContext<'_>, output: &mut Vec<Diagnostic>) {
+    check_memory_code(&INVALID_ADDRESS_BLOCK, context, output);
+}
 
 fn check_memory_code(
     definition: &DiagnosticDefinition,

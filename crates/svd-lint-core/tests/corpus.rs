@@ -59,7 +59,14 @@ fn corpus_codes_and_sidecars_match_actual_analysis() {
         let actual = result
             .diagnostics
             .into_iter()
-            .map(|d| d.code.as_str())
+            .map(|d| {
+                assert!(
+                    find_rule(d.code.as_str()).is_some(),
+                    "unregistered diagnostic: {}",
+                    d.code
+                );
+                d.code.as_str()
+            })
             .collect::<BTreeSet<_>>();
         let expected = case["diagnostics"]
             .as_array()
@@ -108,12 +115,6 @@ fn registry_documents_every_code_and_enforces_semantic_case_coverage() {
             "{} has no corpus or dedicated I/O/schema integration test",
             rule.code.as_str()
         );
-        if rule.source == RuleSource::CmsisSvd {
-            assert!(!rule.spec_refs.is_empty(), "{}", rule.code.as_str());
-        }
-        if rule.source == RuleSource::SvdConvCompatibility {
-            assert!(!rule.svdconv_codes.is_empty());
-        }
         if rule.code.as_str().starts_with("SEM") {
             for kind in ["negative", "positive", "boundary"] {
                 assert!(

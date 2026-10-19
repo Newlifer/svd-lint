@@ -7,6 +7,7 @@
 //! this crate never depends on it.
 
 pub mod diagnostic;
+pub mod diagnostic_definition;
 pub mod frontend;
 pub mod ir;
 pub mod normalize;

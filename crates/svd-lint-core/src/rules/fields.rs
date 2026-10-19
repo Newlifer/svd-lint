@@ -1,7 +1,5 @@
-use super::{CheckContext, Rule, ranges};
-use crate::registry::{
-    Compatibility, DiagnosticDefinition, RuleCategory, RuleSource, SpecReference, SvdConvReference,
-};
+use super::{CheckContext, ranges};
+use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory, RuleSource};
 use crate::{Diagnostic, Severity};
 
 pub(crate) static ZERO_FIELD_WIDTH: DiagnosticDefinition = DiagnosticDefinition {
@@ -12,22 +10,7 @@ pub(crate) static ZERO_FIELD_WIDTH: DiagnosticDefinition = DiagnosticDefinition 
     default_severity: Severity::Error,
     source: RuleSource::CmsisSvd,
     configurable: true,
-    svdconv_codes: &[SvdConvReference {
-        code: "M310",
-        compatibility: Compatibility::Partial,
-    }],
-    spec_refs: &[SpecReference {
-        title: "Fields / zero-field-width",
-        url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_registers.html",
-    }],
     tags: &["check"],
-};
-
-pub(crate) static ZERO_FIELD_WIDTH_CHECK: Rule = Rule {
-    name: ZERO_FIELD_WIDTH.name,
-    description: ZERO_FIELD_WIDTH.description,
-    diagnostics: &[&ZERO_FIELD_WIDTH],
-    check: |context, output| check_fields_code(&ZERO_FIELD_WIDTH, context, output),
 };
 
 pub(crate) static FIELD_OUT_OF_BOUNDS: DiagnosticDefinition = DiagnosticDefinition {
@@ -38,28 +21,7 @@ pub(crate) static FIELD_OUT_OF_BOUNDS: DiagnosticDefinition = DiagnosticDefiniti
     default_severity: Severity::Error,
     source: RuleSource::CmsisSvd,
     configurable: true,
-    svdconv_codes: &[
-        SvdConvReference {
-            code: "M324",
-            compatibility: Compatibility::Partial,
-        },
-        SvdConvReference {
-            code: "M345",
-            compatibility: Compatibility::Partial,
-        },
-    ],
-    spec_refs: &[SpecReference {
-        title: "Fields / field-out-of-bounds",
-        url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_registers.html",
-    }],
     tags: &["check"],
-};
-
-pub(crate) static FIELD_OUT_OF_BOUNDS_CHECK: Rule = Rule {
-    name: FIELD_OUT_OF_BOUNDS.name,
-    description: FIELD_OUT_OF_BOUNDS.description,
-    diagnostics: &[&FIELD_OUT_OF_BOUNDS],
-    check: |context, output| check_fields_code(&FIELD_OUT_OF_BOUNDS, context, output),
 };
 
 pub(crate) static FIELD_OVERLAP: DiagnosticDefinition = DiagnosticDefinition {
@@ -70,45 +32,24 @@ pub(crate) static FIELD_OVERLAP: DiagnosticDefinition = DiagnosticDefinition {
     default_severity: Severity::Warning,
     source: RuleSource::SvdLint,
     configurable: true,
-    svdconv_codes: &[SvdConvReference {
-        code: "M338",
-        compatibility: Compatibility::Equivalent,
-    }],
-    spec_refs: &[],
     tags: &["heuristic"],
 };
 
-pub(crate) static FIELD_OVERLAP_CHECK: Rule = Rule {
-    name: FIELD_OVERLAP.name,
-    description: FIELD_OVERLAP.description,
-    diagnostics: &[&FIELD_OVERLAP],
-    check: |context, output| check_fields_code(&FIELD_OVERLAP, context, output),
-};
-
-fn check_fields_code(
-    definition: &DiagnosticDefinition,
-    context: &CheckContext<'_>,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
-    let code = definition.code();
+pub(super) fn check_fields(context: &CheckContext<'_>, diagnostics: &mut Vec<Diagnostic>) {
     for peripheral in &context.device.peripherals {
         for register in &peripheral.registers {
             let size = register.properties.size.as_ref();
             let mut intervals = Vec::new();
             for field in &register.fields {
                 if field.bit_width == 0 {
-                    if code == ZERO_FIELD_WIDTH.code() {
-                        diagnostics.push(context.diagnostic(
-                            definition,
-                            Severity::Error,
-                            "field width must be greater than zero",
-                            &field.origin,
-                            "bitWidth",
-                        ));
-                    }
-                    continue;
-                }
-                if code == ZERO_FIELD_WIDTH.code() {
+                    diagnostics.push(context.diagnostic(
+                        &ZERO_FIELD_WIDTH,
+                        Severity::Error,
+                        "field width must be greater than zero",
+                        &field.origin,
+                        "bitWidth",
+                    ));
+
                     continue;
                 }
                 let Some(size) = size.filter(|s| s.value > 0) else {
@@ -116,12 +57,10 @@ fn check_fields_code(
                 };
                 if let Some(interval) = ranges::field(field.bit_offset, field.bit_width, size.value)
                 {
-                    if code == FIELD_OVERLAP.code() {
-                        intervals.push((interval, field));
-                    }
-                } else if code == FIELD_OUT_OF_BOUNDS.code() {
+                    intervals.push((interval, field));
+                } else {
                     let mut d = context.diagnostic(
-                        definition,
+                        &FIELD_OUT_OF_BOUNDS,
                         Severity::Error,
                         format!(
                             "field interval [{}, {}) exceeds register size {}",
@@ -144,7 +83,7 @@ fn check_fields_code(
                     }
                     if range.overlaps(other) {
                         let mut d = context.diagnostic(
-                            definition,
+                            &FIELD_OVERLAP,
                             Severity::Warning,
                             format!(
                                 "field intervals [{}, {}) and [{}, {}) overlap",

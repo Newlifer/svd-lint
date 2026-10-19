@@ -1,7 +1,5 @@
 //! Diagnostic metadata for this pipeline component.
-use crate::registry::{
-    Compatibility, DiagnosticDefinition, RuleCategory, RuleSource, SpecReference, SvdConvReference,
-};
+use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory, RuleSource};
 pub static IO_READ_FAILED: DiagnosticDefinition = DiagnosticDefinition {
     code: crate::DiagnosticCode::new("IO001"),
     name: "io-read-failed",
@@ -10,8 +8,6 @@ pub static IO_READ_FAILED: DiagnosticDefinition = DiagnosticDefinition {
     default_severity: crate::Severity::Error,
     source: RuleSource::SvdLint,
     configurable: false,
-    svdconv_codes: &[],
-    spec_refs: &[],
     tags: &["check"],
 };
 
@@ -23,8 +19,6 @@ pub static IO_INVALID_UTF8: DiagnosticDefinition = DiagnosticDefinition {
     default_severity: crate::Severity::Error,
     source: RuleSource::SvdLint,
     configurable: false,
-    svdconv_codes: &[],
-    spec_refs: &[],
     tags: &["check"],
 };
 
@@ -36,11 +30,6 @@ pub static XML_SYNTAX: DiagnosticDefinition = DiagnosticDefinition {
     default_severity: crate::Severity::Error,
     source: RuleSource::CmsisSvd,
     configurable: false,
-    svdconv_codes: &[],
-    spec_refs: &[SpecReference {
-        title: "Structure / xml-syntax",
-        url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_device.html",
-    }],
     tags: &["check"],
 };
 
@@ -52,11 +41,6 @@ pub static INVALID_ROOT_ELEMENT: DiagnosticDefinition = DiagnosticDefinition {
     default_severity: crate::Severity::Error,
     source: RuleSource::CmsisSvd,
     configurable: false,
-    svdconv_codes: &[],
-    spec_refs: &[SpecReference {
-        title: "Structure / invalid-root",
-        url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_device.html",
-    }],
     tags: &["check"],
 };
 
@@ -68,14 +52,6 @@ pub static MISSING_REQUIRED_ELEMENT: DiagnosticDefinition = DiagnosticDefinition
     default_severity: crate::Severity::Error,
     source: RuleSource::CmsisSvd,
     configurable: false,
-    svdconv_codes: &[SvdConvReference {
-        code: "M316",
-        compatibility: Compatibility::Partial,
-    }],
-    spec_refs: &[SpecReference {
-        title: "Structure / missing-required-element",
-        url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_device.html",
-    }],
     tags: &["check"],
 };
 
@@ -87,14 +63,6 @@ pub static DUPLICATE_SINGLETON_ELEMENT: DiagnosticDefinition = DiagnosticDefinit
     default_severity: crate::Severity::Error,
     source: RuleSource::CmsisSvd,
     configurable: false,
-    svdconv_codes: &[SvdConvReference {
-        code: "M203",
-        compatibility: Compatibility::Partial,
-    }],
-    spec_refs: &[SpecReference {
-        title: "Structure / duplicate-singleton",
-        url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_device.html",
-    }],
     tags: &["check"],
 };
 
@@ -106,14 +74,6 @@ pub static EMPTY_REQUIRED_ELEMENT: DiagnosticDefinition = DiagnosticDefinition {
     default_severity: crate::Severity::Error,
     source: RuleSource::CmsisSvd,
     configurable: false,
-    svdconv_codes: &[SvdConvReference {
-        code: "M205",
-        compatibility: Compatibility::Partial,
-    }],
-    spec_refs: &[SpecReference {
-        title: "Structure / empty-required-element",
-        url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_device.html",
-    }],
     tags: &["check"],
 };
 
@@ -125,11 +85,6 @@ pub static MISSING_PERIPHERAL_DESCRIPTION: DiagnosticDefinition = DiagnosticDefi
     default_severity: crate::Severity::Warning,
     source: RuleSource::SvdLint,
     configurable: true,
-    svdconv_codes: &[SvdConvReference {
-        code: "M317",
-        compatibility: Compatibility::Partial,
-    }],
-    spec_refs: &[],
     tags: &["check"],
 };
 
@@ -141,16 +96,5 @@ pub static SVD_PARSE_ERROR: DiagnosticDefinition = DiagnosticDefinition {
     default_severity: crate::Severity::Error,
     source: RuleSource::SvdLint,
     configurable: false,
-    svdconv_codes: &[
-        SvdConvReference {
-            code: "M202",
-            compatibility: Compatibility::Partial,
-        },
-        SvdConvReference {
-            code: "M204",
-            compatibility: Compatibility::Partial,
-        },
-    ],
-    spec_refs: &[],
     tags: &["check"],
 };

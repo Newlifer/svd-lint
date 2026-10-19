@@ -1,10 +1,8 @@
 use super::{
-    CheckContext, Rule,
+    CheckContext,
     ranges::{self, Interval},
 };
-use crate::registry::{
-    Compatibility, DiagnosticDefinition, RuleCategory, RuleSource, SpecReference, SvdConvReference,
-};
+use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory, RuleSource};
 use crate::{Diagnostic, Severity, ir::*};
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -176,35 +174,10 @@ pub(crate) static INVALID_ALTERNATE_REGISTER: DiagnosticDefinition = DiagnosticD
     default_severity: Severity::Error,
     source: RuleSource::CmsisSvd,
     configurable: true,
-    svdconv_codes: &[
-        SvdConvReference {
-            code: "M348",
-            compatibility: Compatibility::Partial,
-        },
-        SvdConvReference {
-            code: "M349",
-            compatibility: Compatibility::Partial,
-        },
-    ],
-    spec_refs: &[SpecReference {
-        title: "Addressing / invalid-alternate-register",
-        url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_peripherals.html",
-    }],
     tags: &["check"],
 };
 
-pub(crate) static INVALID_ALTERNATE_REGISTER_CHECK: Rule = Rule {
-    name: INVALID_ALTERNATE_REGISTER.name,
-    description: INVALID_ALTERNATE_REGISTER.description,
-    diagnostics: &[&INVALID_ALTERNATE_REGISTER],
-    check: |context, output| check_alternatives_code(&INVALID_ALTERNATE_REGISTER, context, output),
-};
-
-fn check_alternatives_code(
-    definition: &DiagnosticDefinition,
-    context: &CheckContext<'_>,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
+pub(super) fn check_alternatives(context: &CheckContext<'_>, diagnostics: &mut Vec<Diagnostic>) {
     for peripheral in &context.device.peripherals {
         let layout = Layout::new(peripheral, context.device.address_unit_bits);
         for (i, (r, status)) in peripheral
@@ -215,7 +188,7 @@ fn check_alternatives_code(
         {
             if let Alternate::Invalid(reason) = status {
                 let mut d = context.diagnostic(
-                    definition,
+                    &INVALID_ALTERNATE_REGISTER,
                     Severity::Error,
                     *reason,
                     &r.origin,

@@ -1,7 +1,5 @@
-use super::{CheckContext, Rule, ranges::fits};
-use crate::registry::{
-    Compatibility, DiagnosticDefinition, RuleCategory, RuleSource, SpecReference, SvdConvReference,
-};
+use super::{CheckContext, ranges::fits};
+use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory, RuleSource};
 use crate::{Diagnostic, Origin, Severity, ir::*, svd};
 
 pub(crate) static INVALID_WRITE_CONSTRAINT: DiagnosticDefinition = DiagnosticDefinition {
@@ -12,19 +10,7 @@ pub(crate) static INVALID_WRITE_CONSTRAINT: DiagnosticDefinition = DiagnosticDef
     default_severity: Severity::Error,
     source: RuleSource::CmsisSvd,
     configurable: true,
-    svdconv_codes: &[],
-    spec_refs: &[SpecReference {
-        title: "Access / invalid-write-constraint",
-        url: "https://arm-software.github.io/CMSIS_5/SVD/html/elem_registers.html",
-    }],
     tags: &["check"],
-};
-
-pub(crate) static INVALID_WRITE_CONSTRAINT_CHECK: Rule = Rule {
-    name: INVALID_WRITE_CONSTRAINT.name,
-    description: INVALID_WRITE_CONSTRAINT.description,
-    diagnostics: &[&INVALID_WRITE_CONSTRAINT],
-    check: |context, output| check_access_code(&INVALID_WRITE_CONSTRAINT, context, output),
 };
 
 pub(crate) static ACCESS_CONFLICT: DiagnosticDefinition = DiagnosticDefinition {
@@ -35,34 +21,15 @@ pub(crate) static ACCESS_CONFLICT: DiagnosticDefinition = DiagnosticDefinition {
     default_severity: Severity::Warning,
     source: RuleSource::SvdLint,
     configurable: true,
-    svdconv_codes: &[SvdConvReference {
-        code: "M367",
-        compatibility: Compatibility::Partial,
-    }],
-    spec_refs: &[],
     tags: &["heuristic"],
 };
 
-pub(crate) static ACCESS_CONFLICT_CHECK: Rule = Rule {
-    name: ACCESS_CONFLICT.name,
-    description: ACCESS_CONFLICT.description,
-    diagnostics: &[&ACCESS_CONFLICT],
-    check: |context, output| check_access_code(&ACCESS_CONFLICT, context, output),
-};
-
-fn check_access_code(
-    definition: &DiagnosticDefinition,
-    context: &CheckContext<'_>,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
-    let code = definition.code();
-    let constraints = code == INVALID_WRITE_CONSTRAINT.code();
-
+pub(super) fn check_access(context: &CheckContext<'_>, diagnostics: &mut Vec<Diagnostic>) {
     for peripheral in &context.device.peripherals {
         for register in &peripheral.registers {
             let constraint = register.metadata.write_constraint;
             if let (Some(constraint), Some(width)) = (
-                constraint.filter(|_| constraints),
+                constraint,
                 register.properties.size.as_ref().filter(|s| s.value > 0),
             ) {
                 // Register metadata keeps effective derived values; follow the
@@ -74,7 +41,6 @@ fn check_access_code(
                     .flat_map(|f| &f.enumerated_values)
                     .any(writable_enum);
                 check_constraint(
-                    definition,
                     context,
                     constraint,
                     width.value,
@@ -83,23 +49,21 @@ fn check_access_code(
                     diagnostics,
                 );
             }
-            if !constraints {
-                check_operations(
-                    definition,
-                    context,
-                    register.properties.access.as_ref(),
-                    register.metadata.read_action,
-                    register.metadata.modified_write_values,
-                    &metadata_origin(context, &register.origin, "readAction"),
-                    &metadata_origin(context, &register.origin, "modifiedWriteValues"),
-                    diagnostics,
-                );
-            }
+
+            check_operations(
+                context,
+                register.properties.access.as_ref(),
+                register.metadata.read_action,
+                register.metadata.modified_write_values,
+                &metadata_origin(context, &register.origin, "readAction"),
+                &metadata_origin(context, &register.origin, "modifiedWriteValues"),
+                diagnostics,
+            );
+
             for field in &register.fields {
-                if let Some(constraint) = field.write_constraint.as_ref().filter(|_| constraints) {
+                if let Some(constraint) = field.write_constraint.as_ref() {
                     if field.bit_width > 0 {
                         check_constraint(
-                            definition,
                             context,
                             constraint.value,
                             field.bit_width,
@@ -109,26 +73,24 @@ fn check_access_code(
                         );
                     }
                 }
-                if !constraints {
-                    check_operations(
-                        definition,
-                        context,
-                        field.access.as_ref(),
-                        field.read_action.as_ref().map(|v| v.value),
-                        field.modified_write_values.as_ref().map(|v| v.value),
-                        &field
-                            .read_action
-                            .as_ref()
-                            .map(|v| v.origin.clone())
-                            .unwrap_or_else(|| field.origin.clone()),
-                        &field
-                            .modified_write_values
-                            .as_ref()
-                            .map(|v| v.origin.clone())
-                            .unwrap_or_else(|| field.origin.clone()),
-                        diagnostics,
-                    );
-                }
+
+                check_operations(
+                    context,
+                    field.access.as_ref(),
+                    field.read_action.as_ref().map(|v| v.value),
+                    field.modified_write_values.as_ref().map(|v| v.value),
+                    &field
+                        .read_action
+                        .as_ref()
+                        .map(|v| v.origin.clone())
+                        .unwrap_or_else(|| field.origin.clone()),
+                    &field
+                        .modified_write_values
+                        .as_ref()
+                        .map(|v| v.origin.clone())
+                        .unwrap_or_else(|| field.origin.clone()),
+                    diagnostics,
+                );
             }
         }
     }
@@ -150,7 +112,6 @@ fn metadata_origin(context: &CheckContext<'_>, origin: &Origin, tag: &str) -> Or
 }
 
 fn check_constraint(
-    definition: &DiagnosticDefinition,
     context: &CheckContext<'_>,
     constraint: svd::WriteConstraint,
     width: u32,
@@ -177,7 +138,7 @@ fn check_constraint(
     };
     if let Some(reason) = reason {
         diagnostics.push(context.diagnostic(
-            definition,
+            &INVALID_WRITE_CONSTRAINT,
             Severity::Error,
             reason,
             origin,
@@ -199,7 +160,6 @@ fn writable_enum(e: &CanonicalEnumeratedValues) -> bool {
 
 #[allow(clippy::too_many_arguments)]
 fn check_operations(
-    definition: &DiagnosticDefinition,
     context: &CheckContext<'_>,
     access: Option<&crate::Resolved<svd::Access>>,
     read: Option<svd::ReadAction>,
@@ -229,7 +189,8 @@ fn check_operations(
         ),
     ] {
         if contradiction {
-            let mut d = context.diagnostic(definition, Severity::Warning, reason, origin, tag);
+            let mut d =
+                context.diagnostic(&ACCESS_CONFLICT, Severity::Warning, reason, origin, tag);
             context.related(
                 &mut d,
                 &access.origin,

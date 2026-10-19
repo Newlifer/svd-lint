@@ -372,6 +372,89 @@ fn invalid_fields_do_not_create_overlap_cascades() {
 }
 
 #[test]
+fn field_checks_report_independent_errors_without_overlap_cascades() {
+    let result = run(&one(
+        8,
+        "",
+        &(field("A", 0, 2, "")
+            + &field("B", 1, 2, "")
+            + &field("ZERO", 0, 0, "")
+            + &field("OUT", 7, 2, "")),
+    ));
+    let mut codes: Vec<_> = result.diagnostics.iter().map(|d| d.code.as_str()).collect();
+    codes.sort();
+    assert_eq!(codes, ["SEM002", "SEM003", "SEM004"]);
+}
+
+#[test]
+fn invalid_reset_properties_do_not_create_mask_cascades() {
+    for (properties, expected) in [
+        (
+            "<resetValue>0x100</resetValue><resetMask>0</resetMask>",
+            vec!["SEM005"],
+        ),
+        (
+            "<resetValue>1</resetValue><resetMask>0x100</resetMask>",
+            vec!["SEM006"],
+        ),
+        (
+            "<resetValue>0x200</resetValue><resetMask>0x100</resetMask>",
+            vec!["SEM005", "SEM006"],
+        ),
+    ] {
+        let result = run(&one(8, properties, ""));
+        let mut codes: Vec<_> = result.diagnostics.iter().map(|d| d.code.as_str()).collect();
+        codes.sort();
+        assert_eq!(codes, expected);
+    }
+}
+
+#[test]
+fn enum_checks_report_bounds_duplicates_and_defaults_together() {
+    let items = entry("X", "4")
+        + &entry("X", "5")
+        + "<enumeratedValue><name>DEFAULT_A</name><isDefault>true</isDefault></enumeratedValue>"
+        + "<enumeratedValue><name>DEFAULT_B</name><isDefault>true</isDefault></enumeratedValue>";
+    let result = run(&enum_doc(2, &items));
+    let mut codes: Vec<_> = result.diagnostics.iter().map(|d| d.code.as_str()).collect();
+    codes.sort();
+    assert_eq!(codes, ["SEM012", "SEM012", "SEM013", "SEM014"]);
+}
+
+#[test]
+fn access_checks_report_constraints_and_effects_at_register_and_field() {
+    let invalid_constraint = "<writeConstraint><range><minimum>3</minimum><maximum>2</maximum></range></writeConstraint>";
+    let result = run(&one(
+        8,
+        &("<access>read-only</access><modifiedWriteValues>oneToClear</modifiedWriteValues>"
+            .to_owned()
+            + invalid_constraint),
+        &field(
+            "F",
+            0,
+            1,
+            &("<access>write-only</access><readAction>clear</readAction>".to_owned()
+                + invalid_constraint),
+        ),
+    ));
+    let mut findings: Vec<_> = result
+        .diagnostics
+        .iter()
+        .map(|d| (d.code.as_str(), d.severity))
+        .collect();
+    findings.sort_by_key(|d| d.0);
+    assert_eq!(
+        findings,
+        [
+            ("SEM015", Severity::Error),
+            ("SEM015", Severity::Error),
+            ("SEM016", Severity::Warning),
+            ("SEM016", Severity::Warning),
+        ]
+    );
+}
+
+#[test]
 fn reset_values_above_64_bits_and_absence_are_safe() {
     clean(&one(
         128,
