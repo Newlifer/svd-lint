@@ -180,26 +180,32 @@ pub(super) fn check_alternatives(context: &CheckContext<'_>) -> Vec<Diagnostic> 
     let mut diagnostics = Vec::new();
     for peripheral in &context.device.peripherals {
         let layout = Layout::new(peripheral, context.device.address_unit_bits);
-        for (i, (r, status)) in peripheral
-            .registers
-            .iter()
-            .zip(&layout.alternatives)
-            .enumerate()
-        {
-            if let Alternate::Invalid(reason) = status {
-                let mut d = context.diagnostic(
-                    &INVALID_ALTERNATE_REGISTER,
-                    Severity::Error,
-                    *reason,
-                    &r.origin,
-                    "alternateRegister",
-                );
-                if let Some(target) = layout.targets[i].map(|target| &peripheral.registers[target])
-                {
-                    context.related(&mut d, &target.origin, "name", "referenced register");
-                }
-                diagnostics.push(d);
+        diagnostics.extend(check_layout(context, &layout));
+    }
+    diagnostics
+}
+
+fn check_layout(context: &CheckContext<'_>, layout: &Layout<'_>) -> Vec<Diagnostic> {
+    let mut diagnostics = Vec::new();
+    let peripheral = layout.peripheral;
+    for (i, (r, status)) in peripheral
+        .registers
+        .iter()
+        .zip(&layout.alternatives)
+        .enumerate()
+    {
+        if let Alternate::Invalid(reason) = status {
+            let mut d = context.diagnostic(
+                &INVALID_ALTERNATE_REGISTER,
+                Severity::Error,
+                *reason,
+                &r.origin,
+                "alternateRegister",
+            );
+            if let Some(target) = layout.targets[i].map(|target| &peripheral.registers[target]) {
+                context.related(&mut d, &target.origin, "name", "referenced register");
             }
+            diagnostics.push(d);
         }
     }
 

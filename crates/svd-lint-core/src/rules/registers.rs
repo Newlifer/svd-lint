@@ -1,6 +1,6 @@
 use super::CheckContext;
 use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory};
-use crate::{Diagnostic, Severity};
+use crate::{CanonicalRegister, Diagnostic, Severity};
 
 pub(crate) static ZERO_REGISTER_SIZE: DiagnosticDefinition = DiagnosticDefinition {
     code: crate::DiagnosticCode::new("SEM001"),
@@ -14,22 +14,23 @@ pub(crate) static ZERO_REGISTER_SIZE: DiagnosticDefinition = DiagnosticDefinitio
 
 pub(super) fn check_registers(context: &CheckContext<'_>) -> Vec<Diagnostic> {
     let mut diagnostics = Vec::new();
-    let definition = &ZERO_REGISTER_SIZE;
     for peripheral in &context.device.peripherals {
         for register in &peripheral.registers {
-            if let Some(size) = &register.properties.size {
-                if size.value == 0 {
-                    diagnostics.push(context.diagnostic(
-                        definition,
-                        Severity::Error,
-                        "register size must be greater than zero",
-                        &size.origin,
-                        "size",
-                    ));
-                }
-            }
+            diagnostics.extend(check_size(context, register));
         }
     }
-
     diagnostics
+}
+
+fn check_size(context: &CheckContext<'_>, register: &CanonicalRegister) -> Option<Diagnostic> {
+    let size = register.properties.size.as_ref()?;
+    (size.value == 0).then(|| {
+        context.diagnostic(
+            &ZERO_REGISTER_SIZE,
+            Severity::Error,
+            "register size must be greater than zero",
+            &size.origin,
+            "size",
+        )
+    })
 }

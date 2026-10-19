@@ -26,69 +26,84 @@ pub(super) fn check_access(context: &CheckContext<'_>) -> Vec<Diagnostic> {
     let mut diagnostics = Vec::new();
     for peripheral in &context.device.peripherals {
         for register in &peripheral.registers {
-            let constraint = register.metadata.write_constraint;
-            if let (Some(constraint), Some(width)) = (
-                constraint,
-                register.properties.size.as_ref().filter(|s| s.value > 0),
-            ) {
-                // Register metadata keeps effective derived values; follow the
-                // derivation chain for a declaration missing on the use node.
-                let origin = metadata_origin(context, &register.origin, "writeConstraint");
-                let write_enums = register
-                    .fields
-                    .iter()
-                    .flat_map(|f| &f.enumerated_values)
-                    .any(writable_enum);
-                diagnostics.extend(check_constraint(
-                    context,
-                    constraint,
-                    width.value,
-                    &origin,
-                    write_enums,
-                ));
-            }
-
-            diagnostics.extend(check_operations(
-                context,
-                register.properties.access.as_ref(),
-                register.metadata.read_action,
-                register.metadata.modified_write_values,
-                &metadata_origin(context, &register.origin, "readAction"),
-                &metadata_origin(context, &register.origin, "modifiedWriteValues"),
-            ));
-
-            for field in &register.fields {
-                if let Some(constraint) = field.write_constraint.as_ref() {
-                    if field.bit_width > 0 {
-                        diagnostics.extend(check_constraint(
-                            context,
-                            constraint.value,
-                            field.bit_width,
-                            &constraint.origin,
-                            field.enumerated_values.iter().any(writable_enum),
-                        ));
-                    }
-                }
-
-                diagnostics.extend(check_operations(
-                    context,
-                    field.access.as_ref(),
-                    field.read_action.as_ref().map(|v| v.value),
-                    field.modified_write_values.as_ref().map(|v| v.value),
-                    &field
-                        .read_action
-                        .as_ref()
-                        .map(|v| v.origin.clone())
-                        .unwrap_or_else(|| field.origin.clone()),
-                    &field
-                        .modified_write_values
-                        .as_ref()
-                        .map(|v| v.origin.clone())
-                        .unwrap_or_else(|| field.origin.clone()),
-                ));
-            }
+            diagnostics.extend(check_register(context, register));
         }
     }
+    diagnostics
+}
+
+fn check_register(context: &CheckContext<'_>, register: &CanonicalRegister) -> Vec<Diagnostic> {
+    let mut diagnostics = Vec::new();
+
+    let constraint = register.metadata.write_constraint;
+    if let (Some(constraint), Some(width)) = (
+        constraint,
+        register.properties.size.as_ref().filter(|s| s.value > 0),
+    ) {
+        // Register metadata keeps effective derived values; follow the
+        // derivation chain for a declaration missing on the use node.
+        let origin = metadata_origin(context, &register.origin, "writeConstraint");
+        let write_enums = register
+            .fields
+            .iter()
+            .flat_map(|f| &f.enumerated_values)
+            .any(writable_enum);
+        diagnostics.extend(check_constraint(
+            context,
+            constraint,
+            width.value,
+            &origin,
+            write_enums,
+        ));
+    }
+
+    diagnostics.extend(check_operations(
+        context,
+        register.properties.access.as_ref(),
+        register.metadata.read_action,
+        register.metadata.modified_write_values,
+        &metadata_origin(context, &register.origin, "readAction"),
+        &metadata_origin(context, &register.origin, "modifiedWriteValues"),
+    ));
+
+    for field in &register.fields {
+        diagnostics.extend(check_field(context, field));
+    }
+
+    diagnostics
+}
+
+fn check_field(context: &CheckContext<'_>, field: &CanonicalField) -> Vec<Diagnostic> {
+    let mut diagnostics = Vec::new();
+
+    if let Some(constraint) = field.write_constraint.as_ref() {
+        if field.bit_width > 0 {
+            diagnostics.extend(check_constraint(
+                context,
+                constraint.value,
+                field.bit_width,
+                &constraint.origin,
+                field.enumerated_values.iter().any(writable_enum),
+            ));
+        }
+    }
+
+    diagnostics.extend(check_operations(
+        context,
+        field.access.as_ref(),
+        field.read_action.as_ref().map(|v| v.value),
+        field.modified_write_values.as_ref().map(|v| v.value),
+        &field
+            .read_action
+            .as_ref()
+            .map(|v| v.origin.clone())
+            .unwrap_or_else(|| field.origin.clone()),
+        &field
+            .modified_write_values
+            .as_ref()
+            .map(|v| v.origin.clone())
+            .unwrap_or_else(|| field.origin.clone()),
+    ));
 
     diagnostics
 }

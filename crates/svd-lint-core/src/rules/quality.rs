@@ -1,7 +1,7 @@
 //! Opt-in description quality check.
 use super::CheckContext;
 use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory};
-use crate::{CanonicalDevice, Diagnostic, Severity, SourceMap};
+use crate::{CanonicalDevice, CanonicalRegister, Diagnostic, Severity, SourceMap};
 
 pub(crate) static LOW_QUALITY_DESCRIPTION: DiagnosticDefinition = DiagnosticDefinition {
     code: crate::DiagnosticCode::new("SVD007"),
@@ -15,31 +15,35 @@ pub(crate) static LOW_QUALITY_DESCRIPTION: DiagnosticDefinition = DiagnosticDefi
 
 pub(super) fn check_descriptions(context: &CheckContext<'_>) -> Vec<Diagnostic> {
     let mut diagnostics = Vec::new();
-    let definition = &LOW_QUALITY_DESCRIPTION;
     let mut seen = std::collections::BTreeSet::new();
-    for p in &context.device.peripherals {
-        for r in &p.registers {
-            if r.metadata.description.as_deref().is_some_and(|d| {
-                let d = d.trim();
-                d.chars().count() < 4
-                    || d.eq_ignore_ascii_case(r.name.rsplit('.').next().unwrap_or(&r.name))
-            }) {
-                let d = context.diagnostic(
-                    definition,
-                    Severity::Warning,
-                    "register description is too short or repeats its name",
-                    &r.origin,
-                    "description",
-                );
-                if seen.insert(d.primary_span.map(|s| (s.start, s.end))) {
-                    diagnostics.push(d);
+    for peripheral in &context.device.peripherals {
+        for register in &peripheral.registers {
+            if let Some(diagnostic) = check_description(context, register) {
+                if seen.insert(diagnostic.primary_span.map(|span| (span.start, span.end))) {
+                    diagnostics.push(diagnostic);
                 }
             }
         }
     }
-    diagnostics.sort_by_key(|d| d.primary_span.map(|s| s.start));
-
+    diagnostics.sort_by_key(|diagnostic| diagnostic.primary_span.map(|span| span.start));
     diagnostics
+}
+
+fn check_description(
+    context: &CheckContext<'_>,
+    register: &CanonicalRegister,
+) -> Option<Diagnostic> {
+    let description = register.metadata.description.as_deref()?.trim();
+    let name = register.name.rsplit('.').next().unwrap_or(&register.name);
+    (description.chars().count() < 4 || description.eq_ignore_ascii_case(name)).then(|| {
+        context.diagnostic(
+            &LOW_QUALITY_DESCRIPTION,
+            Severity::Warning,
+            "register description is too short or repeats its name",
+            &register.origin,
+            "description",
+        )
+    })
 }
 
 pub fn check_quality(device: &CanonicalDevice, map: &SourceMap) -> Vec<Diagnostic> {

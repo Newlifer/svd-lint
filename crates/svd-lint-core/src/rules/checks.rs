@@ -8,10 +8,8 @@ pub(super) const CHECKS: &[CheckFn] = &[
     registers::check_registers,
     fields::check_fields,
     reset::check_reset,
-    memory::check_register_overlaps,
+    memory::check_memory,
     alternatives::check_alternatives,
-    memory::check_register_blocks,
-    memory::check_address_blocks,
     enums::check_enums,
     access::check_access,
 ];
