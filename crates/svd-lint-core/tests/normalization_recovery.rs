@@ -12,11 +12,9 @@ fn duplicate_fields_preserve_semantic_checks_but_do_not_export_ir() {
     let source = SourceFile::new("duplicates.svd", INPUT);
     let result = analyze_svd(&source);
     assert!(result.device.is_none());
-    for code in [
-        "NORM003", "SEM003", "SEM004", "SEM005", "SEM008", "SEM010", "SEM012",
-    ] {
+    for code in ["E011", "E020", "W003", "E021", "W006", "E025", "E027"] {
         assert!(
-            result.diagnostics.iter().any(|d| d.code.as_str() == code),
+            result.diagnostics.iter().any(|d| d.code().as_str() == code),
             "missing {code}: {:?}",
             result.diagnostics
         );
@@ -24,7 +22,7 @@ fn duplicate_fields_preserve_semantic_checks_but_do_not_export_ir() {
     let overlap = result
         .diagnostics
         .iter()
-        .find(|d| d.code == DiagnosticCode::new("SEM004"))
+        .find(|d| d.code() == DiagnosticCode::new("W003"))
         .unwrap();
     let primary = overlap.primary_span.unwrap();
     let related = overlap.related.first().unwrap().span;
@@ -42,7 +40,7 @@ fn duplicate_fields_preserve_semantic_checks_but_do_not_export_ir() {
         normalized
             .diagnostics
             .iter()
-            .all(|d| d.code == DiagnosticCode::new("NORM003"))
+            .all(|d| d.code() == DiagnosticCode::new("E011"))
     );
     assert_eq!(
         serde_json::to_value(result.diagnostics).unwrap(),
@@ -63,15 +61,15 @@ fn ambiguous_derived_from_stays_blocking_without_picking_a_duplicate() {
         result
             .diagnostics
             .iter()
-            .any(|d| d.code == DiagnosticCode::new("NORM003")
+            .any(|d| d.code() == DiagnosticCode::new("E011")
                 && d.message.contains("ambiguous derivedFrom")
                 && d.related.len() == 2)
     );
     assert!(
-        !result
+        result
             .diagnostics
             .iter()
-            .any(|d| d.code.as_str().starts_with("SEM"))
+            .all(|d| d.code().as_str() == "E011")
     );
 }
 
@@ -83,13 +81,13 @@ fn missing_effective_properties_are_not_recovered_as_a_complete_model() {
         result
             .diagnostics
             .iter()
-            .any(|d| d.code == DiagnosticCode::new("NORM008"))
+            .any(|d| d.code() == DiagnosticCode::new("E016"))
     );
     assert!(
-        !result
+        result
             .diagnostics
             .iter()
-            .any(|d| d.code.as_str().starts_with("SEM"))
+            .all(|d| matches!(d.code().as_str(), "E011" | "E016"))
     );
 }
 
@@ -102,12 +100,13 @@ fn unique_names_restore_public_ir_without_hiding_semantic_errors() {
         result
             .diagnostics
             .iter()
-            .any(|d| d.code == DiagnosticCode::new("SEM004"))
+            .any(|d| d.code() == DiagnosticCode::new("W003"))
     );
-    assert!(
-        !result
-            .diagnostics
-            .iter()
-            .any(|d| d.code.as_str().starts_with("NORM"))
+    assert_eq!(
+        result.diagnostics,
+        check_rules(
+            result.device.as_ref().unwrap(),
+            result.source_map.as_ref().unwrap()
+        )
     );
 }

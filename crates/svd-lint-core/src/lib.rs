@@ -32,7 +32,7 @@ pub struct AnalysisResult {
 
 impl AnalysisResult {
     pub fn has_errors(&self) -> bool {
-        self.diagnostics.iter().any(|d| d.severity.is_error())
+        self.diagnostics.iter().any(|d| d.severity().is_error())
     }
 }
 
@@ -67,7 +67,7 @@ pub fn analyze_svd_with_config(source: &SourceFile, config: &NormalizeConfig) ->
     diagnostics.sort_by_key(|d| {
         (
             d.primary_span.map(|s| (s.start, s.end)),
-            d.code.as_str(),
+            d.code().as_str(),
             d.message.clone(),
         )
     });

@@ -40,7 +40,7 @@ fn check_reports_normalization_errors_in_stable_json_shape() {
             .as_array()
             .unwrap()
             .iter()
-            .any(|d| d["code"] == "NORM001")
+            .any(|d| d["code"] == "E009")
     );
     assert!(report["diagnostics"][0]["span"]["start_line"].is_number());
     assert_eq!(report.as_object().unwrap().len(), 2);
@@ -58,7 +58,7 @@ fn dump_ir_is_deterministic_json_even_with_semantic_errors() {
             ])
             .assert()
             .code(1)
-            .stderr(contains("SEM009"))
+            .stderr(contains("E024"))
             .get_output()
             .stdout
             .clone()
@@ -101,7 +101,7 @@ fn check_reports_semantic_errors_and_preserves_json_structure() {
     let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
     assert_eq!(report.as_object().unwrap().len(), 2);
     let diagnostics = report["diagnostics"].as_array().unwrap();
-    for code in ["SEM001", "SEM008", "SEM013", "SEM016"] {
+    for code in ["E018", "E023", "E028", "W005"] {
         assert!(diagnostics.iter().any(|d| d["code"] == code));
     }
     assert!(
@@ -121,7 +121,7 @@ fn semantic_warning_only_file_exits_zero() {
         .arg(file.path())
         .assert()
         .code(0)
-        .stderr(contains("SEM007"));
+        .stderr(contains("W004"));
 }
 
 #[test]
@@ -135,7 +135,7 @@ fn dump_ir_keeps_schema_and_returns_error_status_for_semantic_violations() {
         ])
         .assert()
         .code(1)
-        .stderr(contains("SEM001"));
+        .stderr(contains("E018"));
     let ir: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
     assert!(ir["peripherals"].is_array());
     assert!(ir.get("diagnostics").is_none());
@@ -166,7 +166,7 @@ fn warning_only_file_exits_zero() {
         .args(["check", &fixture("valid/warning_no_description.svd")])
         .assert()
         .code(0)
-        .stderr(contains("SVD005"));
+        .stderr(contains("W002"));
 }
 
 #[test]
@@ -175,7 +175,7 @@ fn bad_xml_exits_one_with_xml001() {
         .args(["check", &fixture("invalid/bad_xml.svd")])
         .assert()
         .code(1)
-        .stderr(contains("XML001"));
+        .stderr(contains("E003"));
 }
 
 #[test]
@@ -184,7 +184,7 @@ fn missing_version_exits_one_with_svd002() {
         .args(["check", &fixture("invalid/missing_version.svd")])
         .assert()
         .code(1)
-        .stderr(contains("SVD002"));
+        .stderr(contains("E005"));
 }
 
 #[test]
@@ -193,10 +193,10 @@ fn multiple_errors_are_all_reported() {
         .args(["check", &fixture("invalid/multiple_errors.svd")])
         .assert()
         .code(1)
-        .stderr(contains("SVD002"))
-        .stderr(contains("SVD003"))
-        .stderr(contains("SVD004"))
-        .stderr(contains("SVD005"));
+        .stderr(contains("E005"))
+        .stderr(contains("E006"))
+        .stderr(contains("E007"))
+        .stderr(contains("W002"));
 }
 
 #[test]
@@ -205,7 +205,7 @@ fn bad_number_exits_one_with_svd006_without_panic() {
         .args(["check", &fixture("invalid/bad_number.svd")])
         .assert()
         .code(1)
-        .stderr(contains("SVD006"));
+        .stderr(contains("E008"));
     // A panic would produce exit code 101 and "panicked" on stderr.
     let output = String::from_utf8_lossy(&assert.get_output().stderr).into_owned();
     assert!(!output.contains("panicked"), "{output}");
@@ -217,7 +217,7 @@ fn nonexistent_file_exits_two_with_io001() {
         .args(["check", "../../tests/fixtures/does_not_exist.svd"])
         .assert()
         .code(2)
-        .stderr(contains("IO001"));
+        .stderr(contains("E001"));
 }
 
 #[test]
@@ -229,7 +229,7 @@ fn invalid_utf8_exits_two_with_io002() {
         .args(["check".as_ref(), path.as_os_str()])
         .assert()
         .code(2)
-        .stderr(contains("IO002"));
+        .stderr(contains("E002"));
 }
 
 #[test]
@@ -251,15 +251,15 @@ fn json_output_is_valid_and_structured() {
         .iter()
         .map(|d| d["code"].as_str().unwrap())
         .collect();
-    for expected in ["SVD002", "SVD003", "SVD004", "SVD005"] {
+    for expected in ["E005", "E006", "E007", "W002"] {
         assert!(codes.contains(&expected), "missing {expected} in {codes:?}");
     }
 
     // Byte ranges and computed line/column positions are present.
     let dup = diagnostics
         .iter()
-        .find(|d| d["code"] == "SVD003")
-        .expect("SVD003 diagnostic");
+        .find(|d| d["code"] == "E006")
+        .expect("E006 diagnostic");
     let span = &dup["span"];
     assert!(span["start"].as_u64().unwrap() < span["end"].as_u64().unwrap());
     assert_eq!(span["start_line"], 5);
@@ -281,7 +281,7 @@ fn json_output_for_io_error() {
         .code(2);
     let stdout = String::from_utf8(assert.get_output().stdout.clone()).unwrap();
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
-    assert_eq!(json["diagnostics"][0]["code"], "IO001");
+    assert_eq!(json["diagnostics"][0]["code"], "E001");
 }
 
 #[test]

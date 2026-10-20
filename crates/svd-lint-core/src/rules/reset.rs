@@ -1,33 +1,30 @@
 use super::{CheckContext, ranges::fits};
-use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory};
+use crate::diagnostic_definition::DiagnosticDefinition;
 use crate::{CanonicalRegister, Diagnostic, Resolved, Severity};
 
 pub(crate) static RESET_VALUE_OUT_OF_BOUNDS: DiagnosticDefinition = DiagnosticDefinition {
-    code: crate::DiagnosticCode::new("SEM005"),
+    code: crate::DiagnosticCode::new("E021"),
     name: "reset-value-out-of-bounds",
     description: "The effective reset value exceeds register width.",
-    category: RuleCategory::Reset,
-    default_severity: Severity::Error,
+    severity: Severity::Error,
     configurable: true,
     tags: &["check"],
 };
 
 pub(crate) static RESET_MASK_OUT_OF_BOUNDS: DiagnosticDefinition = DiagnosticDefinition {
-    code: crate::DiagnosticCode::new("SEM006"),
+    code: crate::DiagnosticCode::new("E022"),
     name: "reset-mask-out-of-bounds",
     description: "The effective reset mask exceeds register width.",
-    category: RuleCategory::Reset,
-    default_severity: Severity::Error,
+    severity: Severity::Error,
     configurable: true,
     tags: &["check"],
 };
 
 pub(crate) static RESET_OUTSIDE_MASK: DiagnosticDefinition = DiagnosticDefinition {
-    code: crate::DiagnosticCode::new("SEM007"),
+    code: crate::DiagnosticCode::new("W004"),
     name: "reset-outside-mask",
     description: "Reset bits outside the declared mask may be suspicious.",
-    category: RuleCategory::Reset,
-    default_severity: Severity::Warning,
+    severity: Severity::Warning,
     configurable: true,
     tags: &["heuristic"],
 };
@@ -77,7 +74,6 @@ fn check_bounds<'a>(
             if !fits(value.value, width) {
                 let mut d = context.diagnostic(
                     definition,
-                    Severity::Error,
                     format!("{tag} {:#x} does not fit in {width} bits", value.value),
                     &value.origin,
                     tag,
@@ -105,7 +101,6 @@ fn check_mask(context: &CheckContext<'_>, pair: ResetPair<'_>) -> Vec<Diagnostic
     if outside != 0 {
         let mut d = context.diagnostic(
             &RESET_OUTSIDE_MASK,
-            Severity::Warning,
             format!("resetValue has bits {outside:#x} outside resetMask; those reset bits are unspecified"),
             &pair.value.origin,
             "resetValue",

@@ -4,7 +4,7 @@ expression: "serde_json::to_string_pretty(&result.diagnostics).unwrap()"
 ---
 [
   {
-    "code": "SEM005",
+    "code": "E021",
     "severity": "error",
     "message": "resetValue 0x100 does not fit in 8 bits",
     "primary_span": {
@@ -14,8 +14,8 @@ expression: "serde_json::to_string_pretty(&result.diagnostics).unwrap()"
     "related": [
       {
         "span": {
-          "start": 2103,
-          "end": 2174
+          "start": 2179,
+          "end": 2250
         },
         "message": "property is used here"
       },
@@ -29,7 +29,7 @@ expression: "serde_json::to_string_pretty(&result.diagnostics).unwrap()"
     ]
   },
   {
-    "code": "SEM006",
+    "code": "E022",
     "severity": "error",
     "message": "resetMask 0x100 does not fit in 8 bits",
     "primary_span": {
@@ -39,8 +39,8 @@ expression: "serde_json::to_string_pretty(&result.diagnostics).unwrap()"
     "related": [
       {
         "span": {
-          "start": 2103,
-          "end": 2174
+          "start": 2179,
+          "end": 2250
         },
         "message": "property is used here"
       },
@@ -54,7 +54,7 @@ expression: "serde_json::to_string_pretty(&result.diagnostics).unwrap()"
     ]
   },
   {
-    "code": "SEM011",
+    "code": "E026",
     "severity": "error",
     "message": "addressBlock size must be greater than zero",
     "primary_span": {
@@ -64,7 +64,7 @@ expression: "serde_json::to_string_pretty(&result.diagnostics).unwrap()"
     "related": []
   },
   {
-    "code": "SEM001",
+    "code": "E018",
     "severity": "error",
     "message": "register size must be greater than zero",
     "primary_span": {
@@ -74,7 +74,7 @@ expression: "serde_json::to_string_pretty(&result.diagnostics).unwrap()"
     "related": []
   },
   {
-    "code": "SEM002",
+    "code": "E019",
     "severity": "error",
     "message": "field width must be greater than zero",
     "primary_span": {
@@ -84,7 +84,7 @@ expression: "serde_json::to_string_pretty(&result.diagnostics).unwrap()"
     "related": []
   },
   {
-    "code": "SEM007",
+    "code": "W004",
     "severity": "warning",
     "message": "resetValue has bits 0x2 outside resetMask; those reset bits are unspecified",
     "primary_span": {
@@ -102,7 +102,7 @@ expression: "serde_json::to_string_pretty(&result.diagnostics).unwrap()"
     ]
   },
   {
-    "code": "SEM016",
+    "code": "W005",
     "severity": "warning",
     "message": "modifiedWriteValues is declared on a read-only object",
     "primary_span": {
@@ -120,7 +120,7 @@ expression: "serde_json::to_string_pretty(&result.diagnostics).unwrap()"
     ]
   },
   {
-    "code": "SEM003",
+    "code": "E020",
     "severity": "error",
     "message": "field interval [7, 9) exceeds register size 8",
     "primary_span": {
@@ -138,7 +138,7 @@ expression: "serde_json::to_string_pretty(&result.diagnostics).unwrap()"
     ]
   },
   {
-    "code": "SEM004",
+    "code": "W003",
     "severity": "warning",
     "message": "field intervals [0, 2) and [0, 4) overlap",
     "primary_span": {
@@ -148,15 +148,15 @@ expression: "serde_json::to_string_pretty(&result.diagnostics).unwrap()"
     "related": [
       {
         "span": {
-          "start": 1677,
-          "end": 1692
+          "start": 1753,
+          "end": 1768
         },
         "message": "overlapping field"
       }
     ]
   },
   {
-    "code": "SEM004",
+    "code": "W003",
     "severity": "warning",
     "message": "field intervals [0, 4) and [3, 5) overlap",
     "primary_span": {
@@ -174,7 +174,7 @@ expression: "serde_json::to_string_pretty(&result.diagnostics).unwrap()"
     ]
   },
   {
-    "code": "SEM012",
+    "code": "E027",
     "severity": "error",
     "message": "enumerated value 0x4 does not fit in 2 bits",
     "primary_span": {
@@ -185,7 +185,7 @@ expression: "serde_json::to_string_pretty(&result.diagnostics).unwrap()"
       {
         "span": {
           "start": 1236,
-          "end": 1661
+          "end": 1737
         },
         "message": "property is used here"
       },
@@ -199,7 +199,7 @@ expression: "serde_json::to_string_pretty(&result.diagnostics).unwrap()"
     ]
   },
   {
-    "code": "SEM013",
+    "code": "E028",
     "severity": "error",
     "message": "duplicate enumerated name `X` in one usage set",
     "primary_span": {
@@ -210,7 +210,7 @@ expression: "serde_json::to_string_pretty(&result.diagnostics).unwrap()"
       {
         "span": {
           "start": 1236,
-          "end": 1661
+          "end": 1737
         },
         "message": "property is used here"
       },
@@ -224,47 +224,90 @@ expression: "serde_json::to_string_pretty(&result.diagnostics).unwrap()"
     ]
   },
   {
-    "code": "SEM014",
-    "severity": "error",
-    "message": "enumeratedValues contains multiple isDefault=true entries",
+    "code": "W007",
+    "severity": "warning",
+    "message": "enumerated value 0x1 has multiple semantic descriptions in one usage set",
     "primary_span": {
-      "start": 1580,
-      "end": 1607
+      "start": 1504,
+      "end": 1520
     },
     "related": [
       {
         "span": {
           "start": 1236,
-          "end": 1661
+          "end": 1737
         },
         "message": "property is used here"
       },
       {
         "span": {
-          "start": 1504,
-          "end": 1531
+          "start": 1428,
+          "end": 1444
+        },
+        "message": "previous value description"
+      }
+    ]
+  },
+  {
+    "code": "E029",
+    "severity": "error",
+    "message": "enumeratedValues contains multiple isDefault=true entries",
+    "primary_span": {
+      "start": 1656,
+      "end": 1683
+    },
+    "related": [
+      {
+        "span": {
+          "start": 1236,
+          "end": 1737
+        },
+        "message": "property is used here"
+      },
+      {
+        "span": {
+          "start": 1580,
+          "end": 1607
         },
         "message": "previous default entry"
       }
     ]
   },
   {
-    "code": "SEM015",
+    "code": "E030",
     "severity": "error",
     "message": "writeConstraint minimum exceeds maximum",
     "primary_span": {
-      "start": 1738,
-      "end": 1828
+      "start": 1814,
+      "end": 1904
     },
     "related": []
   },
   {
-    "code": "SEM008",
+    "code": "E025",
+    "severity": "error",
+    "message": "register range [0x1000, 0x1002) is outside every registers addressBlock",
+    "primary_span": {
+      "start": 1973,
+      "end": 2005
+    },
+    "related": [
+      {
+        "span": {
+          "start": 397,
+          "end": 482
+        },
+        "message": "registers addressBlock"
+      }
+    ]
+  },
+  {
+    "code": "W006",
     "severity": "warning",
     "message": "register ranges [0x1000, 0x1001) and [0x1000, 0x1002) overlap",
     "primary_span": {
-      "start": 1897,
-      "end": 1929
+      "start": 1973,
+      "end": 2005
     },
     "related": [
       {
@@ -277,48 +320,30 @@ expression: "serde_json::to_string_pretty(&result.diagnostics).unwrap()"
     ]
   },
   {
-    "code": "SEM010",
-    "severity": "error",
-    "message": "register range [0x1000, 0x1002) is outside every registers addressBlock",
-    "primary_span": {
-      "start": 1897,
-      "end": 1929
-    },
-    "related": [
-      {
-        "span": {
-          "start": 397,
-          "end": 482
-        },
-        "message": "registers addressBlock"
-      }
-    ]
-  },
-  {
-    "code": "SEM008",
+    "code": "E023",
     "severity": "error",
     "message": "register ranges [0x1000, 0x1002) and [0x1001, 0x1003) overlap",
     "primary_span": {
-      "start": 1992,
-      "end": 2024
+      "start": 2068,
+      "end": 2100
     },
     "related": [
       {
         "span": {
-          "start": 1897,
-          "end": 1929
+          "start": 1973,
+          "end": 2005
         },
         "message": "overlapping register"
       }
     ]
   },
   {
-    "code": "SEM010",
+    "code": "E025",
     "severity": "error",
     "message": "register range [0x1001, 0x1003) is outside every registers addressBlock",
     "primary_span": {
-      "start": 1992,
-      "end": 2024
+      "start": 2068,
+      "end": 2100
     },
     "related": [
       {
@@ -331,22 +356,22 @@ expression: "serde_json::to_string_pretty(&result.diagnostics).unwrap()"
     ]
   },
   {
-    "code": "SEM009",
+    "code": "E024",
     "severity": "error",
     "message": "alternateRegister target does not exist in this peripheral",
     "primary_span": {
-      "start": 2039,
-      "end": 2085
+      "start": 2115,
+      "end": 2161
     },
     "related": []
   },
   {
-    "code": "SEM010",
+    "code": "E025",
     "severity": "error",
     "message": "register range [0x1008, 0x1009) is outside every registers addressBlock",
     "primary_span": {
-      "start": 2131,
-      "end": 2163
+      "start": 2207,
+      "end": 2239
     },
     "related": [
       {

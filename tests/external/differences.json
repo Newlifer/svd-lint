@@ -49,15 +49,15 @@
   },
   "tests/svd/enumerated_values/do_not_care_and_distinct_result_in_same_value.svd": {
     "status": "EXPECTED DIFFERENCE",
-    "reason": "svd-lint retains conflicting enum entries for SEM013 diagnostics; SVDSuite removes subsequent conflicting entries from its processed model."
+    "reason": "svd-lint retains conflicting enum entries for E028 diagnostics; SVDSuite removes subsequent conflicting entries from its processed model."
   },
   "tests/svd/enumerated_values/value_already_defined.svd": {
     "status": "EXPECTED DIFFERENCE",
-    "reason": "svd-lint retains conflicting enum entries for SEM013 diagnostics; SVDSuite removes subsequent conflicting entries from its processed model."
+    "reason": "svd-lint retains conflicting enum entries for E028 diagnostics; SVDSuite removes subsequent conflicting entries from its processed model."
   },
   "tests/svd/enumerated_values/value_name_already_defined_same_container.svd": {
     "status": "EXPECTED DIFFERENCE",
-    "reason": "svd-lint retains conflicting enum entries for SEM013 diagnostics; SVDSuite removes subsequent conflicting entries from its processed model."
+    "reason": "svd-lint retains conflicting enum entries for E028 diagnostics; SVDSuite removes subsequent conflicting entries from its processed model."
   },
   "tests/svd/field_inheritance_via_derivedfrom/override_behavior.svd": {
     "status": "REFERENCE AMBIGUITY",

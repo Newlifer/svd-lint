@@ -2,8 +2,8 @@ use svd_lint_core::{schema::*, *};
 struct Rejected;
 impl SchemaValidator for Rejected {
     fn validate(&self, _: &SourceFile, _: SchemaVersion) -> Vec<Diagnostic> {
-        vec![Diagnostic::error(
-            DiagnosticCode::new("XSD002"),
+        vec![Diagnostic::new(
+            DiagnosticCode::new("E032"),
             "invalid schema content",
         )]
     }
@@ -25,7 +25,7 @@ fn schema_failure_stops_typed_parse_cascades() {
     );
     assert!(result.device.is_none());
     assert_eq!(result.diagnostics.len(), 1);
-    assert_eq!(result.diagnostics[0].code, DiagnosticCode::new("XSD002"));
+    assert_eq!(result.diagnostics[0].code(), DiagnosticCode::new("E032"));
 }
 #[test]
 fn accepted_schema_runs_existing_pipeline() {

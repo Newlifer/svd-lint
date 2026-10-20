@@ -2,7 +2,7 @@ use super::{
     CheckContext,
     ranges::{self, Interval},
 };
-use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory};
+use crate::diagnostic_definition::DiagnosticDefinition;
 use crate::{Diagnostic, Severity, ir::*};
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -167,11 +167,10 @@ impl<'a> Layout<'a> {
 }
 
 pub(crate) static INVALID_ALTERNATE_REGISTER: DiagnosticDefinition = DiagnosticDefinition {
-    code: crate::DiagnosticCode::new("SEM009"),
+    code: crate::DiagnosticCode::new("E024"),
     name: "invalid-alternate-register",
     description: "The alternate register reference or memory range is invalid.",
-    category: RuleCategory::Addressing,
-    default_severity: Severity::Error,
+    severity: Severity::Error,
     configurable: true,
     tags: &["check"],
 };
@@ -197,7 +196,6 @@ fn check_layout(context: &CheckContext<'_>, layout: &Layout<'_>) -> Vec<Diagnost
         if let Alternate::Invalid(reason) = status {
             let mut d = context.diagnostic(
                 &INVALID_ALTERNATE_REGISTER,
-                Severity::Error,
                 *reason,
                 &r.origin,
                 "alternateRegister",

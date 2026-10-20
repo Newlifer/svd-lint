@@ -2,7 +2,7 @@
 source: crates/svd-lint-cli/tests/cli.rs
 expression: stderr
 ---
-SVD002
+E005
 
   × missing required element <width>
     ╭─[../../tests/fixtures/invalid/multiple_errors.svd:2:1]
@@ -22,7 +22,7 @@ SVD002
  14 │ ╰─▶ </device>
     ╰────
 
-SVD003
+E006
 
   × element <version> must appear only once
    ╭─[../../tests/fixtures/invalid/multiple_errors.svd:4:3]
@@ -35,7 +35,7 @@ SVD003
  6 │   <description></description>
    ╰────
 
-SVD004
+E007
 
   × required element <description> must not be empty
    ╭─[../../tests/fixtures/invalid/multiple_errors.svd:6:3]
@@ -45,7 +45,7 @@ SVD004
  7 │   <addressUnitBits>8</addressUnitBits>
    ╰────
 
-SVD005
+W002
 
   ⚠ peripheral <P0> has no description
     ╭─[../../tests/fixtures/invalid/multiple_errors.svd:9:5]

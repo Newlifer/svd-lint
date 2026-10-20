@@ -33,7 +33,7 @@ pub fn check_document(document: &Document) -> Vec<Diagnostic> {
     let root = document.root_element();
     if root.tag_name().name() != "device" {
         diagnostics.push(
-            Diagnostic::error(
+            Diagnostic::new(
                 diagnostics::INVALID_ROOT_ELEMENT.code(),
                 format!(
                     "root element must be <device>, found <{}>",
@@ -60,7 +60,7 @@ fn check_required_singletons(root: roxmltree::Node<'_, '_>, diagnostics: &mut Ve
 
         match elements.as_slice() {
             [] => diagnostics.push(
-                Diagnostic::error(
+                Diagnostic::new(
                     diagnostics::MISSING_REQUIRED_ELEMENT.code(),
                     format!("missing required element <{name}>"),
                 )
@@ -68,10 +68,10 @@ fn check_required_singletons(root: roxmltree::Node<'_, '_>, diagnostics: &mut Ve
             ),
             [first, duplicates @ ..] => {
                 // An empty `<peripherals>` is reported by the peripheral
-                // check below, not as SVD004.
+                // check below, not as E007.
                 if name != "peripherals" && element_text_is_empty(*first) {
                     diagnostics.push(
-                        Diagnostic::error(
+                        Diagnostic::new(
                             diagnostics::EMPTY_REQUIRED_ELEMENT.code(),
                             format!("required element <{name}> must not be empty"),
                         )
@@ -80,7 +80,7 @@ fn check_required_singletons(root: roxmltree::Node<'_, '_>, diagnostics: &mut Ve
                 }
                 for duplicate in duplicates {
                     diagnostics.push(
-                        Diagnostic::error(
+                        Diagnostic::new(
                             diagnostics::DUPLICATE_SINGLETON_ELEMENT.code(),
                             format!("element <{name}> must appear only once"),
                         )
@@ -98,7 +98,7 @@ fn check_peripherals(root: roxmltree::Node<'_, '_>, diagnostics: &mut Vec<Diagno
         .children()
         .find(|n| n.is_element() && n.tag_name().name() == "peripherals")
     else {
-        // Already reported as SVD002 by the singleton check.
+        // Already reported as E005 by the singleton check.
         return;
     };
 
@@ -109,7 +109,7 @@ fn check_peripherals(root: roxmltree::Node<'_, '_>, diagnostics: &mut Vec<Diagno
 
     if peripheral_nodes.is_empty() {
         diagnostics.push(
-            Diagnostic::error(
+            Diagnostic::new(
                 diagnostics::MISSING_REQUIRED_ELEMENT.code(),
                 "element <peripherals> must contain at least one <peripheral>",
             )
@@ -137,7 +137,7 @@ fn check_peripherals(root: roxmltree::Node<'_, '_>, diagnostics: &mut Vec<Diagno
                 .filter(|s| !s.is_empty())
                 .unwrap_or("<unnamed>");
             diagnostics.push(
-                Diagnostic::warning(
+                Diagnostic::new(
                     diagnostics::MISSING_PERIPHERAL_DESCRIPTION.code(),
                     format!("peripheral <{name}> has no description"),
                 )
@@ -173,7 +173,7 @@ mod tests {
     }
 
     fn codes(diagnostics: &[Diagnostic]) -> Vec<DiagnosticCode> {
-        diagnostics.iter().map(|d| d.code).collect()
+        diagnostics.iter().map(|d| d.code()).collect()
     }
 
     const VALID: &str = "\
@@ -201,7 +201,7 @@ mod tests {
     fn wrong_root_is_svd001() {
         let diags = check("<chip><name>D</name></chip>");
         assert_eq!(codes(&diags), [diagnostics::INVALID_ROOT_ELEMENT.code()]);
-        assert_eq!(diags[0].severity, Severity::Error);
+        assert_eq!(diags[0].severity(), Severity::Error);
     }
 
     #[test]
@@ -277,7 +277,7 @@ mod tests {
             codes(&diags),
             [diagnostics::MISSING_PERIPHERAL_DESCRIPTION.code()]
         );
-        assert_eq!(diags[0].severity, Severity::Warning);
+        assert_eq!(diags[0].severity(), Severity::Warning);
         assert!(diags[0].message.contains("P0"));
     }
 

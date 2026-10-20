@@ -1,0 +1,10 @@
+{
+  "expected": [
+    "W003"
+  ],
+  "profile": "default",
+  "unexpected": [
+    "E019",
+    "E020"
+  ]
+}

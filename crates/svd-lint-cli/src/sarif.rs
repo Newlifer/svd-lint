@@ -37,7 +37,7 @@ pub fn results(path: &str, diagnostics: &[Diagnostic], source: Option<&SourceFil
         .iter()
         .map(|d| {
             let mut result =
-                json!({"ruleId":d.code.as_str(),"level":d.severity,"message":{"text":d.message}});
+                json!({"ruleId":d.code().as_str(),"level":d.severity(),"message":{"text":d.message}});
             if let Some(loc) = d.primary_span.and_then(|s| location(path, s, source)) {
                 result["locations"] = json!([loc]);
             }
@@ -67,8 +67,7 @@ pub fn document(results: Vec<Value>) -> Value {
             json!({
                 "id":r.code,"name":r.name,"shortDescription":{"text":r.description},
                 "helpUri":"https://github.com/Newlifer/svd-lint/blob/main/docs/rules.md",
-                "defaultConfiguration":{"level":r.default_severity},
-                "properties":{"category":r.category}
+                "defaultConfiguration":{"level":r.severity}
             })
         })
         .collect();

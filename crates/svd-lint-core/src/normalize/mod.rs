@@ -166,7 +166,7 @@ pub(crate) fn normalize_for_analysis(
     }
     let duplicate_fields = builder.duplicate_fields;
     let mut diagnostics = builder.resolver.diagnostics;
-    diagnostics.sort_by_key(|d| (d.primary_span.map(|s| (s.start, s.end)), d.code.as_str()));
+    diagnostics.sort_by_key(|d| (d.primary_span.map(|s| (s.start, s.end)), d.code().as_str()));
     let mut metadata = device.clone();
     metadata.peripherals.clear();
     let canonical = CanonicalDevice {
@@ -178,7 +178,10 @@ pub(crate) fn normalize_for_analysis(
         unmodeled_nodes: unmodeled::nodes(source_map),
         origin,
     };
-    let errors = diagnostics.iter().filter(|d| d.severity.is_error()).count();
+    let errors = diagnostics
+        .iter()
+        .filter(|d| d.severity().is_error())
+        .count();
     let (device, diagnostic_device) = if errors == 0 {
         (Some(canonical), None)
     } else if errors == duplicate_fields {

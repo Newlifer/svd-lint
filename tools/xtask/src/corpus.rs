@@ -54,7 +54,7 @@ cases!(
     sem001_valid,
     sem001_invalid,
     sem001_boundary,
-    "SEM001",
+    "E018",
     Severity::Error,
     one(32, "", ""),
     one(0, "", ""),
@@ -64,7 +64,7 @@ cases!(
     sem002_valid,
     sem002_invalid,
     sem002_boundary,
-    "SEM002",
+    "E019",
     Severity::Error,
     one(8, "", &field("F", 0, 1, "")),
     one(8, "", &field("F", 0, 0, "")),
@@ -74,7 +74,7 @@ cases!(
     sem003_valid,
     sem003_invalid,
     sem003_boundary,
-    "SEM003",
+    "E020",
     Severity::Error,
     one(8, "", &field("F", 0, 2, "")),
     one(8, "", &field("F", 7, 2, "")),
@@ -84,7 +84,7 @@ cases!(
     sem004_valid,
     sem004_invalid,
     sem004_boundary,
-    "SEM004",
+    "W003",
     Severity::Warning,
     one(8, "", &(field("A", 0, 1, "") + &field("B", 1, 1, ""))),
     one(8, "", &(field("A", 0, 4, "") + &field("B", 3, 2, ""))),
@@ -94,7 +94,7 @@ cases!(
     sem005_valid,
     sem005_invalid,
     sem005_boundary,
-    "SEM005",
+    "E021",
     Severity::Error,
     one(8, "<resetValue>255</resetValue>", ""),
     one(8, "<resetValue>256</resetValue>", ""),
@@ -104,7 +104,7 @@ cases!(
     sem006_valid,
     sem006_invalid,
     sem006_boundary,
-    "SEM006",
+    "E022",
     Severity::Error,
     one(8, "<resetMask>255</resetMask>", ""),
     one(8, "<resetMask>256</resetMask>", ""),
@@ -114,7 +114,7 @@ cases!(
     sem007_valid,
     sem007_invalid,
     sem007_boundary,
-    "SEM007",
+    "W004",
     Severity::Warning,
     one(8, "<resetValue>1</resetValue><resetMask>1</resetMask>", ""),
     one(8, "<resetValue>2</resetValue><resetMask>1</resetMask>", ""),
@@ -124,7 +124,7 @@ cases!(
     sem008_valid,
     sem008_invalid,
     sem008_boundary,
-    "SEM008",
+    "E023",
     Severity::Error,
     xml(
         "",
@@ -142,7 +142,7 @@ cases!(
     sem009_valid,
     sem009_invalid,
     sem009_boundary,
-    "SEM009",
+    "E024",
     Severity::Error,
     xml(
         "",
@@ -163,7 +163,7 @@ cases!(
     sem010_valid,
     sem010_invalid,
     sem010_boundary,
-    "SEM010",
+    "E025",
     Severity::Error,
     xml("", &block(0, 8), &reg("R", 0, 32, "", "")),
     xml("", &block(0, 8), &reg("R", 8, 8, "", "")),
@@ -173,7 +173,7 @@ cases!(
     sem011_valid,
     sem011_invalid,
     sem011_boundary,
-    "SEM011",
+    "E026",
     Severity::Error,
     xml("", &block(0, 4), &reg("R", 0, 32, "", "")),
     xml("", &block(0, 0), &reg("R", 0, 32, "", "")),
@@ -186,7 +186,7 @@ cases!(
     sem012_valid,
     sem012_invalid,
     sem012_boundary,
-    "SEM012",
+    "E027",
     Severity::Error,
     enum_doc(2, &entry("A", "3")),
     enum_doc(2, &entry("A", "4")),
@@ -196,7 +196,7 @@ cases!(
     sem013_valid,
     sem013_invalid,
     sem013_boundary,
-    "SEM013",
+    "E028",
     Severity::Error,
     enum_doc(2, &(entry("A", "0") + &entry("B", "1"))),
     enum_doc(2, &(entry("A", "0") + &entry("A", "1"))),
@@ -215,7 +215,7 @@ cases!(
     sem014_valid,
     sem014_invalid,
     sem014_boundary,
-    "SEM014",
+    "E029",
     Severity::Error,
     enum_doc(
         2,
@@ -234,7 +234,7 @@ cases!(
     sem015_valid,
     sem015_invalid,
     sem015_boundary,
-    "SEM015",
+    "E030",
     Severity::Error,
     one(
         2,
@@ -271,7 +271,7 @@ cases!(
     sem016_valid,
     sem016_invalid,
     sem016_boundary,
-    "SEM016",
+    "W005",
     Severity::Warning,
     one(
         8,
@@ -322,6 +322,32 @@ pub fn semantic_cases() -> Vec<(&'static str, String, String, String)> {
         sem014_valid(),
         sem015_valid(),
         sem016_valid(),
+        (
+            "W006",
+            xml("", "", &(reg("A", 0, 8, "", "") + &reg("B", 1, 8, "", ""))),
+            xml("", "", &(reg("A", 0, 8, "", "") + &reg("B", 0, 8, "", ""))),
+            xml(
+                "",
+                "",
+                &(reg("A", 0, 8, "", "")
+                    + &reg("B", 0, 8, "<alternateRegister>A</alternateRegister>", "")),
+            ),
+        ),
+        (
+            "W007",
+            enum_doc(2, &(entry("A", "0") + &entry("B", "1"))),
+            enum_doc(2, &(entry("A", "0") + &entry("B", "0"))),
+            one(
+                2,
+                "",
+                &field(
+                    "F",
+                    0,
+                    2,
+                    &(entries(&entry("A", "0"), "read") + &entries(&entry("B", "0"), "write")),
+                ),
+            ),
+        ),
     ]
 }
 
@@ -334,7 +360,7 @@ pub fn normalization_cases() -> Vec<(&'static str, String)> {
     };
     vec![
         (
-            "NORM002",
+            "E010",
             xml(
                 "",
                 "",
@@ -342,31 +368,31 @@ pub fn normalization_cases() -> Vec<(&'static str, String)> {
             ),
         ),
         (
-            "NORM003",
+            "E011",
             xml(
                 "",
                 "",
                 &(reg("R", 0, 32, "", "") + &reg("R", 4, 32, "", "")),
             ),
         ),
-        ("NORM004", xml("", "", &array(0, "", "R%s"))),
+        ("E012", xml("", "", &array(0, "", "R%s"))),
         (
-            "NORM005",
+            "E013",
             xml("", "", &array(2, "<dimIndex>A, A</dimIndex>", "R%s")),
         ),
-        ("NORM006", xml("", "", &array(2, "", "R%s%s"))),
+        ("E014", xml("", "", &array(2, "", "R%s%s"))),
         (
-            "NORM007",
+            "E015",
             xml("", "", &reg("R", 1, 32, "", "")).replace(
                 "<baseAddress>0x1000</baseAddress>",
                 "<baseAddress>0xffffffffffffffff</baseAddress>",
             ),
         ),
         (
-            "NORM008",
+            "E016",
             xml("", "", &reg("R", 0, 32, "", "")).replace("<size>32</size>", ""),
         ),
-        ("NORM009", xml("", "", &array(100_001, "", "R%s"))),
+        ("E017", xml("", "", &array(100_001, "", "R%s"))),
     ]
 }
 pub fn regression_whitespace() -> String {

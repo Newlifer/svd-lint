@@ -11,7 +11,7 @@ fn valid_fixture_passes_all_three_stages() {
 }
 
 #[test]
-fn independent_semantic_failures_include_every_sem_code_and_preserve_ir() {
+fn independent_semantic_failures_match_direct_checks_and_preserve_ir() {
     let input = SourceFile::new("invalid.svd", INVALID);
     let parsed = parse_svd(&input);
     assert!(parsed.device.is_some());
@@ -25,14 +25,13 @@ fn independent_semantic_failures_include_every_sem_code_and_preserve_ir() {
     let result = analyze_svd(&input);
     assert!(result.has_errors());
     assert!(result.device.is_some());
-    for i in 1..=16 {
-        let code = format!("SEM{i:03}");
-        assert!(
-            result.diagnostics.iter().any(|d| d.code.as_str() == code),
-            "missing {code}: {:?}",
-            result.diagnostics
-        );
-    }
+    assert_eq!(
+        result.diagnostics,
+        check_rules(
+            result.device.as_ref().unwrap(),
+            result.source_map.as_ref().unwrap()
+        )
+    );
 }
 
 #[test]

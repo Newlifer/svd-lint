@@ -13,6 +13,7 @@
         <field><name>B</name><bitOffset>3</bitOffset><bitWidth>2</bitWidth></field>
         <field><name>E</name><bitOffset>5</bitOffset><bitWidth>2</bitWidth><enumeratedValues>
           <enumeratedValue><name>X</name><value>4</value></enumeratedValue><enumeratedValue><name>X</name><value>1</value></enumeratedValue>
+          <enumeratedValue><name>Y</name><value>1</value></enumeratedValue>
           <enumeratedValue><name>D</name><isDefault>true</isDefault></enumeratedValue><enumeratedValue><name>E</name><isDefault>true</isDefault></enumeratedValue>
         </enumeratedValues></field>
         <field><name>WC</name><bitOffset>0</bitOffset><bitWidth>2</bitWidth><writeConstraint><range><minimum>3</minimum><maximum>2</maximum></range></writeConstraint></field>

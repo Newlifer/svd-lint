@@ -15,7 +15,7 @@ pub fn check_rules(device: &CanonicalDevice, source_map: &SourceMap) -> Vec<Diag
     let mut seen = BTreeSet::new();
     diagnostics.retain(|d| {
         seen.insert((
-            d.code.as_str(),
+            d.code().as_str(),
             d.primary_span.map(|s| (s.start, s.end)),
             d.message.clone(),
             d.related
@@ -28,7 +28,7 @@ pub fn check_rules(device: &CanonicalDevice, source_map: &SourceMap) -> Vec<Diag
     diagnostics.sort_by_key(|d| {
         (
             d.primary_span.map(|s| (s.start, s.end)),
-            d.code.as_str(),
+            d.code().as_str(),
             d.message.clone(),
             d.related
                 .iter()

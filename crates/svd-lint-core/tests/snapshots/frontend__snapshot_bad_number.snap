@@ -2,4 +2,4 @@
 source: crates/svd-lint-core/tests/frontend.rs
 expression: "debug_dump(&source, &result.diagnostics)"
 ---
-Error SVD006 [no span] failed to parse SVD: In device `BadNumber`
+Error E008 [no span] failed to parse SVD: In device `BadNumber`

@@ -43,10 +43,10 @@ fn case(
     kind: &str,
 ) -> Result<Value, Box<dyn std::error::Error>> {
     write(&Path::new("tests/corpus").join(file), input)?;
-    let d = corpus_diagnostics(file, input, rule == "SVD007");
+    let d = corpus_diagnostics(file, input, rule == "W001");
     let codes: Vec<_> = d
         .iter()
-        .map(|d| d.code.as_str())
+        .map(|d| d.code().as_str())
         .collect::<std::collections::BTreeSet<_>>()
         .into_iter()
         .collect();
@@ -56,16 +56,12 @@ fn case(
     if kind != "negative" && codes.contains(&rule) {
         return Err(format!("{file} unexpectedly triggers {rule}").into());
     }
-    let unexpected: &[&str] = if rule == "SEM004" {
-        &["SEM002", "SEM003"]
+    let unexpected: &[&str] = if rule == "W003" {
+        &["E019", "E020"]
     } else {
         &[]
     };
-    let profile = if rule == "SVD007" {
-        "strict"
-    } else {
-        "default"
-    };
+    let profile = if rule == "W001" { "strict" } else { "default" };
     let expected = json!({"expected":codes,"unexpected":unexpected,"profile":profile});
     write(
         &Path::new("tests/corpus").join(file).with_extension("json"),
@@ -101,15 +97,15 @@ fn generate_corpus() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
     for (rule, file) in [
-        ("XML001", "invalid/bad_xml.svd"),
-        ("SVD001", "invalid/wrong_root.svd"),
-        ("SVD002", "invalid/missing_version.svd"),
-        ("SVD004", "invalid/empty_peripherals.svd"),
-        ("SVD005", "valid/warning_no_description.svd"),
-        ("SVD006", "invalid/bad_number.svd"),
+        ("E003", "invalid/bad_xml.svd"),
+        ("E004", "invalid/wrong_root.svd"),
+        ("E005", "invalid/missing_version.svd"),
+        ("E007", "invalid/empty_peripherals.svd"),
+        ("W002", "valid/warning_no_description.svd"),
+        ("E008", "invalid/bad_number.svd"),
     ] {
         let input = fs::read_to_string(Path::new("tests/fixtures").join(file))?;
-        let actual_rule = if rule == "SVD004" { "SVD002" } else { rule };
+        let actual_rule = if rule == "E007" { "E005" } else { rule };
         cases.push(case(
             &format!("invalid/{actual_rule}/frontend-{}.svd", rule),
             &input,
@@ -118,6 +114,23 @@ fn generate_corpus() -> Result<(), Box<dyn std::error::Error>> {
         )?);
     }
     let minimal = fs::read_to_string("tests/fixtures/valid/minimal.svd")?;
+    for (kind, input) in [
+        ("positive", minimal.clone()),
+        (
+            "boundary",
+            minimal.replace(
+                "<description>General purpose timer</description>",
+                "<description>p</description>",
+            ),
+        ),
+    ] {
+        cases.push(case(
+            &format!("valid/W002-{kind}.svd"),
+            &input,
+            "W002",
+            kind,
+        )?);
+    }
     let quality_good = "<device schemaVersion=\"1.3\"><name>D</name><version>1</version><description>Device</description><addressUnitBits>8</addressUnitBits><width>32</width><size>32</size><peripherals><peripheral><name>P</name><description>Peripheral</description><baseAddress>0</baseAddress><registers><register><name>CTRL</name><description>Control register</description><addressOffset>0</addressOffset></register></registers></peripheral></peripherals></device>";
     for (kind, description) in [
         ("positive", "Control register"),
@@ -126,14 +139,14 @@ fn generate_corpus() -> Result<(), Box<dyn std::error::Error>> {
     ] {
         let input = quality_good.replace("Control register", description);
         let directory = if kind == "negative" {
-            "invalid/SVD007"
+            "invalid/W001"
         } else {
             "valid"
         };
         cases.push(case(
-            &format!("{directory}/SVD007-{kind}.svd"),
+            &format!("{directory}/W001-{kind}.svd"),
             &input,
-            "SVD007",
+            "W001",
             kind,
         )?);
     }
@@ -141,7 +154,7 @@ fn generate_corpus() -> Result<(), Box<dyn std::error::Error>> {
     cases.push(case(
         "regression/xml-depth-limit/input.svd",
         &nested,
-        "SVD006",
+        "E008",
         "negative",
     )?);
     let mut registers = String::new();
@@ -162,7 +175,7 @@ fn generate_corpus() -> Result<(), Box<dyn std::error::Error>> {
     cases.push(case(
         "regression/derived-depth-limit/input.svd",
         &chain,
-        "NORM009",
+        "E017",
         "negative",
     )?);
     for (rule, input) in corpus::normalization_cases() {
@@ -176,33 +189,33 @@ fn generate_corpus() -> Result<(), Box<dyn std::error::Error>> {
     cases.push(case(
         "regression/dim-index-whitespace/input.svd",
         &corpus::regression_whitespace(),
-        "NORM005",
+        "E013",
         "regression",
     )?);
     let regression = "regression/duplicate-fields-semantic-checks/input.svd";
     let input = fs::read_to_string(Path::new("tests/corpus").join(regression))?;
-    cases.push(case(regression, &input, "NORM003", "negative")?);
-    cases.push(case("valid/minimal.svd", &minimal, "SVD001", "positive")?);
+    cases.push(case(regression, &input, "E011", "negative")?);
+    cases.push(case("valid/minimal.svd", &minimal, "E004", "positive")?);
     let derived = minimal.replace("<register>", "<register derivedFrom=\"MISSING\">");
     cases.push(case(
-        "invalid/NORM001/missing-reference.svd",
+        "invalid/E009/missing-reference.svd",
         &derived,
-        "NORM001",
+        "E009",
         "negative",
     )?);
     let duplicate = minimal.replace("<version>", "<version>duplicate</version><version>");
     cases.push(case(
-        "invalid/SVD003/duplicate-version.svd",
+        "invalid/E006/duplicate-version.svd",
         &duplicate,
-        "SVD003",
+        "E006",
         "negative",
     )?);
     let empty = minimal.replace("<version>1.0</version>", "<version/>");
     if empty != minimal {
         cases.push(case(
-            "invalid/SVD004/empty-version.svd",
+            "invalid/E007/empty-version.svd",
             &empty,
-            "SVD004",
+            "E007",
             "negative",
         )?);
     }
@@ -221,7 +234,7 @@ fn test_corpus() -> Result<(), Box<dyn std::error::Error>> {
         let d = corpus_diagnostics(file, &input, case["profile"] == "strict");
         let actual: Vec<_> = d
             .iter()
-            .map(|d| d.code.as_str())
+            .map(|d| d.code().as_str())
             .collect::<std::collections::BTreeSet<_>>()
             .into_iter()
             .collect();
@@ -249,11 +262,10 @@ fn generate_docs(check: bool) -> Result<(), Box<dyn std::error::Error>> {
     );
     for rule in rule_registry() {
         rules.push_str(&format!(
-            "## {} — {}\n\nSeverity: {:?}; category: {:?}; configurable: {}.\n\n{}\n\n",
+            "## {} — {}\n\nSeverity: {:?}; configurable: {}.\n\n{}\n\n",
             rule.code.as_str(),
             rule.name,
-            rule.default_severity,
-            rule.category,
+            rule.severity,
             rule.configurable,
             rule.description
         ));
@@ -273,7 +285,13 @@ fn generate_docs(check: bool) -> Result<(), Box<dyn std::error::Error>> {
                 ));
             }
         }
-        if !rule.code.as_str().starts_with("SEM") {
+        if !["positive", "negative"].iter().all(|kind| {
+            manifest["cases"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|case| case["rule"] == rule.code.as_str() && case["kind"] == *kind)
+        }) {
             if !manifest["cases"]
                 .as_array()
                 .unwrap()
@@ -289,13 +307,13 @@ fn generate_docs(check: bool) -> Result<(), Box<dyn std::error::Error>> {
                 .any(|c| c["rule"] == rule.code.as_str() && c["kind"] == "negative")
             {
                 let example = match rule.code.as_str() {
-                    "IO001" => "svd-lint check missing.svd",
-                    "IO002" => "svd-lint check non-utf8.svd",
-                    "SVD007" => "svd-lint check short-description.svd --profile strict",
-                    "XSD001" => "svd-lint check missing-schema-version.svd --xsd",
-                    "XSD002" => "svd-lint check schema-invalid.svd --xsd --schema-dir schemas",
-                    "XSD003" => "svd-lint check device.svd --xsd --schema-dir missing-schemas",
-                    "XSD004" => "svd-lint check device.svd --xsd --schema-dir malformed-schemas",
+                    "E001" => "svd-lint check missing.svd",
+                    "E002" => "svd-lint check non-utf8.svd",
+                    "W001" => "svd-lint check short-description.svd --profile strict",
+                    "E031" => "svd-lint check missing-schema-version.svd --xsd",
+                    "E032" => "svd-lint check schema-invalid.svd --xsd --schema-dir schemas",
+                    "E033" => "svd-lint check device.svd --xsd --schema-dir missing-schemas",
+                    "E034" => "svd-lint check device.svd --xsd --schema-dir malformed-schemas",
                     _ => "svd-lint check invalid.svd",
                 };
                 rules.push_str(&format!(

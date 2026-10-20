@@ -9,13 +9,13 @@ pub struct UppsalaValidator {
 impl SchemaValidator for UppsalaValidator {
     fn validate(&self, source: &SourceFile, version: SchemaVersion) -> Vec<Diagnostic> {
         if !version.supported() {
-            return vec![Diagnostic::error(
+            return vec![Diagnostic::new(
                 diagnostics::UNKNOWN_VERSION.code(),
                 "unknown schemaVersion",
             )];
         }
         let Some(path) = self.provider.schema(&version) else {
-            return vec![Diagnostic::error(
+            return vec![Diagnostic::new(
                 diagnostics::MISSING_SCHEMA.code(),
                 format!("schema {} not found", version.0),
             )];
@@ -35,7 +35,7 @@ impl SchemaValidator for UppsalaValidator {
             let document = match uppsala::parse(source.text()) {
                 Ok(doc) => doc,
                 Err(e) => {
-                    return Ok(vec![Diagnostic::error(
+                    return Ok(vec![Diagnostic::new(
                         diagnostics::NONCONFORMANCE.code(),
                         e.to_string(),
                     )]);
@@ -47,8 +47,7 @@ impl SchemaValidator for UppsalaValidator {
                 .into_iter()
                 .filter(|e| seen.insert((e.line, e.column, e.message.clone())))
                 .map(|error| {
-                    let mut d =
-                        Diagnostic::error(diagnostics::NONCONFORMANCE.code(), error.message);
+                    let mut d = Diagnostic::new(diagnostics::NONCONFORMANCE.code(), error.message);
                     d.primary_span = error
                         .line
                         .zip(error.column)
@@ -63,8 +62,8 @@ impl SchemaValidator for UppsalaValidator {
         });
         match run {
             Ok(Ok(d)) => d,
-            Ok(Err(e)) => vec![Diagnostic::error(diagnostics::BACKEND_ERROR.code(), e)],
-            Err(_) => vec![Diagnostic::error(
+            Ok(Err(e)) => vec![Diagnostic::new(diagnostics::BACKEND_ERROR.code(), e)],
+            Err(_) => vec![Diagnostic::new(
                 diagnostics::BACKEND_ERROR.code(),
                 "XSD backend panicked",
             )],

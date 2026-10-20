@@ -177,7 +177,7 @@ impl<'a> Resolver<'a> {
         property: &str,
         message: impl Into<String>,
     ) {
-        let mut diagnostic = Diagnostic::error(code, message);
+        let mut diagnostic = Diagnostic::new(code, message);
         diagnostic.primary_span = node.and_then(|id| {
             let info = self.map.node(id)?;
             if property == "derivedFrom" {

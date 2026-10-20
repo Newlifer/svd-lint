@@ -21,9 +21,7 @@ fn duplicate_field_names_do_not_hide_semantic_errors_in_check() {
             &result.get_output().stdout
         };
         let output = String::from_utf8_lossy(output);
-        for code in [
-            "NORM003", "SEM003", "SEM004", "SEM005", "SEM008", "SEM010", "SEM012",
-        ] {
+        for code in ["E011", "E020", "W003", "E021", "W006", "E025", "E027"] {
             assert!(output.contains(code), "check/{format} is missing {code}");
         }
     }
@@ -38,7 +36,7 @@ fn duplicate_field_names_do_not_hide_semantic_errors_in_check() {
             .as_array()
             .unwrap()
             .iter()
-            .any(|d| d["code"] == "NORM003")
+            .any(|d| d["code"] == "E011")
     );
 }
 #[test]
@@ -53,14 +51,42 @@ fn registry_and_explain_are_machine_readable() {
         svd_lint_core::DiagnosticCode::all().len()
     );
     let result = cli()
-        .args(["explain", "SEM004", "--format", "json"])
+        .args(["explain", "W003", "--format", "json"])
         .assert()
         .success();
     let rule: Value = serde_json::from_slice(&result.get_output().stdout).unwrap();
-    assert_eq!(rule["code"], "SEM004");
+    assert_eq!(rule["code"], "W003");
+    assert_eq!(rule["severity"], "warning");
+    assert!(rule.get("category").is_none());
+    assert!(rule.get("default_severity").is_none());
     assert!(rule.get("svdconv_codes").is_none());
     assert!(rule.get("spec_refs").is_none());
     cli().args(["explain", "M338"]).assert().code(2);
+}
+#[test]
+fn profiles_and_output_formats_preserve_fixed_severity() {
+    let input = "../../tests/corpus/invalid/W003/negative.svd";
+    for profile in ["default", "strict", "svdconv"] {
+        for format in ["json", "sarif"] {
+            let result = cli()
+                .args(["check", input, "--profile", profile, "--format", format])
+                .assert()
+                .success();
+            let report: Value = serde_json::from_slice(&result.get_output().stdout).unwrap();
+            let (diagnostics, code, severity) = if format == "json" {
+                (&report["diagnostics"], "code", "severity")
+            } else {
+                (&report["runs"][0]["results"], "ruleId", "level")
+            };
+            let finding = diagnostics
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|finding| finding[code] == "W003")
+                .unwrap();
+            assert_eq!(finding[severity], "warning", "{profile}/{format}");
+        }
+    }
 }
 #[test]
 fn fail_on_is_consistent_for_all_check_formats_and_profiles() {
@@ -90,10 +116,10 @@ fn fail_on_is_consistent_for_all_check_formats_and_profiles() {
     }
 }
 #[test]
-fn config_suppresses_upgrades_and_rejects_disabling_fatal_analysis() {
+fn config_suppresses_and_rejects_severity_changes_or_disabling_fatal_analysis() {
     let dir = tempfile::tempdir().unwrap();
     let config = dir.path().join("svd-lint.toml");
-    std::fs::write(&config, "[rules.SVD005]\nseverity = \"allow\"\n").unwrap();
+    std::fs::write(&config, "[rules.W002]\nseverity = \"allow\"\n").unwrap();
     cli()
         .args([
             "check",
@@ -105,17 +131,30 @@ fn config_suppresses_upgrades_and_rejects_disabling_fatal_analysis() {
         .arg(&config)
         .assert()
         .success();
-    std::fs::write(&config, "[rules.SVD005]\nseverity = \"error\"\n").unwrap();
+    std::fs::write(&config, "[rules.W002]\nseverity = \"error\"\n").unwrap();
     cli()
         .args([
             "check",
             &fixture("valid/warning_no_description.svd"),
+            "--format",
+            "json",
             "--config",
         ])
         .arg(&config)
         .assert()
-        .code(1);
-    for code in ["IO001", "XML001", "NORM007", "SVD002", "XSD002"] {
+        .code(2);
+    for text in [
+        "[rules.E018]\nseverity = \"warning\"\n",
+        "[[overrides]]\nfiles=[\"*.svd\"]\nrules=[\"W002\"]\nseverity=\"error\"\n",
+    ] {
+        std::fs::write(&config, text).unwrap();
+        cli()
+            .args(["check", &fixture("valid/minimal.svd"), "--config"])
+            .arg(&config)
+            .assert()
+            .code(2);
+    }
+    for code in ["E001", "E003", "E015", "E005", "E032"] {
         std::fs::write(&config, format!("[rules.{code}]\nenabled = false\n")).unwrap();
         cli()
             .args(["check", &fixture("valid/minimal.svd"), "--config"])
@@ -182,7 +221,7 @@ fn sarif_contains_metadata_primary_related_and_omits_unknown_positions() {
     );
     let results = data["runs"][0]["results"].as_array().unwrap();
     assert!(results.iter().any(|r| r.get("relatedLocations").is_some()));
-    assert!(results.iter().any(|r| r["ruleId"] == "SEM004"
+    assert!(results.iter().any(|r| r["ruleId"] == "W003"
         && r["locations"][0]["physicalLocation"]["region"]["startLine"].is_number()));
     let result = cli()
         .args(["check", "absent.svd", "--format", "sarif"])
@@ -207,7 +246,7 @@ fn xsd_is_explicit_and_failure_does_not_cascade() {
         .code(1);
     let data: Value = serde_json::from_slice(&result.get_output().stdout).unwrap();
     assert_eq!(data["diagnostics"].as_array().unwrap().len(), 1);
-    assert_eq!(data["diagnostics"][0]["code"], "XSD001");
+    assert_eq!(data["diagnostics"][0]["code"], "E031");
     let result = cli()
         .args([
             "check",
@@ -219,13 +258,13 @@ fn xsd_is_explicit_and_failure_does_not_cascade() {
         .assert()
         .code(1);
     let data: Value = serde_json::from_slice(&result.get_output().stdout).unwrap();
-    assert_eq!(data["diagnostics"][0]["code"], "XSD003");
+    assert_eq!(data["diagnostics"][0]["code"], "E033");
 }
 #[test]
 fn file_overrides_are_config_only_and_unknown_toml_is_rejected() {
     let dir = tempfile::tempdir().unwrap();
     let config = dir.path().join("config.toml");
-    std::fs::write(&config,"[[overrides]]\nfiles=[\"**/warning_no_description.svd\"]\nrules=[\"SVD005\"]\nseverity=\"allow\"").unwrap();
+    std::fs::write(&config,"[[overrides]]\nfiles=[\"**/warning_no_description.svd\"]\nrules=[\"W002\"]\nseverity=\"allow\"").unwrap();
     cli()
         .args([
             "check",

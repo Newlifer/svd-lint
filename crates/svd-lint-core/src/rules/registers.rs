@@ -1,13 +1,12 @@
 use super::CheckContext;
-use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory};
+use crate::diagnostic_definition::DiagnosticDefinition;
 use crate::{CanonicalRegister, Diagnostic, Severity};
 
 pub(crate) static ZERO_REGISTER_SIZE: DiagnosticDefinition = DiagnosticDefinition {
-    code: crate::DiagnosticCode::new("SEM001"),
+    code: crate::DiagnosticCode::new("E018"),
     name: "zero-register-size",
     description: "A register must occupy a positive number of bits.",
-    category: RuleCategory::Registers,
-    default_severity: Severity::Error,
+    severity: Severity::Error,
     configurable: true,
     tags: &["check"],
 };
@@ -27,7 +26,6 @@ fn check_size(context: &CheckContext<'_>, register: &CanonicalRegister) -> Optio
     (size.value == 0).then(|| {
         context.diagnostic(
             &ZERO_REGISTER_SIZE,
-            Severity::Error,
             "register size must be greater than zero",
             &size.origin,
             "size",

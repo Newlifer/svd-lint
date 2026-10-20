@@ -4,7 +4,7 @@ expression: "serde_json::to_string_pretty(&analyze_svd(&source(ERRORS)).diagnost
 ---
 [
   {
-    "code": "NORM001",
+    "code": "E009",
     "severity": "error",
     "message": "derivedFrom target `MISSING` not found for `P.A`",
     "primary_span": {
@@ -14,7 +14,7 @@ expression: "serde_json::to_string_pretty(&analyze_svd(&source(ERRORS)).diagnost
     "related": []
   },
   {
-    "code": "NORM002",
+    "code": "E010",
     "severity": "error",
     "message": "cyclic derivedFrom dependency",
     "primary_span": {
@@ -32,7 +32,7 @@ expression: "serde_json::to_string_pretty(&analyze_svd(&source(ERRORS)).diagnost
     ]
   },
   {
-    "code": "NORM002",
+    "code": "E010",
     "severity": "error",
     "message": "cyclic derivedFrom dependency",
     "primary_span": {
@@ -64,7 +64,7 @@ expression: "serde_json::to_string_pretty(&analyze_svd(&source(ERRORS)).diagnost
     ]
   },
   {
-    "code": "NORM005",
+    "code": "E013",
     "severity": "error",
     "message": "dimIndex must contain one distinct nonempty index per instance",
     "primary_span": {
@@ -74,7 +74,7 @@ expression: "serde_json::to_string_pretty(&analyze_svd(&source(ERRORS)).diagnost
     "related": []
   },
   {
-    "code": "NORM006",
+    "code": "E014",
     "severity": "error",
     "message": "invalid array name template `DOUBLE%s%s`",
     "primary_span": {
@@ -84,7 +84,7 @@ expression: "serde_json::to_string_pretty(&analyze_svd(&source(ERRORS)).diagnost
     "related": []
   },
   {
-    "code": "NORM004",
+    "code": "E012",
     "severity": "error",
     "message": "array dimension must be positive",
     "primary_span": {
@@ -94,7 +94,7 @@ expression: "serde_json::to_string_pretty(&analyze_svd(&source(ERRORS)).diagnost
     "related": []
   },
   {
-    "code": "NORM007",
+    "code": "E015",
     "severity": "error",
     "message": "address overflow for `OVERFLOW.R`",
     "primary_span": {

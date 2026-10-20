@@ -2,594 +2,654 @@
   "cases": [
     {
       "diagnostics": [],
-      "file": "valid/SEM001-positive.svd",
+      "file": "valid/E018-positive.svd",
       "kind": "positive",
       "profile": "default",
-      "rule": "SEM001"
+      "rule": "E018"
     },
     {
       "diagnostics": [
-        "SEM001"
+        "E018"
       ],
-      "file": "invalid/SEM001/negative.svd",
+      "file": "invalid/E018/negative.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "SEM001"
+      "rule": "E018"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM001-boundary.svd",
+      "file": "valid/E018-boundary.svd",
       "kind": "boundary",
       "profile": "default",
-      "rule": "SEM001"
+      "rule": "E018"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM002-positive.svd",
+      "file": "valid/E019-positive.svd",
       "kind": "positive",
       "profile": "default",
-      "rule": "SEM002"
+      "rule": "E019"
     },
     {
       "diagnostics": [
-        "SEM002"
+        "E019"
       ],
-      "file": "invalid/SEM002/negative.svd",
+      "file": "invalid/E019/negative.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "SEM002"
+      "rule": "E019"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM002-boundary.svd",
+      "file": "valid/E019-boundary.svd",
       "kind": "boundary",
       "profile": "default",
-      "rule": "SEM002"
+      "rule": "E019"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM003-positive.svd",
+      "file": "valid/E020-positive.svd",
       "kind": "positive",
       "profile": "default",
-      "rule": "SEM003"
+      "rule": "E020"
     },
     {
       "diagnostics": [
-        "SEM003"
+        "E020"
       ],
-      "file": "invalid/SEM003/negative.svd",
+      "file": "invalid/E020/negative.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "SEM003"
+      "rule": "E020"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM003-boundary.svd",
+      "file": "valid/E020-boundary.svd",
       "kind": "boundary",
       "profile": "default",
-      "rule": "SEM003"
+      "rule": "E020"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM004-positive.svd",
+      "file": "valid/W003-positive.svd",
       "kind": "positive",
       "profile": "default",
-      "rule": "SEM004"
+      "rule": "W003"
     },
     {
       "diagnostics": [
-        "SEM004"
+        "W003"
       ],
-      "file": "invalid/SEM004/negative.svd",
+      "file": "invalid/W003/negative.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "SEM004"
+      "rule": "W003"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM004-boundary.svd",
+      "file": "valid/W003-boundary.svd",
       "kind": "boundary",
       "profile": "default",
-      "rule": "SEM004"
+      "rule": "W003"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM005-positive.svd",
+      "file": "valid/E021-positive.svd",
       "kind": "positive",
       "profile": "default",
-      "rule": "SEM005"
+      "rule": "E021"
     },
     {
       "diagnostics": [
-        "SEM005"
+        "E021"
       ],
-      "file": "invalid/SEM005/negative.svd",
+      "file": "invalid/E021/negative.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "SEM005"
+      "rule": "E021"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM005-boundary.svd",
+      "file": "valid/E021-boundary.svd",
       "kind": "boundary",
       "profile": "default",
-      "rule": "SEM005"
+      "rule": "E021"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM006-positive.svd",
+      "file": "valid/E022-positive.svd",
       "kind": "positive",
       "profile": "default",
-      "rule": "SEM006"
+      "rule": "E022"
     },
     {
       "diagnostics": [
-        "SEM006"
+        "E022"
       ],
-      "file": "invalid/SEM006/negative.svd",
+      "file": "invalid/E022/negative.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "SEM006"
+      "rule": "E022"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM006-boundary.svd",
+      "file": "valid/E022-boundary.svd",
       "kind": "boundary",
       "profile": "default",
-      "rule": "SEM006"
+      "rule": "E022"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM007-positive.svd",
+      "file": "valid/W004-positive.svd",
       "kind": "positive",
       "profile": "default",
-      "rule": "SEM007"
+      "rule": "W004"
     },
     {
       "diagnostics": [
-        "SEM007"
+        "W004"
       ],
-      "file": "invalid/SEM007/negative.svd",
+      "file": "invalid/W004/negative.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "SEM007"
+      "rule": "W004"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM007-boundary.svd",
+      "file": "valid/W004-boundary.svd",
       "kind": "boundary",
       "profile": "default",
-      "rule": "SEM007"
+      "rule": "W004"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM008-positive.svd",
+      "file": "valid/E023-positive.svd",
       "kind": "positive",
       "profile": "default",
-      "rule": "SEM008"
+      "rule": "E023"
     },
     {
       "diagnostics": [
-        "SEM008"
+        "E023"
       ],
-      "file": "invalid/SEM008/negative.svd",
+      "file": "invalid/E023/negative.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "SEM008"
+      "rule": "E023"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM008-boundary.svd",
+      "file": "valid/E023-boundary.svd",
       "kind": "boundary",
       "profile": "default",
-      "rule": "SEM008"
+      "rule": "E023"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM009-positive.svd",
+      "file": "valid/E024-positive.svd",
       "kind": "positive",
       "profile": "default",
-      "rule": "SEM009"
+      "rule": "E024"
     },
     {
       "diagnostics": [
-        "SEM009"
+        "E024"
       ],
-      "file": "invalid/SEM009/negative.svd",
+      "file": "invalid/E024/negative.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "SEM009"
+      "rule": "E024"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM009-boundary.svd",
+      "file": "valid/E024-boundary.svd",
       "kind": "boundary",
       "profile": "default",
-      "rule": "SEM009"
+      "rule": "E024"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM010-positive.svd",
+      "file": "valid/E025-positive.svd",
       "kind": "positive",
       "profile": "default",
-      "rule": "SEM010"
+      "rule": "E025"
     },
     {
       "diagnostics": [
-        "SEM010"
+        "E025"
       ],
-      "file": "invalid/SEM010/negative.svd",
+      "file": "invalid/E025/negative.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "SEM010"
+      "rule": "E025"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM010-boundary.svd",
+      "file": "valid/E025-boundary.svd",
       "kind": "boundary",
       "profile": "default",
-      "rule": "SEM010"
+      "rule": "E025"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM011-positive.svd",
+      "file": "valid/E026-positive.svd",
       "kind": "positive",
       "profile": "default",
-      "rule": "SEM011"
+      "rule": "E026"
     },
     {
       "diagnostics": [
-        "SEM011"
+        "E026"
       ],
-      "file": "invalid/SEM011/negative.svd",
+      "file": "invalid/E026/negative.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "SEM011"
+      "rule": "E026"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM011-boundary.svd",
+      "file": "valid/E026-boundary.svd",
       "kind": "boundary",
       "profile": "default",
-      "rule": "SEM011"
+      "rule": "E026"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM012-positive.svd",
+      "file": "valid/E027-positive.svd",
       "kind": "positive",
       "profile": "default",
-      "rule": "SEM012"
+      "rule": "E027"
     },
     {
       "diagnostics": [
-        "SEM012"
+        "E027"
       ],
-      "file": "invalid/SEM012/negative.svd",
+      "file": "invalid/E027/negative.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "SEM012"
+      "rule": "E027"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM012-boundary.svd",
+      "file": "valid/E027-boundary.svd",
       "kind": "boundary",
       "profile": "default",
-      "rule": "SEM012"
+      "rule": "E027"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM013-positive.svd",
+      "file": "valid/E028-positive.svd",
       "kind": "positive",
       "profile": "default",
-      "rule": "SEM013"
+      "rule": "E028"
     },
     {
       "diagnostics": [
-        "SEM013"
+        "E028"
       ],
-      "file": "invalid/SEM013/negative.svd",
+      "file": "invalid/E028/negative.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "SEM013"
+      "rule": "E028"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM013-boundary.svd",
+      "file": "valid/E028-boundary.svd",
       "kind": "boundary",
       "profile": "default",
-      "rule": "SEM013"
+      "rule": "E028"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM014-positive.svd",
+      "file": "valid/E029-positive.svd",
       "kind": "positive",
       "profile": "default",
-      "rule": "SEM014"
+      "rule": "E029"
     },
     {
       "diagnostics": [
-        "SEM014"
+        "E029"
       ],
-      "file": "invalid/SEM014/negative.svd",
+      "file": "invalid/E029/negative.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "SEM014"
+      "rule": "E029"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM014-boundary.svd",
+      "file": "valid/E029-boundary.svd",
       "kind": "boundary",
       "profile": "default",
-      "rule": "SEM014"
+      "rule": "E029"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM015-positive.svd",
+      "file": "valid/E030-positive.svd",
       "kind": "positive",
       "profile": "default",
-      "rule": "SEM015"
+      "rule": "E030"
     },
     {
       "diagnostics": [
-        "SEM015"
+        "E030"
       ],
-      "file": "invalid/SEM015/negative.svd",
+      "file": "invalid/E030/negative.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "SEM015"
+      "rule": "E030"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM015-boundary.svd",
+      "file": "valid/E030-boundary.svd",
       "kind": "boundary",
       "profile": "default",
-      "rule": "SEM015"
+      "rule": "E030"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM016-positive.svd",
+      "file": "valid/W005-positive.svd",
       "kind": "positive",
       "profile": "default",
-      "rule": "SEM016"
+      "rule": "W005"
     },
     {
       "diagnostics": [
-        "SEM016"
+        "W005"
       ],
-      "file": "invalid/SEM016/negative.svd",
+      "file": "invalid/W005/negative.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "SEM016"
+      "rule": "W005"
     },
     {
       "diagnostics": [],
-      "file": "valid/SEM016-boundary.svd",
+      "file": "valid/W005-boundary.svd",
       "kind": "boundary",
       "profile": "default",
-      "rule": "SEM016"
-    },
-    {
-      "diagnostics": [
-        "XML001"
-      ],
-      "file": "invalid/XML001/frontend-XML001.svd",
-      "kind": "negative",
-      "profile": "default",
-      "rule": "XML001"
-    },
-    {
-      "diagnostics": [
-        "SVD001"
-      ],
-      "file": "invalid/SVD001/frontend-SVD001.svd",
-      "kind": "negative",
-      "profile": "default",
-      "rule": "SVD001"
-    },
-    {
-      "diagnostics": [
-        "SVD002"
-      ],
-      "file": "invalid/SVD002/frontend-SVD002.svd",
-      "kind": "negative",
-      "profile": "default",
-      "rule": "SVD002"
-    },
-    {
-      "diagnostics": [
-        "SVD002"
-      ],
-      "file": "invalid/SVD002/frontend-SVD004.svd",
-      "kind": "negative",
-      "profile": "default",
-      "rule": "SVD002"
-    },
-    {
-      "diagnostics": [
-        "SVD005"
-      ],
-      "file": "invalid/SVD005/frontend-SVD005.svd",
-      "kind": "negative",
-      "profile": "default",
-      "rule": "SVD005"
-    },
-    {
-      "diagnostics": [
-        "SVD006"
-      ],
-      "file": "invalid/SVD006/frontend-SVD006.svd",
-      "kind": "negative",
-      "profile": "default",
-      "rule": "SVD006"
+      "rule": "W005"
     },
     {
       "diagnostics": [],
-      "file": "valid/SVD007-positive.svd",
+      "file": "valid/W006-positive.svd",
+      "kind": "positive",
+      "profile": "default",
+      "rule": "W006"
+    },
+    {
+      "diagnostics": [
+        "W006"
+      ],
+      "file": "invalid/W006/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "W006"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/W006-boundary.svd",
+      "kind": "boundary",
+      "profile": "default",
+      "rule": "W006"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/W007-positive.svd",
+      "kind": "positive",
+      "profile": "default",
+      "rule": "W007"
+    },
+    {
+      "diagnostics": [
+        "W007"
+      ],
+      "file": "invalid/W007/negative.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "W007"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/W007-boundary.svd",
+      "kind": "boundary",
+      "profile": "default",
+      "rule": "W007"
+    },
+    {
+      "diagnostics": [
+        "E003"
+      ],
+      "file": "invalid/E003/frontend-E003.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "E003"
+    },
+    {
+      "diagnostics": [
+        "E004"
+      ],
+      "file": "invalid/E004/frontend-E004.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "E004"
+    },
+    {
+      "diagnostics": [
+        "E005"
+      ],
+      "file": "invalid/E005/frontend-E005.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "E005"
+    },
+    {
+      "diagnostics": [
+        "E005"
+      ],
+      "file": "invalid/E005/frontend-E007.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "E005"
+    },
+    {
+      "diagnostics": [
+        "W002"
+      ],
+      "file": "invalid/W002/frontend-W002.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "W002"
+    },
+    {
+      "diagnostics": [
+        "E008"
+      ],
+      "file": "invalid/E008/frontend-E008.svd",
+      "kind": "negative",
+      "profile": "default",
+      "rule": "E008"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/W002-positive.svd",
+      "kind": "positive",
+      "profile": "default",
+      "rule": "W002"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/W002-boundary.svd",
+      "kind": "boundary",
+      "profile": "default",
+      "rule": "W002"
+    },
+    {
+      "diagnostics": [],
+      "file": "valid/W001-positive.svd",
       "kind": "positive",
       "profile": "strict",
-      "rule": "SVD007"
+      "rule": "W001"
     },
     {
       "diagnostics": [
-        "SVD007"
+        "W001"
       ],
-      "file": "invalid/SVD007/SVD007-negative.svd",
+      "file": "invalid/W001/W001-negative.svd",
       "kind": "negative",
       "profile": "strict",
-      "rule": "SVD007"
+      "rule": "W001"
     },
     {
       "diagnostics": [],
-      "file": "valid/SVD007-boundary.svd",
+      "file": "valid/W001-boundary.svd",
       "kind": "boundary",
       "profile": "strict",
-      "rule": "SVD007"
+      "rule": "W001"
     },
     {
       "diagnostics": [
-        "SVD006"
+        "E008"
       ],
       "file": "regression/xml-depth-limit/input.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "SVD006"
+      "rule": "E008"
     },
     {
       "diagnostics": [
-        "NORM009"
+        "E017"
       ],
       "file": "regression/derived-depth-limit/input.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "NORM009"
+      "rule": "E017"
     },
     {
       "diagnostics": [
-        "NORM002"
+        "E010"
       ],
-      "file": "invalid/NORM002/negative.svd",
+      "file": "invalid/E010/negative.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "NORM002"
+      "rule": "E010"
     },
     {
       "diagnostics": [
-        "NORM003"
+        "E011"
       ],
-      "file": "invalid/NORM003/negative.svd",
+      "file": "invalid/E011/negative.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "NORM003"
+      "rule": "E011"
     },
     {
       "diagnostics": [
-        "NORM004"
+        "E012"
       ],
-      "file": "invalid/NORM004/negative.svd",
+      "file": "invalid/E012/negative.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "NORM004"
+      "rule": "E012"
     },
     {
       "diagnostics": [
-        "NORM005"
+        "E013"
       ],
-      "file": "invalid/NORM005/negative.svd",
+      "file": "invalid/E013/negative.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "NORM005"
+      "rule": "E013"
     },
     {
       "diagnostics": [
-        "NORM006"
+        "E014"
       ],
-      "file": "invalid/NORM006/negative.svd",
+      "file": "invalid/E014/negative.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "NORM006"
+      "rule": "E014"
     },
     {
       "diagnostics": [
-        "NORM007"
+        "E015"
       ],
-      "file": "invalid/NORM007/negative.svd",
+      "file": "invalid/E015/negative.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "NORM007"
+      "rule": "E015"
     },
     {
       "diagnostics": [
-        "NORM008"
+        "E016"
       ],
-      "file": "invalid/NORM008/negative.svd",
+      "file": "invalid/E016/negative.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "NORM008"
+      "rule": "E016"
     },
     {
       "diagnostics": [
-        "NORM009"
+        "E017"
       ],
-      "file": "invalid/NORM009/negative.svd",
+      "file": "invalid/E017/negative.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "NORM009"
+      "rule": "E017"
     },
     {
       "diagnostics": [],
       "file": "regression/dim-index-whitespace/input.svd",
       "kind": "regression",
       "profile": "default",
-      "rule": "NORM005"
+      "rule": "E013"
     },
     {
       "diagnostics": [
-        "NORM003",
-        "SEM003",
-        "SEM004",
-        "SEM005",
-        "SEM008",
-        "SEM010",
-        "SEM012"
+        "E011",
+        "E020",
+        "E021",
+        "E025",
+        "E027",
+        "W003",
+        "W006"
       ],
       "file": "regression/duplicate-fields-semantic-checks/input.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "NORM003"
+      "rule": "E011"
     },
     {
       "diagnostics": [],
       "file": "valid/minimal.svd",
       "kind": "positive",
       "profile": "default",
-      "rule": "SVD001"
+      "rule": "E004"
     },
     {
       "diagnostics": [
-        "NORM001"
+        "E009"
       ],
-      "file": "invalid/NORM001/missing-reference.svd",
+      "file": "invalid/E009/missing-reference.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "NORM001"
+      "rule": "E009"
     },
     {
       "diagnostics": [
-        "SVD003"
+        "E006"
       ],
-      "file": "invalid/SVD003/duplicate-version.svd",
+      "file": "invalid/E006/duplicate-version.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "SVD003"
+      "rule": "E006"
     },
     {
       "diagnostics": [
-        "SVD004"
+        "E007"
       ],
-      "file": "invalid/SVD004/empty-version.svd",
+      "file": "invalid/E007/empty-version.svd",
       "kind": "negative",
       "profile": "default",
-      "rule": "SVD004"
+      "rule": "E007"
     }
   ],
   "version": 1

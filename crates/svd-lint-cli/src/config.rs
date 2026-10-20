@@ -43,11 +43,21 @@ pub struct Config {
 fn validate_rule(code: &str, options: &RuleOptions) -> Result<(), String> {
     let rule = find_rule(code).ok_or_else(|| format!("unknown rule {code}"))?;
     if !rule.configurable
-        && (options.enabled == Some(false)
-            || matches!(options.severity, Some(Level::Allow | Level::Warning)))
+        && (options.enabled == Some(false) || matches!(options.severity, Some(Level::Allow)))
     {
         return Err(format!(
-            "{code} is required for analysis and cannot be disabled or downgraded"
+            "{code} is required for analysis and cannot be disabled"
+        ));
+    }
+    let requested = match options.severity {
+        Some(Level::Error) => Some(Severity::Error),
+        Some(Level::Warning) => Some(Severity::Warning),
+        _ => None,
+    };
+    if requested.is_some_and(|severity| severity != rule.severity) {
+        return Err(format!(
+            "{code} has fixed severity {:?}; only suppression is configurable",
+            rule.severity
         ));
     }
     Ok(())
@@ -86,36 +96,20 @@ impl Config {
         }
         Ok(())
     }
-    pub fn apply(
-        &self,
-        diagnostics: &mut Vec<Diagnostic>,
-        path: &str,
-        cli_profile: Option<Profile>,
-    ) {
-        let profile = cli_profile.unwrap_or(self.profile);
-        diagnostics.retain_mut(|d| {
-            let code = d.code.as_str();
+    pub fn apply(&self, diagnostics: &mut Vec<Diagnostic>, path: &str) {
+        diagnostics.retain(|d| {
+            let code = d.code().as_str();
             let configurable = find_rule(code).is_some_and(|r| r.configurable);
             if !configurable {
                 return true;
             }
-            let mut level = if profile == Profile::Svdconv && matches!(code, "SEM004" | "SEM013") {
-                Level::Error
-            } else {
-                match d.severity {
-                    Severity::Error => Level::Error,
-                    _ => Level::Warning,
-                }
-            };
+            let mut enabled = true;
             if let Some(options) = self.rules.get(code) {
-                if options.enabled == Some(true) && matches!(level, Level::Allow) {
-                    level = Level::Warning;
-                }
                 if let Some(value) = options.severity {
-                    level = value;
+                    enabled = !matches!(value, Level::Allow);
                 }
                 if options.enabled == Some(false) {
-                    level = Level::Allow;
+                    enabled = false;
                 }
             }
             let normalized = path.replace('\\', "/");
@@ -128,20 +122,10 @@ impl Config {
                             .is_match(&normalized)
                     })
                 {
-                    level = item.severity;
+                    enabled = !matches!(item.severity, Level::Allow);
                 }
             }
-            match level {
-                Level::Allow => false,
-                Level::Warning => {
-                    d.severity = Severity::Warning;
-                    true
-                }
-                Level::Error => {
-                    d.severity = Severity::Error;
-                    true
-                }
-            }
+            enabled
         });
     }
 }

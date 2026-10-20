@@ -21,7 +21,7 @@ fn load(rel: &str) -> SourceFile {
 }
 
 fn codes(diagnostics: &[Diagnostic]) -> Vec<DiagnosticCode> {
-    diagnostics.iter().map(|d| d.code).collect()
+    diagnostics.iter().map(|d| d.code()).collect()
 }
 
 #[test]
@@ -80,19 +80,19 @@ fn derived_dim_cluster_parses_without_expansion() {
 fn bad_xml_yields_xml001() {
     let result = parse_svd(&load("invalid/bad_xml.svd"));
     assert!(result.device.is_none());
-    assert_eq!(codes(&result.diagnostics), [DiagnosticCode::new("XML001")]);
+    assert_eq!(codes(&result.diagnostics), [DiagnosticCode::new("E003")]);
 }
 
 #[test]
 fn wrong_root_yields_svd001() {
     let result = parse_svd(&load("invalid/wrong_root.svd"));
-    assert_eq!(codes(&result.diagnostics), [DiagnosticCode::new("SVD001")]);
+    assert_eq!(codes(&result.diagnostics), [DiagnosticCode::new("E004")]);
 }
 
 #[test]
 fn missing_version_yields_svd002() {
     let result = parse_svd(&load("invalid/missing_version.svd"));
-    assert_eq!(codes(&result.diagnostics), [DiagnosticCode::new("SVD002")]);
+    assert_eq!(codes(&result.diagnostics), [DiagnosticCode::new("E005")]);
     assert!(result.diagnostics[0].message.contains("<version>"));
 }
 
@@ -100,24 +100,24 @@ fn missing_version_yields_svd002() {
 fn multiple_errors_are_reported_together() {
     let result = parse_svd(&load("invalid/multiple_errors.svd"));
     let codes = codes(&result.diagnostics);
-    assert!(codes.contains(&DiagnosticCode::new("SVD002"))); // width
-    assert!(codes.contains(&DiagnosticCode::new("SVD003"))); // version
-    assert!(codes.contains(&DiagnosticCode::new("SVD004"))); // description
-    assert!(codes.contains(&DiagnosticCode::new("SVD005"))); // P0
+    assert!(codes.contains(&DiagnosticCode::new("E005"))); // width
+    assert!(codes.contains(&DiagnosticCode::new("E006"))); // version
+    assert!(codes.contains(&DiagnosticCode::new("E007"))); // description
+    assert!(codes.contains(&DiagnosticCode::new("W002"))); // P0
     assert_eq!(result.diagnostics.len(), 4);
 }
 
 #[test]
 fn empty_peripherals_yields_svd002() {
     let result = parse_svd(&load("invalid/empty_peripherals.svd"));
-    assert_eq!(codes(&result.diagnostics), [DiagnosticCode::new("SVD002")]);
+    assert_eq!(codes(&result.diagnostics), [DiagnosticCode::new("E005")]);
 }
 
 #[test]
 fn bad_number_yields_svd006_without_panic() {
     let result = parse_svd(&load("invalid/bad_number.svd"));
     assert!(result.device.is_none());
-    assert_eq!(codes(&result.diagnostics), [DiagnosticCode::new("SVD006")]);
+    assert_eq!(codes(&result.diagnostics), [DiagnosticCode::new("E008")]);
     assert!(result.diagnostics[0].primary_span.is_none());
 }
 
@@ -125,8 +125,8 @@ fn bad_number_yields_svd006_without_panic() {
 fn warning_only_file_has_no_errors() {
     let result = parse_svd(&load("valid/warning_no_description.svd"));
     assert!(!result.has_errors());
-    assert_eq!(codes(&result.diagnostics), [DiagnosticCode::new("SVD005")]);
-    assert_eq!(result.diagnostics[0].severity, Severity::Warning);
+    assert_eq!(codes(&result.diagnostics), [DiagnosticCode::new("W002")]);
+    assert_eq!(result.diagnostics[0].severity(), Severity::Warning);
     // Warnings must not prevent the typed parse.
     assert!(result.device.is_some());
 }
@@ -164,7 +164,10 @@ fn debug_dump(source: &SourceFile, diagnostics: &[Diagnostic]) -> String {
             .unwrap_or_else(|| "[no span]".to_owned());
         out.push_str(&format!(
             "{:?} {} {} {}\n",
-            d.severity, d.code, pos, d.message
+            d.severity(),
+            d.code(),
+            pos,
+            d.message
         ));
         for r in &d.related {
             let start = source.line_col(r.span.start).unwrap();

@@ -4,8 +4,9 @@
 //! rendering crate; conversion to human-readable output happens in the CLI.
 
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-/// A stable diagnostic identifier backed by a static string. Registered codes live in the
-/// metadata next to their checker or pipeline component.
+/// A stable identifier: E001..E999, W001..W999 or N001..N999.
+/// Each registered code has one fixed severity, matching its prefix.
+/// Registered codes live next to their checker or pipeline component.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct DiagnosticCode(&'static str);
 
@@ -161,11 +162,12 @@ impl<'de> Deserialize<'de> for DiagnosticCode {
 
 /// Результат проверки
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(try_from = "DiagnosticData")]
 pub struct Diagnostic {
     /// Код проверки (E001, E002 и т.д.)
-    pub code: DiagnosticCode,
+    code: DiagnosticCode,
     /// Тяжесть греха: ошибка, предупреждение
-    pub severity: Severity,
+    severity: Severity,
     /// Человекочитаемое сообщение греха
     pub message: String,
     /// Основной диапазон байтов в сырках
@@ -176,7 +178,10 @@ pub struct Diagnostic {
 
 impl Diagnostic {
     /// Creates a diagnostic without spans.
-    pub fn new(code: DiagnosticCode, severity: Severity, message: impl Into<String>) -> Self {
+    pub fn new(code: DiagnosticCode, message: impl Into<String>) -> Self {
+        let severity = crate::registry::find_rule(code.as_str())
+            .expect("diagnostic code must be registered")
+            .severity;
         Self {
             code,
             severity,
@@ -186,14 +191,14 @@ impl Diagnostic {
         }
     }
 
-    /// Creates an error diagnostic without spans.
-    pub fn error(code: DiagnosticCode, message: impl Into<String>) -> Self {
-        Self::new(code, Severity::Error, message)
+    /// The stable identifier of this finding.
+    pub fn code(&self) -> DiagnosticCode {
+        self.code
     }
 
-    /// Creates a warning diagnostic without spans.
-    pub fn warning(code: DiagnosticCode, message: impl Into<String>) -> Self {
-        Self::new(code, Severity::Warning, message)
+    /// The fixed severity declared for this diagnostic code.
+    pub fn severity(&self) -> Severity {
+        self.severity
     }
 
     /// Sets the primary span.
@@ -206,6 +211,33 @@ impl Diagnostic {
     pub fn with_related(mut self, span: Span, message: impl Into<String>) -> Self {
         self.related.push(RelatedSpan::new(span, message));
         self
+    }
+}
+
+// Validate the same invariant when accepting serialized diagnostics.
+#[derive(Deserialize)]
+struct DiagnosticData {
+    code: DiagnosticCode,
+    severity: Severity,
+    message: String,
+    primary_span: Option<Span>,
+    related: Vec<RelatedSpan>,
+}
+
+impl TryFrom<DiagnosticData> for Diagnostic {
+    type Error = String;
+
+    fn try_from(data: DiagnosticData) -> Result<Self, Self::Error> {
+        let mut diagnostic = Self::new(data.code, data.message);
+        if data.severity != diagnostic.severity() {
+            return Err(format!(
+                "severity does not match diagnostic code {}",
+                data.code
+            ));
+        }
+        diagnostic.primary_span = data.primary_span;
+        diagnostic.related = data.related;
+        Ok(diagnostic)
     }
 }
 
@@ -238,29 +270,27 @@ mod tests {
         // do not require maintaining a second exhaustive list in this test.
         assert_eq!(
             crate::frontend::diagnostics::IO_READ_FAILED.code().as_str(),
-            "IO001"
+            "E001"
         );
         assert_eq!(
             crate::normalize::diagnostics::AMBIGUOUS_REFERENCE
                 .code()
                 .as_str(),
-            "NORM003"
+            "E011"
         );
-        assert_eq!(
-            crate::rules::fields::FIELD_OVERLAP.code().as_str(),
-            "SEM004"
-        );
+        assert_eq!(crate::rules::fields::FIELD_OVERLAP.code().as_str(), "W003");
         let mut seen = std::collections::BTreeSet::new();
         for code in DiagnosticCode::all() {
             assert!(seen.insert(code.as_str()), "duplicate code {code}");
             assert_eq!(DiagnosticCode::from_code(code.as_str()), Some(*code));
         }
-        assert_eq!(DiagnosticCode::from_code("SVD999"), None);
+        assert_eq!(DiagnosticCode::from_code("E999"), None);
+        assert_eq!(DiagnosticCode::from_code("SEM004"), None);
     }
 
     #[test]
     fn diagnostic_serializes_with_stable_shape() {
-        let diag = Diagnostic::error(
+        let diag = Diagnostic::new(
             crate::frontend::diagnostics::MISSING_REQUIRED_ELEMENT.code(),
             "missing <name>",
         )
@@ -268,7 +298,7 @@ mod tests {
         .with_related(Span::new(0, 5).unwrap(), "required by CMSIS-SVD");
         let json = serde_json::to_string(&diag).unwrap();
         let expected = serde_json::json!({
-            "code": "SVD002",
+            "code": "E005",
             "severity": "error",
             "message": "missing <name>",
             "primary_span": { "start": 10, "end": 20 },
@@ -284,7 +314,7 @@ mod tests {
 
     #[test]
     fn diagnostic_without_span_serializes_null() {
-        let diag = Diagnostic::warning(
+        let diag = Diagnostic::new(
             crate::frontend::diagnostics::MISSING_PERIPHERAL_DESCRIPTION.code(),
             "no desc",
         );

@@ -30,16 +30,16 @@ pub struct FrontendResult {
 impl FrontendResult {
     /// Returns `true` when at least one diagnostic has [`Severity::Error`].
     pub fn has_errors(&self) -> bool {
-        self.diagnostics.iter().any(|d| d.severity.is_error())
+        self.diagnostics.iter().any(|d| d.severity().is_error())
     }
 }
 
 /// Parses and checks one SVD source file.
 ///
 /// Stages:
-/// 1. XML syntax check via `roxmltree`. On failure a single `XML001`
+/// 1. XML syntax check via `roxmltree`. On failure a single `E003`
 ///    diagnostic is returned and the document is not processed further.
-/// 2. Structural preflight checks (`SVD001`–`SVD005`). All problems are
+/// 2. Structural preflight checks (`E004`–`W002`). All problems are
 ///    collected.
 /// 3. Typed parse via [`svd_parser::parse_with_config`] with validation
 ///    disabled and without `derivedFrom`/`dim` expansion. Only attempted
@@ -48,7 +48,7 @@ impl FrontendResult {
 /// This function never panics on malformed user input.
 pub fn parse_svd(source: &SourceFile) -> FrontendResult {
     if let Some(span) = excessive_nesting(source.text()) {
-        let mut diagnostic = Diagnostic::error(
+        let mut diagnostic = Diagnostic::new(
             diagnostics::SVD_PARSE_ERROR.code(),
             "XML element nesting exceeds the analysis limit of 64",
         );
@@ -77,7 +77,7 @@ pub fn parse_svd(source: &SourceFile) -> FrontendResult {
         Err(err) => {
             // Should never happen with roxmltree-produced ranges; report
             // instead of panicking.
-            diagnostics.push(Diagnostic::error(
+            diagnostics.push(Diagnostic::new(
                 diagnostics::XML_SYNTAX.code(),
                 err.to_string(),
             ));
@@ -87,7 +87,7 @@ pub fn parse_svd(source: &SourceFile) -> FrontendResult {
 
     diagnostics.extend(preflight::check_document(&document));
 
-    let device = if diagnostics.iter().any(|d| d.severity.is_error()) {
+    let device = if diagnostics.iter().any(|d| d.severity().is_error()) {
         // Skipping the typed pass here also guarantees that svd-parser
         // errors cannot duplicate preflight findings.
         None
@@ -173,7 +173,7 @@ fn typed_parse(source: &SourceFile, diagnostics: &mut Vec<Diagnostic>) -> Option
         Err(err) => {
             // svd-parser does not expose source positions for its errors;
             // per policy no coordinates are invented.
-            diagnostics.push(Diagnostic::error(
+            diagnostics.push(Diagnostic::new(
                 diagnostics::SVD_PARSE_ERROR.code(),
                 format!("failed to parse SVD: {err}"),
             ));
@@ -196,7 +196,7 @@ fn xml_error_diagnostic(source: &SourceFile, err: &roxmltree::Error) -> Diagnost
             .offset_at(pos.row, pos.col)
             .and_then(|offset| Span::new(offset, offset).ok())
     };
-    let mut diagnostic = Diagnostic::error(
+    let mut diagnostic = Diagnostic::new(
         diagnostics::XML_SYNTAX.code(),
         format!("XML syntax error: {err}"),
     );
@@ -247,7 +247,7 @@ mod tests {
         assert!(result.source_map.is_none());
         assert_eq!(result.diagnostics.len(), 1);
         let diag = &result.diagnostics[0];
-        assert_eq!(diag.code, diagnostics::XML_SYNTAX.code());
+        assert_eq!(diag.code(), diagnostics::XML_SYNTAX.code());
         assert!(diag.primary_span.is_some());
     }
 
@@ -259,7 +259,7 @@ mod tests {
         assert!(result.device.is_none());
         assert_eq!(result.diagnostics.len(), 1);
         assert_eq!(
-            result.diagnostics[0].code,
+            result.diagnostics[0].code(),
             diagnostics::MISSING_REQUIRED_ELEMENT.code()
         );
     }
@@ -274,7 +274,7 @@ mod tests {
         assert!(result.device.is_none());
         assert_eq!(result.diagnostics.len(), 1);
         assert_eq!(
-            result.diagnostics[0].code,
+            result.diagnostics[0].code(),
             diagnostics::SVD_PARSE_ERROR.code()
         );
         // No position is known, so no position is reported.

@@ -1,14 +1,13 @@
 //! Opt-in description quality check.
 use super::CheckContext;
-use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory};
+use crate::diagnostic_definition::DiagnosticDefinition;
 use crate::{CanonicalDevice, CanonicalRegister, Diagnostic, Severity, SourceMap};
 
 pub(crate) static LOW_QUALITY_DESCRIPTION: DiagnosticDefinition = DiagnosticDefinition {
-    code: crate::DiagnosticCode::new("SVD007"),
+    code: crate::DiagnosticCode::new("W001"),
     name: "low-quality-description",
     description: "A register description repeats its name or is too short to explain its purpose.",
-    category: RuleCategory::Quality,
-    default_severity: Severity::Warning,
+    severity: Severity::Warning,
     configurable: true,
     tags: &["quality", "strict"],
 };
@@ -38,7 +37,6 @@ fn check_description(
     (description.chars().count() < 4 || description.eq_ignore_ascii_case(name)).then(|| {
         context.diagnostic(
             &LOW_QUALITY_DESCRIPTION,
-            Severity::Warning,
             "register description is too short or repeats its name",
             &register.origin,
             "description",

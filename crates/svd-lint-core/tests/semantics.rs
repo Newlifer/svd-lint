@@ -50,13 +50,13 @@ fn run(input: &str) -> AnalysisResult {
         "XML and normalization must succeed: {:?}",
         result.diagnostics
     );
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .all(|d| d.code.as_str().starts_with("SEM")),
-        "{:?}",
-        result.diagnostics
+    assert_eq!(
+        result.diagnostics,
+        check_rules(
+            result.device.as_ref().unwrap(),
+            result.source_map.as_ref().unwrap()
+        ),
+        "parsing and normalization must not introduce diagnostics"
     );
     result
 }
@@ -69,7 +69,7 @@ fn finding(input: &str, code: &str, severity: Severity) {
     let findings: Vec<_> = result
         .diagnostics
         .iter()
-        .filter(|d| d.code.as_str() == code)
+        .filter(|d| d.code().as_str() == code)
         .collect();
     assert!(
         !findings.is_empty(),
@@ -79,7 +79,7 @@ fn finding(input: &str, code: &str, severity: Severity) {
     assert!(
         findings
             .iter()
-            .all(|d| d.severity == severity && d.primary_span.is_some()),
+            .all(|d| d.severity() == severity && d.primary_span.is_some()),
         "{findings:?}"
     );
 }
@@ -104,7 +104,7 @@ cases!(
     sem001_valid,
     sem001_invalid,
     sem001_boundary,
-    "SEM001",
+    "E018",
     Severity::Error,
     one(32, "", ""),
     one(0, "", ""),
@@ -114,7 +114,7 @@ cases!(
     sem002_valid,
     sem002_invalid,
     sem002_boundary,
-    "SEM002",
+    "E019",
     Severity::Error,
     one(8, "", &field("F", 0, 1, "")),
     one(8, "", &field("F", 0, 0, "")),
@@ -124,7 +124,7 @@ cases!(
     sem003_valid,
     sem003_invalid,
     sem003_boundary,
-    "SEM003",
+    "E020",
     Severity::Error,
     one(8, "", &field("F", 0, 2, "")),
     one(8, "", &field("F", 7, 2, "")),
@@ -134,7 +134,7 @@ cases!(
     sem004_valid,
     sem004_invalid,
     sem004_boundary,
-    "SEM004",
+    "W003",
     Severity::Warning,
     one(8, "", &(field("A", 0, 1, "") + &field("B", 1, 1, ""))),
     one(8, "", &(field("A", 0, 4, "") + &field("B", 3, 2, ""))),
@@ -144,7 +144,7 @@ cases!(
     sem005_valid,
     sem005_invalid,
     sem005_boundary,
-    "SEM005",
+    "E021",
     Severity::Error,
     one(8, "<resetValue>255</resetValue>", ""),
     one(8, "<resetValue>256</resetValue>", ""),
@@ -154,7 +154,7 @@ cases!(
     sem006_valid,
     sem006_invalid,
     sem006_boundary,
-    "SEM006",
+    "E022",
     Severity::Error,
     one(8, "<resetMask>255</resetMask>", ""),
     one(8, "<resetMask>256</resetMask>", ""),
@@ -164,7 +164,7 @@ cases!(
     sem007_valid,
     sem007_invalid,
     sem007_boundary,
-    "SEM007",
+    "W004",
     Severity::Warning,
     one(8, "<resetValue>1</resetValue><resetMask>1</resetMask>", ""),
     one(8, "<resetValue>2</resetValue><resetMask>1</resetMask>", ""),
@@ -174,7 +174,7 @@ cases!(
     sem008_valid,
     sem008_invalid,
     sem008_boundary,
-    "SEM008",
+    "E023",
     Severity::Error,
     xml(
         "",
@@ -192,7 +192,7 @@ cases!(
     sem009_valid,
     sem009_invalid,
     sem009_boundary,
-    "SEM009",
+    "E024",
     Severity::Error,
     xml(
         "",
@@ -213,7 +213,7 @@ cases!(
     sem010_valid,
     sem010_invalid,
     sem010_boundary,
-    "SEM010",
+    "E025",
     Severity::Error,
     xml("", &block(0, 8), &reg("R", 0, 32, "", "")),
     xml("", &block(0, 8), &reg("R", 8, 8, "", "")),
@@ -223,7 +223,7 @@ cases!(
     sem011_valid,
     sem011_invalid,
     sem011_boundary,
-    "SEM011",
+    "E026",
     Severity::Error,
     xml("", &block(0, 4), &reg("R", 0, 32, "", "")),
     xml("", &block(0, 0), &reg("R", 0, 32, "", "")),
@@ -236,7 +236,7 @@ cases!(
     sem012_valid,
     sem012_invalid,
     sem012_boundary,
-    "SEM012",
+    "E027",
     Severity::Error,
     enum_doc(2, &entry("A", "3")),
     enum_doc(2, &entry("A", "4")),
@@ -246,7 +246,7 @@ cases!(
     sem013_valid,
     sem013_invalid,
     sem013_boundary,
-    "SEM013",
+    "E028",
     Severity::Error,
     enum_doc(2, &(entry("A", "0") + &entry("B", "1"))),
     enum_doc(2, &(entry("A", "0") + &entry("A", "1"))),
@@ -265,7 +265,7 @@ cases!(
     sem014_valid,
     sem014_invalid,
     sem014_boundary,
-    "SEM014",
+    "E029",
     Severity::Error,
     enum_doc(
         2,
@@ -284,7 +284,7 @@ cases!(
     sem015_valid,
     sem015_invalid,
     sem015_boundary,
-    "SEM015",
+    "E030",
     Severity::Error,
     one(
         2,
@@ -321,7 +321,7 @@ cases!(
     sem016_valid,
     sem016_invalid,
     sem016_boundary,
-    "SEM016",
+    "W005",
     Severity::Warning,
     one(
         8,
@@ -367,7 +367,7 @@ fn invalid_fields_do_not_create_overlap_cascades() {
         !result
             .diagnostics
             .iter()
-            .any(|d| d.code == DiagnosticCode::new("SEM004"))
+            .any(|d| d.code() == DiagnosticCode::new("W003"))
     );
 }
 
@@ -381,9 +381,13 @@ fn field_checks_report_independent_errors_without_overlap_cascades() {
             + &field("ZERO", 0, 0, "")
             + &field("OUT", 7, 2, "")),
     ));
-    let mut codes: Vec<_> = result.diagnostics.iter().map(|d| d.code.as_str()).collect();
+    let mut codes: Vec<_> = result
+        .diagnostics
+        .iter()
+        .map(|d| d.code().as_str())
+        .collect();
     codes.sort();
-    assert_eq!(codes, ["SEM002", "SEM003", "SEM004"]);
+    assert_eq!(codes, ["E019", "E020", "W003"]);
 }
 
 #[test]
@@ -391,19 +395,23 @@ fn invalid_reset_properties_do_not_create_mask_cascades() {
     for (properties, expected) in [
         (
             "<resetValue>0x100</resetValue><resetMask>0</resetMask>",
-            vec!["SEM005"],
+            vec!["E021"],
         ),
         (
             "<resetValue>1</resetValue><resetMask>0x100</resetMask>",
-            vec!["SEM006"],
+            vec!["E022"],
         ),
         (
             "<resetValue>0x200</resetValue><resetMask>0x100</resetMask>",
-            vec!["SEM005", "SEM006"],
+            vec!["E021", "E022"],
         ),
     ] {
         let result = run(&one(8, properties, ""));
-        let mut codes: Vec<_> = result.diagnostics.iter().map(|d| d.code.as_str()).collect();
+        let mut codes: Vec<_> = result
+            .diagnostics
+            .iter()
+            .map(|d| d.code().as_str())
+            .collect();
         codes.sort();
         assert_eq!(codes, expected);
     }
@@ -416,9 +424,13 @@ fn enum_checks_report_bounds_duplicates_and_defaults_together() {
         + "<enumeratedValue><name>DEFAULT_A</name><isDefault>true</isDefault></enumeratedValue>"
         + "<enumeratedValue><name>DEFAULT_B</name><isDefault>true</isDefault></enumeratedValue>";
     let result = run(&enum_doc(2, &items));
-    let mut codes: Vec<_> = result.diagnostics.iter().map(|d| d.code.as_str()).collect();
+    let mut codes: Vec<_> = result
+        .diagnostics
+        .iter()
+        .map(|d| d.code().as_str())
+        .collect();
     codes.sort();
-    assert_eq!(codes, ["SEM012", "SEM012", "SEM013", "SEM014"]);
+    assert_eq!(codes, ["E027", "E027", "E028", "E029"]);
 }
 
 #[test]
@@ -440,16 +452,16 @@ fn access_checks_report_constraints_and_effects_at_register_and_field() {
     let mut findings: Vec<_> = result
         .diagnostics
         .iter()
-        .map(|d| (d.code.as_str(), d.severity))
+        .map(|d| (d.code().as_str(), d.severity()))
         .collect();
     findings.sort_by_key(|d| d.0);
     assert_eq!(
         findings,
         [
-            ("SEM015", Severity::Error),
-            ("SEM015", Severity::Error),
-            ("SEM016", Severity::Warning),
-            ("SEM016", Severity::Warning),
+            ("E030", Severity::Error),
+            ("E030", Severity::Error),
+            ("W005", Severity::Warning),
+            ("W005", Severity::Warning),
         ]
     );
 }
@@ -483,7 +495,7 @@ fn memory_units_are_not_assumed_to_be_bytes() {
             "<addressUnitBits>16</addressUnitBits>",
             "<addressUnitBits>8</addressUnitBits>",
         ),
-        "SEM008",
+        "E023",
         Severity::Error,
     );
 }
@@ -492,7 +504,7 @@ fn memory_units_are_not_assumed_to_be_bytes() {
 fn same_address_is_uncertain_and_different_peripherals_can_alias() {
     finding(
         &xml("", "", &(reg("A", 0, 8, "", "") + &reg("B", 0, 8, "", ""))),
-        "SEM008",
+        "W006",
         Severity::Warning,
     );
     let input = one(8, "", "").replace("</peripherals>", "<peripheral derivedFrom=\"P\"><name>ALIAS</name><baseAddress>0x1000</baseAddress></peripheral></peripherals>");
@@ -531,7 +543,7 @@ fn invalid_alternates_are_not_resolved_like_derived_from() {
                 )
                 + &reg("B", 0, 8, "", "")),
         );
-        finding(&input, "SEM009", Severity::Error);
+        finding(&input, "E024", Severity::Error);
     }
     finding(
         &xml(
@@ -540,7 +552,7 @@ fn invalid_alternates_are_not_resolved_like_derived_from() {
             &(reg("A", 0, 8, "", "")
                 + &reg("B", 1, 8, "<alternateRegister>A</alternateRegister>", "")),
         ),
-        "SEM009",
+        "E024",
         Severity::Error,
     );
 }
@@ -551,7 +563,7 @@ fn address_blocks_remain_disjoint_and_invalid_blocks_do_not_cascade() {
     clean(&xml("", &blocks, &reg("R", 4, 8, "", "")));
     finding(
         &xml("", &blocks, &reg("R", 2, 8, "", "")),
-        "SEM010",
+        "E025",
         Severity::Error,
     );
     let result = run(&xml(
@@ -560,7 +572,7 @@ fn address_blocks_remain_disjoint_and_invalid_blocks_do_not_cascade() {
         &(reg("A", 0, 8, "", "") + &reg("B", 1, 8, "", "")),
     ));
     assert_eq!(result.diagnostics.len(), 1);
-    assert_eq!(result.diagnostics[0].code, DiagnosticCode::new("SEM011"));
+    assert_eq!(result.diagnostics[0].code(), DiagnosticCode::new("E026"));
     clean(&one(8, "", "").replace("<registers>", "<addressBlock><offset>0</offset><size>1</size><usage>buffer</usage></addressBlock><registers>"));
 }
 
@@ -572,7 +584,7 @@ fn array_containment_and_conflicts_keep_distinct_physical_addresses() {
         result
             .diagnostics
             .iter()
-            .filter(|d| d.code == DiagnosticCode::new("SEM010"))
+            .filter(|d| d.code() == DiagnosticCode::new("E025"))
             .count(),
         2
     );
@@ -585,7 +597,7 @@ fn array_containment_and_conflicts_keep_distinct_physical_addresses() {
         result
             .diagnostics
             .iter()
-            .filter(|d| d.code == DiagnosticCode::new("SEM008"))
+            .filter(|d| d.code() == DiagnosticCode::new("E023"))
             .count(),
         3
     );
@@ -596,7 +608,7 @@ fn large_arrays_deduplicate_declaration_errors_and_degenerate_ranges() {
     let array = "<register><dim>5000</dim><dimIncrement>1</dimIncrement><name>R%s</name><addressOffset>0</addressOffset><size>8</size></register>";
     let result = run(&xml("<resetValue>256</resetValue>", "", array));
     assert_eq!(result.diagnostics.len(), 1);
-    assert_eq!(result.diagnostics[0].code, DiagnosticCode::new("SEM005"));
+    assert_eq!(result.diagnostics[0].code(), DiagnosticCode::new("E021"));
     let result = run(&xml(
         "",
         "",
@@ -606,7 +618,7 @@ fn large_arrays_deduplicate_declaration_errors_and_degenerate_ranges() {
         ),
     ));
     assert_eq!(result.diagnostics.len(), 1);
-    assert_eq!(result.diagnostics[0].code, DiagnosticCode::new("SEM008"));
+    assert_eq!(result.diagnostics[0].code(), DiagnosticCode::new("W006"));
 }
 
 #[test]
@@ -621,7 +633,7 @@ fn wildcard_enum_values_and_defaults_are_not_numeric_duplicates() {
     ));
     finding(
         &enum_doc(2, &entry("PATTERN", "#1xx")),
-        "SEM012",
+        "E027",
         Severity::Error,
     );
     clean(&enum_doc(
@@ -636,7 +648,7 @@ fn wildcard_enum_values_and_defaults_are_not_numeric_duplicates() {
         !result
             .diagnostics
             .iter()
-            .any(|d| matches!(d.code.as_str(), "SEM013" | "SEM012"))
+            .any(|d| matches!(d.code().as_str(), "E028" | "E027"))
     );
 }
 
@@ -644,12 +656,12 @@ fn wildcard_enum_values_and_defaults_are_not_numeric_duplicates() {
 fn enum_aliases_warn_and_usage_sets_are_independent() {
     finding(
         &enum_doc(2, &(entry("A", "0") + &entry("B", "0"))),
-        "SEM013",
+        "W007",
         Severity::Warning,
     );
     finding(
         &enum_doc(2, &(entry("A", "0") + &entry("A", "0"))),
-        "SEM013",
+        "W007",
         Severity::Warning,
     );
 }
@@ -667,14 +679,14 @@ fn write_constraints_check_ranges_and_write_usage() {
                 "<writeConstraint><range><minimum>0</minimum><maximum>4</maximum></range></writeConstraint>",
             ),
         ),
-        "SEM015",
+        "E030",
         Severity::Error,
     );
     let constraint =
         "<writeConstraint><useEnumeratedValues>true</useEnumeratedValues></writeConstraint>";
     finding(
         &one(2, "", &field("F", 0, 2, constraint)),
-        "SEM015",
+        "E030",
         Severity::Error,
     );
     finding(
@@ -688,7 +700,7 @@ fn write_constraints_check_ranges_and_write_usage() {
                 &(constraint.to_owned() + &entries(&entry("A", "0"), "read")),
             ),
         ),
-        "SEM015",
+        "E030",
         Severity::Error,
     );
     clean(&one(
@@ -717,7 +729,7 @@ fn write_constraints_check_ranges_and_write_usage() {
             "<writeConstraint><range><minimum>3</minimum><maximum>2</maximum></range></writeConstraint>",
             "",
         ),
-        "SEM015",
+        "E030",
         Severity::Error,
     );
 }
@@ -740,7 +752,7 @@ fn effective_field_access_overrides_register_and_once_access_is_legal() {
             "<access>read-only</access><modifiedWriteValues>oneToClear</modifiedWriteValues>",
             "",
         ),
-        "SEM016",
+        "W005",
         Severity::Warning,
     );
     finding(
@@ -749,7 +761,7 @@ fn effective_field_access_overrides_register_and_once_access_is_legal() {
             "<access>writeOnce</access><readAction>clear</readAction>",
             "",
         ),
-        "SEM016",
+        "W005",
         Severity::Warning,
     );
     clean(&one(
@@ -767,7 +779,7 @@ fn inherited_property_positions_and_conflict_related_spans_are_honest() {
     let d = result
         .diagnostics
         .iter()
-        .find(|d| d.code == DiagnosticCode::new("SEM005"))
+        .find(|d| d.code() == DiagnosticCode::new("E021"))
         .unwrap();
     assert_eq!(
         source.snippet(d.primary_span.unwrap()),
@@ -780,7 +792,7 @@ fn inherited_property_positions_and_conflict_related_spans_are_honest() {
     let d = result
         .diagnostics
         .iter()
-        .find(|d| d.code == DiagnosticCode::new("SEM004"))
+        .find(|d| d.code() == DiagnosticCode::new("W003"))
         .unwrap();
     assert_eq!(
         source.snippet(d.primary_span.unwrap()),
@@ -816,25 +828,25 @@ fn semantic_analysis_is_repeatable_and_does_not_mutate_ir() {
 fn limiting_arithmetic_values_report_errors_without_panics() {
     finding(
         &one(u32::MAX, "", &field("F", u32::MAX, u32::MAX, "")),
-        "SEM003",
+        "E020",
         Severity::Error,
     );
     let input = xml("", &block(0, 2), &reg("R", 0, 8, "", "")).replace(
         "<baseAddress>0x1000</baseAddress>",
         "<baseAddress>0xffffffffffffffff</baseAddress>",
     );
-    finding(&input, "SEM011", Severity::Error);
+    finding(&input, "E026", Severity::Error);
     let input = one(16, "", "").replace(
         "<baseAddress>0x1000</baseAddress>",
         "<baseAddress>0xffffffffffffffff</baseAddress>",
     );
-    finding(&input, "SEM008", Severity::Error);
+    finding(&input, "E023", Severity::Error);
     finding(
         &one(8, "", "").replace(
             "<addressUnitBits>8</addressUnitBits>",
             "<addressUnitBits>0</addressUnitBits>",
         ),
-        "SEM011",
+        "E026",
         Severity::Error,
     );
 }
@@ -892,10 +904,10 @@ fn alternate_cluster_views_are_transitive_and_preserve_internal_conflicts() {
     let overlaps: Vec<_> = result
         .diagnostics
         .iter()
-        .filter(|d| d.code.as_str() == "SEM008")
+        .filter(|d| d.code().as_str() == "E023")
         .collect();
     assert_eq!(overlaps.len(), 1, "{overlaps:?}");
-    assert_eq!(overlaps[0].severity, Severity::Error);
+    assert_eq!(overlaps[0].severity(), Severity::Error);
 }
 
 #[test]

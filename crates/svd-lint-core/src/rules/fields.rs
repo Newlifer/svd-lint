@@ -1,33 +1,30 @@
 use super::{CheckContext, ranges};
-use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory};
+use crate::diagnostic_definition::DiagnosticDefinition;
 use crate::{CanonicalField, CanonicalRegister, Diagnostic, Severity};
 
 pub(crate) static ZERO_FIELD_WIDTH: DiagnosticDefinition = DiagnosticDefinition {
-    code: crate::DiagnosticCode::new("SEM002"),
+    code: crate::DiagnosticCode::new("E019"),
     name: "zero-field-width",
     description: "A field must occupy a positive number of bits.",
-    category: RuleCategory::Fields,
-    default_severity: Severity::Error,
+    severity: Severity::Error,
     configurable: true,
     tags: &["check"],
 };
 
 pub(crate) static FIELD_OUT_OF_BOUNDS: DiagnosticDefinition = DiagnosticDefinition {
-    code: crate::DiagnosticCode::new("SEM003"),
+    code: crate::DiagnosticCode::new("E020"),
     name: "field-out-of-bounds",
     description: "A field extends past its register size.",
-    category: RuleCategory::Fields,
-    default_severity: Severity::Error,
+    severity: Severity::Error,
     configurable: true,
     tags: &["check"],
 };
 
 pub(crate) static FIELD_OVERLAP: DiagnosticDefinition = DiagnosticDefinition {
-    code: crate::DiagnosticCode::new("SEM004"),
+    code: crate::DiagnosticCode::new("W003"),
     name: "overlapping-fields",
     description: "Two fields occupy overlapping bit ranges.",
-    category: RuleCategory::Fields,
-    default_severity: Severity::Warning,
+    severity: Severity::Warning,
     configurable: true,
     tags: &["heuristic"],
 };
@@ -61,7 +58,6 @@ fn check_bounds<'a>(
         if field.bit_width == 0 {
             diagnostics.push(context.diagnostic(
                 &ZERO_FIELD_WIDTH,
-                Severity::Error,
                 "field width must be greater than zero",
                 &field.origin,
                 "bitWidth",
@@ -76,7 +72,6 @@ fn check_bounds<'a>(
         } else {
             let mut d = context.diagnostic(
                 &FIELD_OUT_OF_BOUNDS,
-                Severity::Error,
                 format!(
                     "field interval [{}, {}) exceeds register size {}",
                     field.bit_offset,
@@ -104,7 +99,6 @@ fn check_overlaps(context: &CheckContext<'_>, mut ranges: Vec<FieldRange<'_>>) -
             if left.interval.overlaps(right.interval) {
                 let mut d = context.diagnostic(
                     &FIELD_OVERLAP,
-                    Severity::Warning,
                     format!(
                         "field intervals [{}, {}) and [{}, {}) overlap",
                         left.interval.start,

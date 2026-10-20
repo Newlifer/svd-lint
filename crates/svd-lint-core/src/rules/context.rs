@@ -1,4 +1,4 @@
-use crate::{Diagnostic, NodeId, Origin, Severity, SourceMap, Span, ir::*};
+use crate::{Diagnostic, NodeId, Origin, SourceMap, Span, ir::*};
 
 /// Source provenance helpers shared by every rule; checks never modify the IR.
 pub struct CheckContext<'a> {
@@ -41,13 +41,11 @@ impl CheckContext<'_> {
     pub(super) fn diagnostic(
         &self,
         definition: &crate::diagnostic_definition::DiagnosticDefinition,
-        severity: Severity,
         message: impl Into<String>,
         origin: &Origin,
         tag: &str,
     ) -> Diagnostic {
         let mut diagnostic = definition.diagnostic(message);
-        diagnostic.severity = severity;
         diagnostic.primary_span = self.element_span(origin, tag);
         let owner = origin
             .declaration

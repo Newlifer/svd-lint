@@ -77,8 +77,8 @@ fn fail(diagnostics: &[Diagnostic], policy: FailOn, io: bool) -> u8 {
     if io {
         2
     } else if diagnostics.iter().any(|d| {
-        d.severity == Severity::Error
-            || (policy == FailOn::Warning && d.severity == Severity::Warning)
+        d.severity() == Severity::Error
+            || (policy == FailOn::Warning && d.severity() == Severity::Warning)
     }) {
         1
     } else {
@@ -96,26 +96,26 @@ fn schema_diagnostics(source: &SourceFile, options: &Options) -> Vec<Diagnostic>
         .map(|v| SchemaVersion(v.clone()))
         .or_else(|| SchemaVersion::detect(source))
     else {
-        return vec![Diagnostic::error(
+        return vec![Diagnostic::new(
             schema_diagnostics::UNKNOWN_VERSION.code(),
             "schemaVersion is missing",
         )];
     };
     if !version.supported() {
-        return vec![Diagnostic::error(
+        return vec![Diagnostic::new(
             schema_diagnostics::UNKNOWN_VERSION.code(),
             format!("unsupported schemaVersion {}", version.0),
         )];
     }
     if let Some(dir) = &options.schema_dir {
         if DirectoryProvider::new(dir).schema(&version).is_none() {
-            return vec![Diagnostic::error(
+            return vec![Diagnostic::new(
                 schema_diagnostics::MISSING_SCHEMA.code(),
                 format!("schema {} not found in {}", version.0, dir.display()),
             )];
         }
     } else {
-        return vec![Diagnostic::error(
+        return vec![Diagnostic::new(
             schema_diagnostics::MISSING_SCHEMA.code(),
             "provide --schema-dir with versioned CMSIS-SVD schemas",
         )];
@@ -130,7 +130,7 @@ fn schema_diagnostics(source: &SourceFile, options: &Options) -> Vec<Diagnostic>
     }
     #[cfg(not(feature = "xsd"))]
     {
-        vec![Diagnostic::error(
+        vec![Diagnostic::new(
             schema_diagnostics::BACKEND_ERROR.code(),
             "XSD validation requires a build with --features xsd",
         )]
@@ -144,10 +144,7 @@ fn main() -> ExitCode {
                 println!("{}", serde_json::to_string_pretty(rule_registry()).unwrap());
             } else {
                 for r in rule_registry() {
-                    println!(
-                        "{} {:32} {:?} {:?}",
-                        r.code, r.name, r.default_severity, r.category
-                    );
+                    println!("{} {:32} {:?}", r.code, r.name, r.severity);
                 }
             }
             Ok(0)
@@ -158,12 +155,8 @@ fn main() -> ExitCode {
                     println!("{}", serde_json::to_string_pretty(rule).unwrap());
                 } else {
                     println!(
-                        "{} — {}\n\nSeverity: {:?}\nCategory: {:?}\n\n{}",
-                        rule.code,
-                        rule.name,
-                        rule.default_severity,
-                        rule.category,
-                        rule.description
+                        "{} — {}\n\nSeverity: {:?}\n\n{}",
+                        rule.code, rule.name, rule.severity, rule.description
                     );
                 }
                 Ok(0)
@@ -184,13 +177,13 @@ fn main() -> ExitCode {
 fn read(path: &PathBuf) -> Result<SourceFile, Diagnostic> {
     let name = path.to_string_lossy().replace('\\', "/");
     let bytes = std::fs::read(path).map_err(|e| {
-        Diagnostic::error(
+        Diagnostic::new(
             frontend_diagnostics::IO_READ_FAILED.code(),
             format!("failed to read `{name}`: {e}"),
         )
     })?;
     let text = String::from_utf8(bytes).map_err(|_| {
-        Diagnostic::error(
+        Diagnostic::new(
             frontend_diagnostics::IO_INVALID_UTF8.code(),
             format!("`{name}` is not valid UTF-8"),
         )
@@ -208,11 +201,11 @@ fn analyze(
     }
     let mut result = analyze_svd(source);
     let quality_requested = options.profile.unwrap_or(config.profile) != Profile::Default
-        || config.rules.contains_key("SVD007")
+        || config.rules.contains_key("W001")
         || config
             .overrides
             .iter()
-            .any(|o| o.rules.iter().any(|c| c == "SVD007"));
+            .any(|o| o.rules.iter().any(|c| c == "W001"));
     if quality_requested {
         if let (Some(device), Some(map)) = (&result.device, &result.source_map) {
             result
@@ -220,11 +213,11 @@ fn analyze(
                 .extend(svd_lint_core::rules::check_quality(device, map));
         }
     }
-    config.apply(&mut result.diagnostics, source.name(), options.profile);
+    config.apply(&mut result.diagnostics, source.name());
     result.diagnostics.sort_by_key(|d| {
         (
             d.primary_span.map(|s| s.start),
-            d.code.as_str(),
+            d.code().as_str(),
             d.message.clone(),
         )
     });

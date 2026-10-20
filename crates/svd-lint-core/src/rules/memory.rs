@@ -1,5 +1,5 @@
 use super::{CheckContext, alternatives::Layout, ranges};
-use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory};
+use crate::diagnostic_definition::DiagnosticDefinition;
 use crate::{
     Diagnostic, Severity,
     ir::{CanonicalAddressBlock, CanonicalPeripheral},
@@ -7,31 +7,37 @@ use crate::{
 use std::collections::BTreeMap;
 
 pub(crate) static REGISTER_OVERLAP: DiagnosticDefinition = DiagnosticDefinition {
-    code: crate::DiagnosticCode::new("SEM008"),
+    code: crate::DiagnosticCode::new("E023"),
     name: "overlapping-registers",
     description: "Register address ranges overlap without confirmed alternatives.",
-    category: RuleCategory::Addressing,
-    default_severity: Severity::Error,
+    severity: Severity::Error,
+    configurable: true,
+    tags: &["heuristic"],
+};
+
+pub(crate) static UNCERTAIN_REGISTER_OVERLAP: DiagnosticDefinition = DiagnosticDefinition {
+    code: crate::DiagnosticCode::new("W006"),
+    name: "uncertain-register-overlap",
+    description: "Registers overlap but may represent undocumented alternative views.",
+    severity: Severity::Warning,
     configurable: true,
     tags: &["heuristic"],
 };
 
 pub(crate) static REGISTER_OUTSIDE_BLOCK: DiagnosticDefinition = DiagnosticDefinition {
-    code: crate::DiagnosticCode::new("SEM010"),
+    code: crate::DiagnosticCode::new("E025"),
     name: "register-outside-block",
     description: "A register must fit wholly within a registers addressBlock.",
-    category: RuleCategory::Addressing,
-    default_severity: Severity::Error,
+    severity: Severity::Error,
     configurable: true,
     tags: &["check"],
 };
 
 pub(crate) static INVALID_ADDRESS_BLOCK: DiagnosticDefinition = DiagnosticDefinition {
-    code: crate::DiagnosticCode::new("SEM011"),
+    code: crate::DiagnosticCode::new("E026"),
     name: "invalid-address-block",
     description: "An addressBlock size or address boundary is invalid.",
-    category: RuleCategory::Addressing,
-    default_severity: Severity::Error,
+    severity: Severity::Error,
     configurable: true,
     tags: &["check"],
 };
@@ -59,7 +65,6 @@ pub(super) fn check_memory(context: &CheckContext<'_>) -> Vec<Diagnostic> {
     if unit == 0 {
         diagnostics.push(context.diagnostic(
             &INVALID_ADDRESS_BLOCK,
-            Severity::Error,
             "addressUnitBits must be positive to compute memory ranges",
             &context.device.origin,
             "addressUnitBits",
@@ -103,7 +108,6 @@ fn check_block_bounds<'a>(
             };
             diagnostics.push(context.diagnostic(
                 &INVALID_ADDRESS_BLOCK,
-                Severity::Error,
                 reason,
                 &block.origin,
                 "size",
@@ -137,7 +141,6 @@ fn check_register_bounds(
         } else {
             diagnostics.push(context.diagnostic(
                 &REGISTER_OVERLAP,
-                Severity::Error,
                 format!(
                     "register at {:#x} with {} bits extends beyond the u64 address space",
                     register.address, size.value
@@ -171,7 +174,6 @@ fn check_containment(
         let register = &layout.peripheral.registers[range.index];
         let mut d = context.diagnostic(
             &REGISTER_OUTSIDE_BLOCK,
-            Severity::Error,
             format!(
                 "register range [{:#x}, {:#x}) is outside every registers addressBlock",
                 range.interval.start, range.interval.end
@@ -248,14 +250,13 @@ fn check_pair(
     let (Some(x), Some(y)) = (layout.intervals[a], layout.intervals[b]) else {
         return diagnostics;
     };
-    let severity = if layout.uncertain(a, b) {
-        Severity::Warning
+    let definition = if layout.uncertain(a, b) {
+        &UNCERTAIN_REGISTER_OVERLAP
     } else {
-        Severity::Error
+        &REGISTER_OVERLAP
     };
     let mut d = context.diagnostic(
-        &REGISTER_OVERLAP,
-        severity,
+        definition,
         format!(
             "register ranges [{:#x}, {:#x}) and [{:#x}, {:#x}) overlap",
             x.start, x.end, y.start, y.end

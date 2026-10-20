@@ -19,7 +19,7 @@ pub fn exit_code(diagnostics: &[Diagnostic], io_failure: bool) -> i32 {
     if io_failure {
         return EXIT_IO;
     }
-    if diagnostics.iter().any(|d| d.severity.is_error()) {
+    if diagnostics.iter().any(|d| d.severity().is_error()) {
         EXIT_ERRORS
     } else {
         EXIT_OK
@@ -67,7 +67,7 @@ struct CliDiagnostic<'a> {
 
 impl fmt::Debug for CliDiagnostic<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}: {}", self.diagnostic.code, self.diagnostic.message)
+        write!(f, "{}: {}", self.diagnostic.code(), self.diagnostic.message)
     }
 }
 
@@ -81,11 +81,11 @@ impl std::error::Error for CliDiagnostic<'_> {}
 
 impl miette::Diagnostic for CliDiagnostic<'_> {
     fn code<'a>(&'a self) -> Option<Box<dyn fmt::Display + 'a>> {
-        Some(Box::new(self.diagnostic.code))
+        Some(Box::new(self.diagnostic.code()))
     }
 
     fn severity(&self) -> Option<miette::Severity> {
-        Some(match self.diagnostic.severity {
+        Some(match self.diagnostic.severity() {
             Severity::Error => miette::Severity::Error,
             Severity::Warning => miette::Severity::Warning,
             Severity::Note => miette::Severity::Advice,
@@ -173,8 +173,8 @@ pub fn render_json(
         diagnostics: diagnostics
             .iter()
             .map(|d| JsonDiagnostic {
-                code: d.code.as_str().to_owned(),
-                severity: match d.severity {
+                code: d.code().as_str().to_owned(),
+                severity: match d.severity() {
                     Severity::Error => "error",
                     Severity::Warning => "warning",
                     Severity::Note => "note",

@@ -1,8 +1,0 @@
-{
-  "expected": [],
-  "profile": "default",
-  "unexpected": [
-    "SEM002",
-    "SEM003"
-  ]
-}

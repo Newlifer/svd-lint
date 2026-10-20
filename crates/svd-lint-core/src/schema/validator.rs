@@ -11,7 +11,7 @@ pub fn analyze_with_schema(
     version: SchemaVersion,
 ) -> AnalysisResult {
     let diagnostics = validator.validate(source, version);
-    if diagnostics.iter().any(|d| d.severity.is_error()) {
+    if diagnostics.iter().any(|d| d.severity().is_error()) {
         return AnalysisResult {
             device: None,
             diagnostics,
@@ -23,7 +23,7 @@ pub fn analyze_with_schema(
     result.diagnostics.sort_by_key(|d| {
         (
             d.primary_span.map(|s| s.start),
-            d.code.as_str(),
+            d.code().as_str(),
             d.message.clone(),
         )
     });

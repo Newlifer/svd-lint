@@ -1,34 +1,40 @@
 use super::{CheckContext, ranges::fits};
-use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory};
+use crate::diagnostic_definition::DiagnosticDefinition;
 use crate::{Diagnostic, Severity, ir::*};
 use std::collections::BTreeMap;
 
 pub(crate) static ENUM_VALUE_OUT_OF_BOUNDS: DiagnosticDefinition = DiagnosticDefinition {
-    code: crate::DiagnosticCode::new("SEM012"),
+    code: crate::DiagnosticCode::new("E027"),
     name: "enum-out-of-bounds",
     description: "A numeric enum value exceeds the field width.",
-    category: RuleCategory::Enumerations,
-    default_severity: Severity::Error,
+    severity: Severity::Error,
     configurable: true,
     tags: &["check"],
 };
 
 pub(crate) static DUPLICATE_ENUM_ENTRY: DiagnosticDefinition = DiagnosticDefinition {
-    code: crate::DiagnosticCode::new("SEM013"),
+    code: crate::DiagnosticCode::new("E028"),
     name: "duplicate-enum-entry",
-    description: "Names or semantic descriptions conflict within one enum usage set.",
-    category: RuleCategory::Enumerations,
-    default_severity: Severity::Error,
+    description: "An enum name has conflicting values, patterns or default flags in one usage set.",
+    severity: Severity::Error,
+    configurable: true,
+    tags: &["heuristic"],
+};
+
+pub(crate) static REDUNDANT_ENUM_ENTRY: DiagnosticDefinition = DiagnosticDefinition {
+    code: crate::DiagnosticCode::new("W007"),
+    name: "redundant-enum-entry",
+    description: "An enum value has multiple descriptions or an identical name is repeated in one usage set.",
+    severity: Severity::Warning,
     configurable: true,
     tags: &["heuristic"],
 };
 
 pub(crate) static MULTIPLE_ENUM_DEFAULTS: DiagnosticDefinition = DiagnosticDefinition {
-    code: crate::DiagnosticCode::new("SEM014"),
+    code: crate::DiagnosticCode::new("E029"),
     name: "multiple-enum-defaults",
     description: "Only one entry may be default in an enum set.",
-    category: RuleCategory::Enumerations,
-    default_severity: Severity::Error,
+    severity: Severity::Error,
     configurable: true,
     tags: &["check"],
 };
@@ -108,7 +114,6 @@ fn check_bounds(
             if !fits(number, field.bit_width) {
                 let mut d = context.diagnostic(
                     &ENUM_VALUE_OUT_OF_BOUNDS,
-                    Severity::Error,
                     format!(
                         "enumerated value {number:#x} does not fit in {} bits",
                         field.bit_width
@@ -139,7 +144,6 @@ fn check_defaults(context: &CheckContext<'_>, entries: &[EnumEntry<'_>]) -> Vec<
         if let Some(previous) = default {
             let mut d = context.diagnostic(
                 &MULTIPLE_ENUM_DEFAULTS,
-                Severity::Error,
                 "enumeratedValues contains multiple isDefault=true entries",
                 &entry.origin,
                 "isDefault",
@@ -178,8 +182,7 @@ fn check_duplicate_values(
                 || earlier.value.description != entry.value.description
             {
                 let mut d = context.diagnostic(
-                    &DUPLICATE_ENUM_ENTRY,
-                    Severity::Warning,
+                    &REDUNDANT_ENUM_ENTRY,
                     format!("enumerated value {number:#x} has multiple semantic descriptions in one usage set"),
                     &entry.origin,
                     "value",
@@ -207,11 +210,10 @@ fn check_duplicate_names(context: &CheckContext<'_>, entries: &[EnumEntry<'_>]) 
                 || earlier.value.is_default != entry.value.is_default
                 || earlier.pattern != entry.pattern;
             let mut d = context.diagnostic(
-                &DUPLICATE_ENUM_ENTRY,
                 if contradictory {
-                    Severity::Error
+                    &DUPLICATE_ENUM_ENTRY
                 } else {
-                    Severity::Warning
+                    &REDUNDANT_ENUM_ENTRY
                 },
                 format!(
                     "duplicate enumerated name `{}` in one usage set",

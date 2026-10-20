@@ -24,18 +24,18 @@ fn xml_depth_guard_has_a_boundary_and_skips_xml_literals() {
         result
             .diagnostics
             .iter()
-            .any(|d| d.code == DiagnosticCode::new("SVD001"))
+            .any(|d| d.code() == DiagnosticCode::new("E004"))
     );
     assert!(
         !result
             .diagnostics
             .iter()
-            .any(|d| d.code == DiagnosticCode::new("SVD006"))
+            .any(|d| d.code() == DiagnosticCode::new("E008"))
     );
     let input = format!("{}{}", "<node>".repeat(65), "</node>".repeat(65));
     let result = parse_svd(&SourceFile::new("deep.svd", input));
     assert_eq!(result.diagnostics.len(), 1);
-    assert_eq!(result.diagnostics[0].code, DiagnosticCode::new("SVD006"));
+    assert_eq!(result.diagnostics[0].code(), DiagnosticCode::new("E008"));
     assert!(result.source_map.is_none());
 }
 #[test]
@@ -61,11 +61,12 @@ fn corpus_codes_and_sidecars_match_actual_analysis() {
             .into_iter()
             .map(|d| {
                 assert!(
-                    find_rule(d.code.as_str()).is_some(),
+                    find_rule(d.code().as_str()).is_some(),
                     "unregistered diagnostic: {}",
-                    d.code
+                    d.code()
                 );
-                d.code.as_str()
+                assert_eq!(d.severity(), find_rule(d.code().as_str()).unwrap().severity);
+                d.code().as_str()
             })
             .collect::<BTreeSet<_>>();
         let expected = case["diagnostics"]
@@ -85,7 +86,7 @@ fn corpus_codes_and_sidecars_match_actual_analysis() {
     }
 }
 #[test]
-fn registry_documents_every_code_and_enforces_semantic_case_coverage() {
+fn registry_documents_every_code_and_enforces_configurable_case_coverage() {
     let root = root();
     let manifest: Value = serde_json::from_str(
         &fs::read_to_string(root.join("tests/corpus/manifests/cases.json")).unwrap(),
@@ -110,12 +111,12 @@ fn registry_documents_every_code_and_enforces_semantic_case_coverage() {
                 .any(|case| case["rule"] == rule.code.as_str())
                 || matches!(
                     rule.code.as_str(),
-                    "IO001" | "IO002" | "XSD001" | "XSD002" | "XSD003" | "XSD004"
+                    "E001" | "E002" | "E031" | "E032" | "E033" | "E034"
                 ),
             "{} has no corpus or dedicated I/O/schema integration test",
             rule.code.as_str()
         );
-        if rule.code.as_str().starts_with("SEM") {
+        if rule.configurable {
             for kind in ["negative", "positive", "boundary"] {
                 assert!(
                     manifest["cases"]

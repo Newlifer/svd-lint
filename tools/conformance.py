@@ -13,6 +13,10 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 CACHE = ROOT / "tests/external/cache"
 REPORTS = ROOT / "tests/external/reports"
 
+# Codes are grouped by analysis phase explicitly; their prefix denotes default severity.
+PARSE_FAILURE_CODES = frozenset(["E001","E002","E003","E004","E005","E006","E007","E008","E031","E032","E033","E034"])
+NORMALIZATION_FAILURE_CODES = frozenset(["E009","E010","E011","E012","E013","E014","E015","E016","E017"])
+
 def verify(name):
     lock = json.loads((ROOT / "tests/external/repos.json").read_text())
     repo = next(r for r in lock if r["name"] == name)
@@ -142,7 +146,7 @@ def compare(args):
         elif reference is None:
             row.update(status="REFERENCE AMBIGUITY",reason=reference_error)
         elif ir is None:
-            if "NORM008" in diagnostic_codes:
+            if "E016" in diagnostic_codes:
                 row.update(status="EXPECTED DIFFERENCE",reason="svd-lint requires an effective register size; reference supplies or infers a default",diagnostics=diagnostic_codes)
                 # Also compare a labelled variant with an explicit common size.
                 # The original result is kept; neither original parser input nor
@@ -224,8 +228,8 @@ def data(args):
         local=by_vendor.setdefault(vendor,collections.Counter())
         for target in [totals,local]:
             target["files"]+=1
-            target["successfully_parsed"]+=not any(d["code"].startswith(("XML","XSD")) or d["code"] in ["SVD001","SVD002","SVD003","SVD004","SVD006","IO001","IO002"] for d in diagnostics)
-            target["normalization_failures"]+=any(d["code"].startswith("NORM") for d in diagnostics)
+            target["successfully_parsed"]+=not any(d["code"] in PARSE_FAILURE_CODES for d in diagnostics)
+            target["normalization_failures"]+=any(d["code"] in NORMALIZATION_FAILURE_CODES for d in diagnostics)
             target["errors"]+=sum(d["severity"]=="error" for d in diagnostics)
             target["warnings"]+=sum(d["severity"]=="warning" for d in diagnostics)
         by_code.update(d["code"] for d in diagnostics)

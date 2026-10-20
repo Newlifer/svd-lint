@@ -1,23 +1,21 @@
 use super::{CheckContext, ranges::fits};
-use crate::diagnostic_definition::{DiagnosticDefinition, RuleCategory};
+use crate::diagnostic_definition::DiagnosticDefinition;
 use crate::{Diagnostic, Origin, Severity, ir::*, svd};
 
 pub(crate) static INVALID_WRITE_CONSTRAINT: DiagnosticDefinition = DiagnosticDefinition {
-    code: crate::DiagnosticCode::new("SEM015"),
+    code: crate::DiagnosticCode::new("E030"),
     name: "invalid-write-constraint",
     description: "A write constraint has invalid bounds or lacks writable enums.",
-    category: RuleCategory::Access,
-    default_severity: Severity::Error,
+    severity: Severity::Error,
     configurable: true,
     tags: &["check"],
 };
 
 pub(crate) static ACCESS_CONFLICT: DiagnosticDefinition = DiagnosticDefinition {
-    code: crate::DiagnosticCode::new("SEM016"),
+    code: crate::DiagnosticCode::new("W005"),
     name: "access-conflict",
     description: "Access and read/write effects may be incompatible.",
-    category: RuleCategory::Access,
-    default_severity: Severity::Warning,
+    severity: Severity::Warning,
     configurable: true,
     tags: &["heuristic"],
 };
@@ -151,7 +149,6 @@ fn check_constraint(
     if let Some(reason) = reason {
         diagnostics.push(context.diagnostic(
             &INVALID_WRITE_CONSTRAINT,
-            Severity::Error,
             reason,
             origin,
             "writeConstraint",
@@ -204,8 +201,7 @@ fn check_operations(
         ),
     ] {
         if contradiction {
-            let mut d =
-                context.diagnostic(&ACCESS_CONFLICT, Severity::Warning, reason, origin, tag);
+            let mut d = context.diagnostic(&ACCESS_CONFLICT, reason, origin, tag);
             context.related(
                 &mut d,
                 &access.origin,
